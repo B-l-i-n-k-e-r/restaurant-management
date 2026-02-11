@@ -27,79 +27,22 @@ include('header.php');
 ?>
 
 <style>
-    /* Glassmorphism Card & Container */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 15px;
-        color: white;
-    }
-
-    /* Table Responsiveness & Forced Scrollbar - Matching table.php */
-    .table-responsive {
-        width: 100% !important;
-        overflow-x: scroll !important; /* Force the scrollbar */
-        -webkit-overflow-scrolling: touch;
-        border-radius: 10px;
-        padding-bottom: 15px; /* Space for the scrollbar */
-    }
-
-    /* Custom Scrollbar Styling - Matching table.php */
-    .table-responsive::-webkit-scrollbar {
-        height: 10px;
-    }
-    .table-responsive::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(23, 162, 184, 0.5); /* Info Cyan */
-        border: 2px solid rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: rgba(23, 162, 184, 0.8);
-    }
-
-    /* Prevent wrapping to ensure scrollbar appears */
-    .table { 
-        color: white !important; 
-        width: 100% !important; 
-        white-space: nowrap; 
-    }
-    
-    .table-bordered { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
-    .table-bordered td, .table-bordered th { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
-
-    /* Modal Glass Styling */
-    .modal-content {
-        background: rgba(30, 30, 30, 0.9) !important;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-    }
-    .form-control {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
-    }
-    .form-control option { background: #333; color: white; }
-    select[multiple] { height: auto !important; min-height: 100px; }
-
-    /* DataTables Text & Pagination Fixes - Matching table.php style */
-    .dataTables_wrapper .dataTables_info, 
-    .dataTables_wrapper .dataTables_length, 
-    .dataTables_wrapper .dataTables_filter, 
-    .dataTables_wrapper .dataTables_paginate {
-        color: white !important;
-        padding-top: 15px;
-    }
-    .page-link {
-        background-color: rgba(255,255,255,0.1) !important;
-        border-color: rgba(255,255,255,0.1) !important;
-        color: white !important;
-    }
+/* Glassmorphism Card & Container */
+.glass-card { background: rgba(255,255,255,0.05)!important; backdrop-filter: blur(15px); border:1px solid rgba(255,255,255,0.1)!important; border-radius:15px; color:white; }
+.table-responsive { width:100%!important; overflow-x:scroll!important; -webkit-overflow-scrolling: touch; border-radius:10px; padding-bottom:15px; }
+.table-responsive::-webkit-scrollbar { height:10px; }
+.table-responsive::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); border-radius:10px; }
+.table-responsive::-webkit-scrollbar-thumb { background: rgba(23,162,184,0.5); border:2px solid rgba(0,0,0,0.2); border-radius:10px; }
+.table-responsive::-webkit-scrollbar-thumb:hover { background: rgba(23,162,184,0.8); }
+.table { color:white!important; width:100%!important; white-space:nowrap; }
+.table-bordered { border:1px solid rgba(255,255,255,0.1)!important; }
+.table-bordered td, .table-bordered th { border:1px solid rgba(255,255,255,0.1)!important; }
+.modal-content { background: rgba(30,30,30,0.9)!important; backdrop-filter: blur(20px); border:1px solid rgba(255,255,255,0.2); color:white; }
+.form-control { background: rgba(255,255,255,0.1)!important; border:1px solid rgba(255,255,255,0.2)!important; color:white!important; }
+.form-control option { background:#333; color:white; }
+select[multiple] { height:auto!important; min-height:100px; }
+.dataTables_wrapper .dataTables_info, .dataTables_wrapper .dataTables_length, .dataTables_wrapper .dataTables_filter, .dataTables_wrapper .dataTables_paginate { color:white!important; padding-top:15px; }
+.page-link { background-color: rgba(255,255,255,0.1)!important; border-color: rgba(255,255,255,0.1)!important; color:white!important; }
 </style>
 
 <h1 class="h3 mb-4 text-white">Product Management</h1>
@@ -127,6 +70,7 @@ include('header.php');
                         <th>Product Name</th>
                         <th>Product Price</th>
                         <th>Category</th>
+                        <th>Image</th> <!-- New column -->
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -141,7 +85,7 @@ include('header.php');
 
 <div id="productModal" class="modal fade">
     <div class="modal-dialog">
-        <form method="post" id="product_form">
+        <form method="post" id="product_form" enctype="multipart/form-data">
             <div class="modal-content shadow-lg">
                 <div class="modal-header border-bottom-0">
                     <h4 class="modal-title" id="modal_title">Add Product</h4>
@@ -179,6 +123,15 @@ include('header.php');
                         </select>
                         <small class="text-info">Hold Ctrl (Win) or Cmd (Mac) for multiple selection.</small>
                     </div>
+
+                    <!-- New image upload -->
+                    <div class="form-group">
+                        <label>Product Image</label>
+                        <input type="file" name="product_image" id="product_image" class="form-control" accept="image/*" />
+                        <small class="text-info">Optional. Max size 2MB.</small>
+                        <div id="uploaded_image" class="mt-2"></div>
+                    </div>
+
                 </div>
                 <div class="modal-footer border-top-0">
                     <input type="hidden" name="hidden_id" id="hidden_id" />
@@ -204,13 +157,10 @@ $(document).ready(function(){
             type:"POST",
             data:{action:'fetch'}
         },
-        "columnDefs":[ { "targets":[4], "orderable":false } ],
+        "columnDefs":[ { "targets":[5], "orderable":false } ], // last column is action
     });
 
-    // Handle window resize for consistent columns
-    $(window).on('resize', function() {
-        dataTable.columns.adjust();
-    });
+    $(window).on('resize', function() { dataTable.columns.adjust(); });
 
     $('#add_product').click(function(){
         $('#product_form')[0].reset();
@@ -220,15 +170,18 @@ $(document).ready(function(){
         $('#submit_button').val('Add');
         $('#productModal').modal('show');
         $('#form_message').html('');
+        $('#uploaded_image').html('');
     });
 
     $('#product_form').on('submit', function(event){
         event.preventDefault();
-        if($('#product_form').parsley().isValid()) {       
+        if($('#product_form').parsley().isValid()) {
             $.ajax({
                 url:"product_action.php",
                 method:"POST",
-                data:$(this).serialize(),
+                data: new FormData(this),
+                contentType:false,
+                processData:false,
                 dataType:'json',
                 beforeSend:function() { 
                     $('#submit_button').attr('disabled', 'disabled').val('wait...'); 
@@ -263,6 +216,7 @@ $(document).ready(function(){
                 $('#product_name').val(data.product_name);
                 $('#product_price').val(data.product_price);
                 $('#tax_ids').val(data.tax_ids); 
+                $('#uploaded_image').html(data.product_image); // show current image
                 $('#modal_title').text('Edit Product');
                 $('#action').val('Edit');
                 $('#submit_button').val('Edit');

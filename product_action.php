@@ -8,252 +8,284 @@ $object = new rms();
 
 if(isset($_POST["action"]))
 {
-	if($_POST["action"] == 'fetch')
-	{
-		$order_column = array('category_name', 'product_name', 'product_price', 'product_status');
+    if($_POST["action"] == 'fetch')
+    {
+        $order_column = array('category_name', 'product_name', 'product_price', 'product_image', 'product_status');
 
-		$output = array();
+        $output = array();
 
-		$main_query = "
-		SELECT * FROM product_table ";
+        $main_query = "SELECT * FROM product_table ";
 
-		$search_query = '';
+        $search_query = '';
 
-		if(isset($_POST["search"]["value"]))
-		{
-			$search_query .= 'WHERE category_name LIKE "%'.$_POST["search"]["value"].'%" ';
-			$search_query .= 'OR product_name LIKE "%'.$_POST["search"]["value"].'%" ';
-			$search_query .= 'OR product_price LIKE "%'.$_POST["search"]["value"].'%" ';
-			$search_query .= 'OR product_status LIKE "%'.$_POST["search"]["value"].'%" ';
-		}
+        if(isset($_POST["search"]["value"]))
+        {
+            $search_query .= 'WHERE category_name LIKE "%'.$_POST["search"]["value"].'%" ';
+            $search_query .= 'OR product_name LIKE "%'.$_POST["search"]["value"].'%" ';
+            $search_query .= 'OR product_price LIKE "%'.$_POST["search"]["value"].'%" ';
+            $search_query .= 'OR product_status LIKE "%'.$_POST["search"]["value"].'%" ';
+        }
 
-		if(isset($_POST["order"]))
-		{
-			$order_query = 'ORDER BY '.$order_column[$_POST['order']['0']['column']].' '.$_POST['order']['0']['dir'].' ';
-		}
-		else
-		{
-			$order_query = 'ORDER BY product_id DESC ';
-		}
+        if(isset($_POST["order"]))
+        {
+            $order_query = 'ORDER BY '.$order_column[$_POST['order']['0']['column']].' '.$_POST['order']['0']['dir'].' ';
+        }
+        else
+        {
+            $order_query = 'ORDER BY product_id DESC ';
+        }
 
-		$limit_query = '';
+        $limit_query = '';
 
-		if($_POST["length"] != -1)
-		{
-			$limit_query .= 'LIMIT ' . $_POST['start'] . ', ' . $_POST['length'];
-		}
+        if($_POST["length"] != -1)
+        {
+            $limit_query .= 'LIMIT ' . $_POST['start'] . ', ' . $_POST['length'];
+        }
 
-		$object->query = $main_query . $search_query . $order_query;
+        $object->query = $main_query . $search_query . $order_query;
+        $object->execute();
+        $filtered_rows = $object->row_count();
 
-		$object->execute();
+        $object->query .= $limit_query;
+        $result = $object->get_result();
 
-		$filtered_rows = $object->row_count();
+        $object->query = $main_query;
+        $object->execute();
+        $total_rows = $object->row_count();
 
-		$object->query .= $limit_query;
+        $data = array();
 
-		$result = $object->get_result();
+        foreach($result as $row)
+        {
+            $sub_array = array();
+            $sub_array[] = html_entity_decode($row["product_name"]);
+            $sub_array[] = $object->cur . $row["product_price"];
+            $sub_array[] = $row["category_name"];
+            
+            // Display image if exists
+            if(!empty($row["product_image"]))
+            {
+                $sub_array[] = '<img src="images/'.$row["product_image"].'" class="img-thumbnail" width="50" />';
+            }
+            else
+            {
+                $sub_array[] = '';
+            }
 
-		$object->query = $main_query;
+            $status = '';
+            if($row["product_status"] == 'Enable')
+            {
+                $status = '<button type="button" name="status_button" class="btn btn-primary btn-sm status_button" data-id="'.$row["product_id"].'" data-status="'.$row["product_status"].'">Enable</button>';
+            }
+            else
+            {
+                $status = '<button type="button" name="status_button" class="btn btn-danger btn-sm status_button" data-id="'.$row["product_id"].'" data-status="'.$row["product_status"].'">Disable</button>';
+            }
+            $sub_array[] = $status;
 
-		$object->execute();
+            $sub_array[] = '
+            <div align="center">
+            <button type="button" name="edit_button" class="btn btn-warning btn-circle btn-sm edit_button" data-id="'.$row["product_id"].'"><i class="fas fa-edit"></i></button>
+            &nbsp;
+            <button type="button" name="delete_button" class="btn btn-danger btn-circle btn-sm delete_button" data-id="'.$row["product_id"].'"><i class="fas fa-times"></i></button>
+            </div>
+            ';
+            $data[] = $sub_array;
+        }
 
-		$total_rows = $object->row_count();
+        $output = array(
+            "draw"              =>  intval($_POST["draw"]),
+            "recordsTotal"      =>  $total_rows,
+            "recordsFiltered"   =>  $filtered_rows,
+            "data"              =>  $data
+        );
+            
+        echo json_encode($output);
+    }
 
-		$data = array();
+    if($_POST["action"] == 'Add')
+    {
+        $error = '';
+        $success = '';
 
-		foreach($result as $row)
-		{
-			$sub_array = array();
-			$sub_array[] = html_entity_decode($row["product_name"]);
-			$sub_array[] = $object->cur . $row["product_price"];
-			$sub_array[] = $row["category_name"];
-			$status = '';
-			if($row["product_status"] == 'Enable')
-			{
-				$status = '<button type="button" name="status_button" class="btn btn-primary btn-sm status_button" data-id="'.$row["product_id"].'" data-status="'.$row["product_status"].'">Enable</button>';
-			}
-			else
-			{
-				$status = '<button type="button" name="status_button" class="btn btn-danger btn-sm status_button" data-id="'.$row["product_id"].'" data-status="'.$row["product_status"].'">Disable</button>';
-			}
-			$sub_array[] = $status;
-			$sub_array[] = '
-			<div align="center">
-			<button type="button" name="edit_button" class="btn btn-warning btn-circle btn-sm edit_button" data-id="'.$row["product_id"].'"><i class="fas fa-edit"></i></button>
-			&nbsp;
-			<button type="button" name="delete_button" class="btn btn-danger btn-circle btn-sm delete_button" data-id="'.$row["product_id"].'"><i class="fas fa-times"></i></button>
-			</div>
-			';
-			$data[] = $sub_array;
-		}
+        $data = array(
+            ':category_name'    =>  $_POST["category_name"],
+            ':product_name'     =>  $_POST["product_name"]
+        );
 
-		$output = array(
-			"draw"    			=> 	intval($_POST["draw"]),
-			"recordsTotal"  	=>  $total_rows,
-			"recordsFiltered" 	=> 	$filtered_rows,
-			"data"    			=> 	$data
-		);
-			
-		echo json_encode($output);
+        $object->query = "
+        SELECT * FROM product_table 
+        WHERE category_name = :category_name 
+        AND product_name = :product_name
+        ";
 
-	}
+        $object->execute($data);
 
-	if($_POST["action"] == 'Add')
-	{
-		$error = '';
+        if($object->row_count() > 0)
+        {
+            $error = '<div class="alert alert-danger">Product Already Exists</div>';
+        }
+        else
+        {
+            // Handle image upload
+            $product_image = '';
+            if(isset($_FILES["product_image"]) && $_FILES["product_image"]["name"] != '')
+            {
+                $product_image = time() . '_' . $_FILES["product_image"]["name"];
+                move_uploaded_file($_FILES["product_image"]["tmp_name"], 'images/' . $product_image);
+            }
 
-		$success = '';
+            $data = array(
+                ':category_name'    =>  $_POST["category_name"],
+                ':product_name'     =>  $object->clean_input($_POST["product_name"]),
+                ':product_price'    =>  $object->clean_input($_POST["product_price"]),
+                ':product_status'   =>  'Enable',
+                ':product_image'    =>  $product_image
+            );
 
-		$data = array(
-			':category_name'	=>	$_POST["category_name"],
-			':product_name'		=>	$_POST["product_name"]
-		);
+            $object->query = "
+            INSERT INTO product_table 
+            (category_name, product_name, product_price, product_status, product_image) 
+            VALUES (:category_name, :product_name, :product_price, :product_status, :product_image)
+            ";
 
-		$object->query = "
-		SELECT * FROM product_table 
-		WHERE category_name = :category_name 
-		AND product_name = :product_name
-		";
+            $object->execute($data);
 
-		$object->execute($data);
+            $success = '<div class="alert alert-success">Product Added</div>';
+        }
 
-		if($object->row_count() > 0)
-		{
-			$error = '<div class="alert alert-danger">Product Already Exists</div>';
-		}
-		else
-		{
-			$data = array(
-				':category_name'	=>	$_POST["category_name"],
-				':product_name'		=>	$object->clean_input($_POST["product_name"]),
-				':product_price'	=>	$object->clean_input($_POST["product_price"]),
-				':product_status'	=>	'Enable',
-			);
+        $output = array(
+            'error'     =>  $error,
+            'success'   =>  $success
+        );
 
-			$object->query = "
-			INSERT INTO product_table 
-			(category_name, product_name, product_price, product_status) 
-			VALUES (:category_name, :product_name, :product_price, :product_status)
-			";
+        echo json_encode($output);
+    }
 
-			$object->execute($data);
+    if($_POST["action"] == 'fetch_single')
+    {
+        $object->query = "
+        SELECT * FROM product_table 
+        WHERE product_id = '".$_POST["product_id"]."'
+        ";
 
-			$success = '<div class="alert alert-success">Product Added</div>';
-		}
+        $result = $object->get_result();
 
-		$output = array(
-			'error'		=>	$error,
-			'success'	=>	$success
-		);
+        $data = array();
 
-		echo json_encode($output);
+        foreach($result as $row)
+        {
+            $data['category_name'] = $row['category_name'];
+            $data['product_name'] = $row['product_name'];
+            $data['product_price'] = $row['product_price'];
+            $data['product_image'] = $row['product_image']; // send image info
+        }
 
-	}
+        echo json_encode($data);
+    }
 
-	if($_POST["action"] == 'fetch_single')
-	{
-		$object->query = "
-		SELECT * FROM product_table 
-		WHERE product_id = '".$_POST["product_id"]."'
-		";
+    if($_POST["action"] == 'Edit')
+    {
+        $error = '';
+        $success = '';
 
-		$result = $object->get_result();
+        $data = array(
+            ':category_name'    =>  $_POST["category_name"],
+            ':product_name'     =>  $_POST["product_name"],
+            ':product_id'       =>  $_POST['hidden_id']
+        );
 
-		$data = array();
+        $object->query = "
+        SELECT * FROM product_table 
+        WHERE category_name = :category_name 
+        AND product_name = :product_name
+        AND product_id != :product_id
+        ";
 
-		foreach($result as $row)
-		{
-			$data['category_name'] = $row['category_name'];
-			$data['product_name'] = $row['product_name'];
-			$data['product_price'] = $row['product_price'];
-		}
+        $object->execute($data);
 
-		echo json_encode($data);
-	}
+        if($object->row_count() > 0)
+        {
+            $error = '<div class="alert alert-danger">Product Already Exists</div>';
+        }
+        else
+        {
+            // Handle image upload for edit
+            $product_image = '';
+            if(isset($_FILES["product_image"]) && $_FILES["product_image"]["name"] != '')
+            {
+                $product_image = time() . '_' . $_FILES["product_image"]["name"];
+                move_uploaded_file($_FILES["product_image"]["tmp_name"], 'images/' . $product_image);
 
-	if($_POST["action"] == 'Edit')
-	{
-		$error = '';
+                // Update with new image
+                $object->query = "
+                UPDATE product_table
+                SET category_name = :category_name,
+                    product_name = :product_name,
+                    product_price = :product_price,
+                    product_image = '".$product_image."'
+                WHERE product_id = '".$_POST['hidden_id']."'
+                ";
+            }
+            else
+            {
+                // Update without changing image
+                $object->query = "
+                UPDATE product_table 
+                SET category_name = :category_name, 
+                    product_name = :product_name, 
+                    product_price = :product_price
+                WHERE product_id = '".$_POST['hidden_id']."'
+                ";
+            }
 
-		$success = '';
+            $data = array(
+                ':category_name'    =>  $_POST["category_name"],
+                ':product_name'     =>  $object->clean_input($_POST["product_name"]),
+                ':product_price'    =>  $object->clean_input($_POST["product_price"])
+            );
 
-		$data = array(
-			':category_name'	=>	$_POST["category_name"],
-			':product_name'		=>	$_POST["product_name"],
-			':product_id'		=>	$_POST['hidden_id']
-		);
+            $object->execute($data);
 
-		$object->query = "
-		SELECT * FROM product_table 
-		WHERE category_name = :category_name 
-		AND product_name = :product_name
-		AND product_id != :product_id
-		";
+            $success = '<div class="alert alert-success">Product Updated</div>';
+        }
 
-		$object->execute($data);
+        $output = array(
+            'error'     =>  $error,
+            'success'   =>  $success
+        );
 
-		if($object->row_count() > 0)
-		{
-			$error = '<div class="alert alert-danger">Product Already Exists</div>';
-		}
-		else
-		{
-			$data = array(
-				':category_name'	=>	$_POST["category_name"],
-				':product_name'		=>	$object->clean_input($_POST["product_name"]),
-				':product_price'	=>	$object->clean_input($_POST["product_price"])
-			);
+        echo json_encode($output);
+    }
 
-			$object->query = "
-			UPDATE product_table 
-			SET category_name = :category_name, 
-			product_name = :product_name, 
-			product_price = :product_price   
-			WHERE product_id = '".$_POST['hidden_id']."'
-			";
+    if($_POST["action"] == 'change_status')
+    {
+        $data = array(
+            ':product_status'        =>  $_POST['next_status']
+        );
 
-			$object->execute($data);
+        $object->query = "
+        UPDATE product_table 
+        SET product_status = :product_status 
+        WHERE product_id = '".$_POST["id"]."'
+        ";
 
-			$success = '<div class="alert alert-success">Product Updated</div>';
-		}
+        $object->execute($data);
 
-		$output = array(
-			'error'		=>	$error,
-			'success'	=>	$success
-		);
+        echo '<div class="alert alert-success">Product Status change to '.$_POST['next_status'].'</div>';
+    }
 
-		echo json_encode($output);
+    if($_POST["action"] == 'delete')
+    {
+        $object->query = "
+        DELETE FROM product_table 
+        WHERE product_id = '".$_POST["id"]."'
+        ";
 
-	}
+        $object->execute();
 
-	if($_POST["action"] == 'change_status')
-	{
-		$data = array(
-			':product_status'		=>	$_POST['next_status']
-		);
-
-		$object->query = "
-		UPDATE product_table 
-		SET product_status = :product_status 
-		WHERE product_id = '".$_POST["id"]."'
-		";
-
-		$object->execute($data);
-
-		echo '<div class="alert alert-success">Product Status change to '.$_POST['next_status'].'</div>';
-	}
-
-	if($_POST["action"] == 'delete')
-	{
-		$object->query = "
-		DELETE FROM product_table 
-		WHERE product_id = '".$_POST["id"]."'
-		";
-
-		$object->execute();
-
-		echo '<div class="alert alert-success">Product Deleted</div>';
-	}
+        echo '<div class="alert alert-success">Product Deleted</div>';
+    }
 }
 
 ?>
