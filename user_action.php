@@ -41,10 +41,26 @@ if(isset($_POST["action"]))
         $data = [];
         foreach($result as $row) {
             $sub_array = [];
+            
+            // 1. Profile Image
             $sub_array[] = '<img src="'.$row["user_profile"].'" class="img-thumbnail" width="50" />';
-            $sub_array[] = htmlspecialchars($row["user_name"]);
+            
+            // 2. User Name + Reset Badge (Logic from header.php)
+            $userNameHTML = htmlspecialchars($row["user_name"]);
+            if(isset($row["reset_request"]) && $row["reset_request"] == 1) {
+                $userNameHTML .= '<br><span class="badge badge-danger badge-counter-reset" style="font-size:10px; padding: 2px 5px;">
+                                    <i class="fas fa-key"></i> Reset Requested
+                                  </span>';
+            }
+            $sub_array[] = $userNameHTML;
+
+            // 3. Contact
             $sub_array[] = htmlspecialchars($row["user_contact_no"]);
+            
+            // 4. Email
             $sub_array[] = htmlspecialchars($row["user_email"]);
+            
+            // 5. Password Masking
             $sub_array[] = '
                 <div class="d-flex align-items-center justify-content-between">
                     <span id="pass_'.$row["user_id"].'">********</span>
@@ -52,18 +68,29 @@ if(isset($_POST["action"]))
                         <i class="fas fa-eye text-info"></i>
                     </button>
                 </div>';
+            
+            // 6. Type
             $sub_array[] = htmlspecialchars($row["user_type"]);
+            
+            // 7. Created Date
             $sub_array[] = $row["user_created_on"];
             
-            $next_status = ($row["user_status"] == 'Enable') ? 'Disable' : 'Enable';
-            $btn_class = ($row["user_status"] == 'Enable') ? 'btn-primary' : 'btn-danger';
-            $sub_array[] = '<button type="button" class="btn btn-sm '.$btn_class.' status_button" data-id="'.$row["user_id"].'" data-status="'.$next_status.'">'.$row["user_status"].'</button>';
+            // 8. Status Column (Modified for Reset Requests)
+            if(isset($row["reset_request"]) && $row["reset_request"] == 1) {
+                $sub_array[] = '<button type="button" class="btn btn-sm btn-warning edit_button" data-id="'.$row["user_id"].'">Pending Reset</button>';
+            } else {
+                $next_status = ($row["user_status"] == 'Enable') ? 'Disable' : 'Enable';
+                $btn_class = ($row["user_status"] == 'Enable') ? 'btn-primary' : 'btn-danger';
+                $sub_array[] = '<button type="button" class="btn btn-sm '.$btn_class.' status_button" data-id="'.$row["user_id"].'" data-status="'.$next_status.'">'.$row["user_status"].'</button>';
+            }
             
+            // 9. Actions
             $sub_array[] = '<div align="center">
                 <button type="button" class="btn btn-warning btn-sm edit_button" data-id="'.$row["user_id"].'"><i class="fas fa-edit"></i></button>
                 &nbsp;
                 <button type="button" class="btn btn-danger btn-sm delete_button" data-id="'.$row["user_id"].'"><i class="fas fa-times"></i></button>
             </div>';
+            
             $data[] = $sub_array;
         }
 
@@ -85,7 +112,6 @@ if(isset($_POST["action"]))
         if($object->row_count() > 0) {
             $error = 'User Email Already Exists';
         } else {
-            // Check if image uploaded, else generate avatar
             if(!empty($_FILES["user_image"]["name"])) {
                 $user_image = upload_image();
             } else {
@@ -93,8 +119,8 @@ if(isset($_POST["action"]))
                 $user_image = make_avatar($first_letter);
             }
 
-            $object->query = "INSERT INTO user_table (user_name, user_contact_no, user_email, user_password, user_profile, user_type, user_status, user_created_on) 
-                              VALUES (:user_name, :user_contact_no, :user_email, :user_password, :user_profile, :user_type, 'Enable', :user_created_on)";
+            $object->query = "INSERT INTO user_table (user_name, user_contact_no, user_email, user_password, user_profile, user_type, user_status, user_created_on, reset_request) 
+                              VALUES (:user_name, :user_contact_no, :user_email, :user_password, :user_profile, :user_type, 'Enable', :user_created_on, 0)";
             $object->execute([
                 'user_name' => $_POST["user_name"], 
                 'user_contact_no' => $_POST["user_contact_no"],
@@ -128,6 +154,7 @@ if(isset($_POST["action"]))
             }
 
             $password_query = "";
+            $reset_request_query = "";
             $params = [
                 'user_name' => $_POST["user_name"], 
                 'user_contact_no' => $_POST["user_contact_no"],
@@ -137,14 +164,22 @@ if(isset($_POST["action"]))
                 'user_id' => $user_id
             ];
 
+            // If a new password is provided, clear the reset_request flag automatically
             if(!empty($_POST["user_password"])) {
                 $params['user_password'] = password_hash($_POST["user_password"], PASSWORD_DEFAULT);
                 $password_query = "user_password = :user_password, ";
+                $reset_request_query = "reset_request = 0, ";
             }
 
-            $object->query = "UPDATE user_table SET user_name = :user_name, user_contact_no = :user_contact_no, 
-                              user_email = :user_email, $password_query user_profile = :user_profile, 
-                              user_type = :user_type WHERE user_id = :user_id";
+            $object->query = "UPDATE user_table SET 
+                                user_name = :user_name, 
+                                user_contact_no = :user_contact_no, 
+                                user_email = :user_email, 
+                                $password_query 
+                                $reset_request_query
+                                user_profile = :user_profile, 
+                                user_type = :user_type 
+                              WHERE user_id = :user_id";
             $object->execute($params);
             $success = 'User Updated Successfully';
         }
@@ -165,7 +200,7 @@ if(isset($_POST["action"]))
         $object->query = "SELECT user_profile FROM user_table WHERE user_id = :id";
         $object->execute(['id' => $_POST["id"]]);
         $row = $object->statement_result();
-        if(file_exists($row[0]['user_profile'])) { @unlink($row[0]['user_profile']); }
+        if(isset($row[0]) && file_exists($row[0]['user_profile'])) { @unlink($row[0]['user_profile']); }
 
         $object->query = "DELETE FROM user_table WHERE user_id = :id";
         $object->execute(['id' => $_POST["id"]]);
@@ -182,6 +217,7 @@ if(isset($_POST["action"]))
     }
 }
 
+// Helper Functions
 function upload_image() {
     $extension = pathinfo($_FILES['user_image']['name'], PATHINFO_EXTENSION);
     $new_name = rand() . '.' . $extension;
@@ -198,7 +234,6 @@ function make_avatar($character) {
     $bg = imagecolorallocate($image, rand(0,100), rand(0,100), rand(0,100));
     $white = imagecolorallocate($image, 255, 255, 255);
     
-    // Using built-in font (5 is largest)
     $font = 5;
     $text_width = imagefontwidth($font) * strlen($character);
     $text_height = imagefontheight($font);

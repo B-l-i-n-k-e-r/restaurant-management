@@ -23,9 +23,16 @@ include('header.php');
 
     .order-row { cursor: pointer; border-bottom: 1px solid rgba(255,255,255,0.05); transition: 0.3s; }
     .order-row:hover { background: rgba(255,255,255,0.03); }
-    .nav-pills .nav-link { color: #aaa; margin-right: 10px; border-radius: 10px; }
-    .nav-pills .nav-link.active { background: #17a2b8 !important; color: white; }
+    .nav-pills .nav-link { color: #aaa; margin-right: 10px; border-radius: 10px; border: 1px solid transparent; }
+    .nav-pills .nav-link.active { background: rgba(23, 162, 184, 0.2) !important; color: #17a2b8 !important; border: 1px solid var(--accent); }
     .item-scroll { max-height: 400px; overflow-y: auto; }
+
+    /* History Table Adjustments */
+    #history_table_wrapper .dataTables_length select, 
+    #history_table_wrapper .dataTables_filter input {
+        background: var(--glass); border: 1px solid var(--glass-border); color: white; border-radius: 5px;
+    }
+    .page-link { background: var(--glass) !important; border: 1px solid var(--glass-border) !important; color: #17a2b8 !important; }
 </style>
 
 <div class="container-fluid">
@@ -60,17 +67,18 @@ include('header.php');
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 font-weight-bold mb-0">Order Oversight</h1>
-                <p class="text-white-50 small">Monitor and print all restaurant transactions</p>
+                <p class="text-white-50 small">Monitor and manage all restaurant transactions</p>
             </div>
             <div class="text-right">
-                <span class="text-white-50 small d-block">System Date</span>
-                <span class="font-weight-bold text-white"><?php echo date('l, d M Y'); ?></span>
+                <button type="button" id="master_print_report" class="btn btn-warning shadow-sm">
+                    <i class="fas fa-file-invoice mr-2"></i>Print Sales Report
+                </button>
             </div>
         </div>
 
         <ul class="nav nav-pills mb-4">
-            <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#pending">Pending Orders</a></li>
-            <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#history">Order History</a></li>
+            <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#pending"><i class="fas fa-clock mr-2"></i>Active Orders</a></li>
+            <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#history"><i class="fas fa-history mr-2"></i>Order History</a></li>
         </ul>
 
         <div class="row">
@@ -86,22 +94,34 @@ include('header.php');
                             </table>
                         </div>
                     </div>
+                    
                     <div class="tab-pane fade" id="history">
                         <div class="glass-card p-4">
-                            <table class="table table-hover text-white w-100" id="history_table">
-                                <thead>
-                                    <tr class="text-white-50 small">
-                                        <th>Order #</th><th>Date</th><th>Table</th><th>Total</th><th>Action</th>
-                                    </tr>
-                                </thead>
-                            </table>
+                            <div class="table-responsive">
+                                <table class="table table-hover text-white w-100" id="history_table">
+                                    <thead>
+                                        <tr class="text-white-50 small">
+                                            <th>Order #</th>
+                                            <th>Date</th>
+                                            <th>Table</th>
+                                            <th>Cashier</th>
+                                            <th>Net Total</th>
+                                            <th class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
             <div class="col-lg-4">
                 <div class="glass-card p-4 sticky-top" style="top: 20px;" id="admin_detail_preview">
-                    <div class="text-center py-5 opacity-50"><h5>Select an order to preview</h5></div>
+                    <div class="text-center py-5 opacity-50">
+                        <i class="fas fa-search fa-3x mb-3 text-info"></i>
+                        <h5>Select an order to preview details</h5>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,6 +134,26 @@ include('header.php');
 $(document).ready(function(){
     const isWaiter = <?php echo $is_waiter ? 'true' : 'false'; ?>;
     const selectMode = <?php echo (isset($_GET['mode']) && $_GET['mode'] == 'select_table') ? 'true' : 'false'; ?>;
+
+    function load_preview(order_id, target_selector) {
+        $.ajax({
+            url: "order_action.php",
+            method: "POST",
+            data: {action: 'fetch_order_preview', order_id: order_id},
+            success: function(data){ 
+                $(target_selector).html(data);
+                if(isWaiter) {
+                    $('.settle_order_btn').html('<i class="fas fa-times-circle mr-2"></i> Cancel Order').removeClass('btn-success').addClass('btn-danger');
+                } else {
+                    $('.settle_order_btn').remove(); 
+                }
+            }
+        });
+    }
+
+    $('#master_print_report').click(function(){
+        window.open("print.php?action=print_all", "_blank");
+    });
 
     if(isWaiter) {
         function load_tables() {
@@ -136,13 +176,11 @@ $(document).ready(function(){
                     Swal.fire('Table Occupied', 'Please select an available table.', 'error');
                     return;
                 }
-                
                 Swal.fire({
                     title: 'Confirm Table',
                     text: "Assign current order to " + table + "?",
                     icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#1cc88a',
                     confirmButtonText: 'Yes, Place Order'
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -152,13 +190,7 @@ $(document).ready(function(){
                             data: {action: 'submit_cart_to_table', table_name: table},
                             success: function(res){ 
                                 if(res.trim() == 'success') {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Success!',
-                                        text: 'Order placed for ' + table,
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
+                                    Swal.fire({ icon: 'success', title: 'Success!', timer: 1500, showConfirmButton: false }).then(() => {
                                         window.location.href = "dashboard.php";
                                     });
                                 } 
@@ -167,16 +199,10 @@ $(document).ready(function(){
                     }
                 });
             } else {
-                if(order_id != 0) {
-                    $.ajax({
-                        url: "order_action.php",
-                        method: "POST",
-                        data: {action: 'fetch_order_preview', order_id: order_id},
-                        success: function(data){ $('#order_detail_panel').html(data); }
-                    });
-                }
+                if(order_id != 0) load_preview(order_id, '#order_detail_panel');
             }
         });
+
     } else {
         function load_admin_pending() {
             $.ajax({
@@ -189,40 +215,38 @@ $(document).ready(function(){
         load_admin_pending();
         setInterval(load_admin_pending, 15000);
 
+        $(document).on('click', '.order-row, .view_history_btn', function(e){
+            e.preventDefault();
+            load_preview($(this).data('id'), '#admin_detail_preview');
+        });
+
         $('#history_table').DataTable({
             "processing": true,
             "serverSide": true,
-            "ajax": { "url": "order_action.php", "type": "POST", "data": { "action": "fetch_history" } },
-            "columns": [ { "data": "0" }, { "data": "1" }, { "data": "2" }, { "data": "3" }, { "data": "4" } ],
-            "order": [[ 0, "desc" ]]
+            "ajax": { 
+                "url": "order_action.php", 
+                "type": "POST", 
+                "data": { "action": "fetch_history" } 
+            },
+            "columns": [
+                { "data": "order_number" },
+                { "data": "order_date" },
+                { "data": "order_table" },
+                { "data": "order_cashier" },
+                { "data": "order_total" },
+                { "data": "action" }
+            ],
+            "order": [[ 0, "desc" ]],
+            "language": {
+                "search": "_INPUT_",
+                "searchPlaceholder": "Search history..."
+            }
         });
     }
 
-    $(document).on('click', '.settle_order_btn', function(){
-        let id = $(this).data('id');
-        Swal.fire({
-            title: 'Settle Order?',
-            text: "This will mark the order as paid.",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#1cc88a'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                $.ajax({
-                    url: "order_action.php",
-                    method: "POST",
-                    data: {action: 'settle_order', order_id: id},
-                    success: function(response) {
-                        if(response.trim() == 'success') location.reload();
-                    }
-                });
-            }
-        });
-    });
-
     $(document).on('click', '.print_receipt', function(e){
         e.stopPropagation();
-        window.open("print_order.php?id=" + $(this).data('id'), "_blank");
+        window.open("print.php?order_id=" + $(this).data('id'), "_blank");
     });
 });
 </script>

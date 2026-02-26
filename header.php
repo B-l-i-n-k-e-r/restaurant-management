@@ -14,6 +14,10 @@
     <link rel="stylesheet" type="text/css" href="vendor/parsley/parsley.css"/>
     <link rel="stylesheet" type="text/css" href="vendor/bootstrap-select/bootstrap-select.min.css"/>
 
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+    <script src="vendor/jquery-easing/jquery.easing.min.js"></script>
+
     <style>
         /* 1. GLOBAL WRAPPERS */
         #wrapper { display: flex; min-height: 100vh; background: transparent !important; }
@@ -26,93 +30,124 @@
         #content { flex: 1 0 auto; background: transparent !important; }
         
         body {
-            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+            background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.75)), 
                         url('img/bg1.jpg') no-repeat center center fixed !important;
             background-size: cover !important;
             min-height: 100vh;
             margin: 0;
+            color: white;
         }
 
         /* 2. SIDEBAR: Frosted Glass */
         #accordionSidebar {
-            background: rgba(255, 255, 255, 0.1) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-right: 1px solid rgba(255, 255, 255, 0.15);
-            transition: width 0.3s ease;
+            background: rgba(255, 255, 255, 0.08) !important;
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            z-index: 1050;
         }
 
-        /* Waiter Slim Style & Active States */
-        <?php if($object->is_waiter_user()) { ?>
-        #accordionSidebar { width: 105px !important; min-width: 105px !important; }
-        .sidebar-brand-text, .sidebar-heading, .sidebar-divider { display: none !important; }
-        .nav-link { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            font-size: 0.65rem !important; 
-            padding: 0.9rem 0 !important; 
-            transition: all 0.3s ease;
-            color: rgba(255,255,255,0.6) !important;
+        .sidebar-dark .nav-item .nav-link { 
+            color: rgba(255,255,255,0.7) !important; 
+            font-weight: 500;
         }
-        .nav-link i { 
-            font-size: 1.4rem !important; 
-            margin-bottom: 6px; 
-            margin-right: 0 !important; 
-            transition: all 0.3s ease;
+        .sidebar-dark .nav-item .nav-link:hover { 
+            color: #ffffff !important; 
+            background: rgba(255,255,255,0.05);
         }
         
         .nav-item.active {
-            background: rgba(255, 255, 255, 0.1);
-            border-left: 4px solid #f6c23e;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border-left: 4px solid #17a2b8;
         }
         .nav-item.active .nav-link { color: #ffffff !important; }
-        .nav-item.active .nav-link i { 
-            color: #f6c23e !important; 
-            transform: scale(1.1);
-            text-shadow: 0 0 10px rgba(246, 194, 62, 0.4);
-        }
-        <?php } ?>
+        .nav-item.active .nav-link i { color: #17a2b8 !important; }
 
-        .sidebar-dark .nav-item .nav-link:hover { color: #ffffff !important; }
+        .sidebar-heading {
+            color: rgba(255, 255, 255, 0.4) !important;
+            font-size: 0.65rem !important;
+            letter-spacing: 1px;
+            margin-top: 1.5rem;
+        }
 
         /* 3. TOPBAR */
         .topbar {
-            background: rgba(255, 255, 255, 0.05) !important;
+            background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(15px);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 1040;
         }
 
-        /* 4. NOTIFICATION BADGE */
-        @keyframes pulse-badge {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 74, 59, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(231, 74, 59, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(231, 74, 59, 0); }
+        #sidebarToggleTop {
+            color: #ffffff !important;
+            background: rgba(255, 255, 255, 0.1);
         }
-        .badge-counter-reset { animation: pulse-badge 2s infinite; font-size: 0.6rem; }
+
+        /* 4. PROFILE DROPDOWN */
+        .dropdown-menu {
+            background: rgba(30, 30, 35, 0.98) !important;
+            backdrop-filter: blur(20px) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            border-radius: 12px;
+            margin-top: 10px !important;
+        }
+
+        .dropdown-item { 
+            color: rgba(255,255,255,0.8) !important; 
+            padding: 10px 20px;
+        }
+        .dropdown-item:hover { 
+            background: rgba(23, 162, 184, 0.2) !important; 
+            color: #17a2b8 !important; 
+        }
+
+        /* 5. NOTIFICATION BADGE */
+        @keyframes pulse-badge {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.2); opacity: 0.8; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .badge-counter-reset { 
+            animation: pulse-badge 2s infinite; 
+            font-size: 0.7rem;
+            position: absolute;
+            top: 10px;
+            right: 5px;
+        }
+
+        .img-profile {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
     </style>
 </head>
 
 <body id="page-top">
     <div id="wrapper">
         <ul class="navbar-nav sidebar sidebar-dark accordion" id="accordionSidebar">
-            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="dashboard.php">
+            
+            <a class="sidebar-brand d-flex align-items-center justify-content-center" href="<?php echo ($object->is_user()) ? 'user_dashboard.php' : 'dashboard.php'; ?>">
                 <?php
                 if($object->Get_restaurant_logo() != '') {
                     echo '<img src="'.$object->Get_restaurant_logo().'" class="img-fluid" style="max-height: 45px;" />';
                 } else {
                     echo '<div class="sidebar-brand-icon rotate-n-15"><i class="fas fa-utensils"></i></div>';
-                    echo '<div class="sidebar-brand-text mx-3">Admin</div>';
+                    echo '<div class="sidebar-brand-text mx-3">RMS</div>';
                 }
                 ?>
             </a>
 
             <hr class="sidebar-divider my-0">
 
-            <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'dashboard.php' && !isset($_GET['cat'])) echo 'active'; ?>">
-                <a class="nav-link" href="dashboard.php">
-                    <i class="fas fa-fw fa-tachometer-alt"></i>
-                    <span>Dashboard</span>
+            <?php 
+                $dash_link = ($object->is_user()) ? 'user_dashboard.php' : 'dashboard.php';
+                $dash_label = ($object->is_user()) ? 'Main Menu' : 'Dashboard';
+                $is_active = (basename($_SERVER['PHP_SELF']) == $dash_link) ? 'active' : '';
+            ?>
+            <li class="nav-item <?php echo $is_active; ?>">
+                <a class="nav-link" href="<?php echo $dash_link; ?>">
+                    <i class="fas fa-fw fa-th-large"></i>
+                    <span><?php echo $dash_label; ?></span>
                 </a>
             </li>
 
@@ -122,13 +157,26 @@
                 $reset_total = 0;
                 foreach($res_count as $row_c) { $reset_total = $row_c['total']; }
             ?>
-                <div class="sidebar-heading" style="opacity: 0.5; font-size: 0.7rem; padding-top: 1rem;">MANAGEMENT</div>
-                <li class="nav-item"><a class="nav-link" href="category.php"><i class="fas fa-th-list"></i> <span>Categories</span></a></li>
-                <li class="nav-item"><a class="nav-link" href="table.php"><i class="fas fa-couch"></i> <span>Tables</span></a></li>
-                <li class="nav-item"><a class="nav-link" href="tax.php"><i class="fas fa-percent"></i> <span>Taxes</span></a></li>
-                <li class="nav-item"><a class="nav-link" href="product.php"><i class="fas fa-utensils"></i> <span>Products</span></a></li>
-                <li class="nav-item">
-                    <a class="nav-link" href="user.php">
+                <div class="sidebar-heading">ADMINISTRATION</div>
+                
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'category.php') echo 'active'; ?>">
+                    <a class="nav-link" href="category.php"><i class="fas fa-th-list"></i> <span>Categories</span></a>
+                </li>
+                
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'table.php') echo 'active'; ?>">
+                    <a class="nav-link" href="table.php"><i class="fas fa-couch"></i> <span>Tables</span></a>
+                </li>
+                
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'tax.php') echo 'active'; ?>">
+                    <a class="nav-link" href="tax.php"><i class="fas fa-percent"></i> <span>Taxes</span></a>
+                </li>
+                
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'product.php') echo 'active'; ?>">
+                    <a class="nav-link" href="product.php"><i class="fas fa-utensils"></i> <span>Products</span></a>
+                </li>
+                
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'user.php') echo 'active'; ?>">
+                    <a class="nav-link position-relative" href="user.php">
                         <i class="fas fa-users-cog"></i> 
                         <span>Users</span>
                         <?php if($reset_total > 0) { ?>
@@ -138,48 +186,29 @@
                 </li>
             <?php } ?>
 
-            <?php if($object->is_waiter_user()) { ?>
-                <div class="sidebar-heading" style="opacity: 0.5; font-size: 0.7rem; padding-top: 1rem;">MENU</div>
-                
-                <li class="nav-item <?php if(isset($_GET['popular'])) echo 'active'; ?>">
-                    <a class="nav-link" href="dashboard.php">
-                        <i class="fas fa-fire-alt"></i>
-                        <span>Popular</span>
-                    </a>
+            <?php if($object->is_user()) { ?>
+                <div class="sidebar-heading">PERSONAL</div>
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'my_orders.php') echo 'active'; ?>">
+                    <a class="nav-link" href="my_orders.php"><i class="fas fa-receipt"></i> <span>My Orders</span></a>
                 </li>
-
-                <?php 
-                $object->query = "SELECT * FROM product_category_table WHERE category_status = 'Enable' ORDER BY category_name ASC";
-                $categories = $object->get_result();
-                foreach($categories as $cat) {
-                    $isActive = (isset($_GET['cat']) && $_GET['cat'] == $cat['category_id']) ? 'active' : '';
-                    
-                    $name = strtolower($cat['category_name']);
-                    $icon = 'fa-utensils'; 
-                    
-                    if (strpos($name, 'appetizer') !== false) $icon = 'fa-cookie-bite';
-                    elseif (strpos($name, 'drink') !== false || strpos($name, 'bev') !== false) $icon = 'fa-glass-martini-alt';
-                    elseif (strpos($name, 'main') !== false) $icon = 'fa-hamburger';
-                    elseif (strpos($name, 'pizza') !== false) $icon = 'fa-pizza-slice';
-                    elseif (strpos($name, 'dessert') !== false || strpos($name, 'sweet') !== false) $icon = 'fa-ice-cream';
-                    
-                    echo '
-                    <li class="nav-item '.$isActive.'">
-                        <a class="nav-link" href="dashboard.php?cat='.$cat['category_id'].'">
-                            <i class="fas '.$icon.'"></i>
-                            <span>'.$cat['category_name'].'</span>
-                        </a>
-                    </li>';
-                }
-                ?>
             <?php } ?>
 
             <?php if($object->is_waiter_user() || $object->is_master_user()) { ?>
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'order.php') echo 'active'; ?>"><a class="nav-link" href="order.php"><i class="far fa-edit"></i> <span>Orders</span></a></li>
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'order.php') echo 'active'; ?>">
+                    <a class="nav-link" href="order.php">
+                        <i class="fas fa-concierge-bell"></i> 
+                        <span>Service Orders</span>
+                    </a>
+                </li>
             <?php } ?>
 
             <?php if($object->is_cashier_user() || $object->is_master_user()) { ?>
-                <li class="nav-item"><a class="nav-link" href="billing.php"><i class="fas fa-file-invoice"></i> <span>Billing</span></a></li>
+                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'billing.php') echo 'active'; ?>">
+                    <a class="nav-link" href="billing.php">
+                        <i class="fas fa-file-invoice-dollar"></i> 
+                        <span>Billing Area</span>
+                    </a>
+                </li>
             <?php } ?>
 
             <hr class="sidebar-divider d-none d-md-block">
@@ -192,8 +221,9 @@
             <div id="content">
                 <nav class="navbar navbar-expand navbar-light topbar mb-4 static-top shadow">
                     <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
-                        <i class="fa fa-bars text-white"></i>
+                        <i class="fa fa-bars"></i>
                     </button>
+                    
                     <ul class="navbar-nav ml-auto">
                         <div class="topbar-divider d-none d-sm-block"></div>
                         <?php
@@ -208,17 +238,21 @@
                         ?>
                         <li class="nav-item dropdown no-arrow">
                             <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                                <span class="mr-2 d-none d-lg-inline text-white small"><?php echo $user_name; ?></span>
-                                <img class="img-profile rounded-circle" src="<?php echo $user_profile_image; ?>">
+                                <span class="mr-3 d-none d-lg-inline text-white small"><?php echo $user_name; ?></span>
+                                <img class="img-profile rounded-circle" src="<?php echo $user_profile_image; ?>" width="32" height="32">
                             </a>
                             <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in">
-                                <a class="dropdown-item" href="profile.php"><i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i> Profile</a>
+                                <a class="dropdown-item" href="profile.php">
+                                    <i class="fas fa-user fa-sm fa-fw mr-2 text-info"></i> Profile
+                                </a>
                                 <?php if($object->is_master_user()) { ?>
-                                    <a class="dropdown-item" href="setting.php"><i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i> Settings</a>
+                                    <a class="dropdown-item" href="setting.php">
+                                        <i class="fas fa-cogs fa-sm fa-fw mr-2 text-info"></i> Settings
+                                    </a>
                                 <?php } ?>
                                 <div class="dropdown-divider"></div>
                                 <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
-                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i> Logout
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-danger"></i> Logout
                                 </a>
                             </div>
                         </li>

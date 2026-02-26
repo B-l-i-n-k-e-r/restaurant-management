@@ -24,33 +24,28 @@ include('header.php');
         color: white;
     }
 
-    /* Table Responsiveness & Forced Bottom Scrollbar */
+    /* Table Responsiveness & Scrollbar */
     .table-responsive {
         width: 100% !important;
-        overflow-x: scroll !important; /* Force the scrollbar */
+        overflow-x: auto !important;
         -webkit-overflow-scrolling: touch;
         border-radius: 10px;
-        padding-bottom: 15px; /* Space for the scrollbar */
+        padding-bottom: 15px;
     }
 
-    /* Custom Scrollbar Styling */
     .table-responsive::-webkit-scrollbar {
-        height: 10px;
+        height: 8px;
     }
     .table-responsive::-webkit-scrollbar-track {
         background: rgba(255, 255, 255, 0.05);
         border-radius: 10px;
     }
     .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(23, 162, 184, 0.5); /* Info Cyan */
-        border: 2px solid rgba(0, 0, 0, 0.2);
+        background: rgba(23, 162, 184, 0.5);
         border-radius: 10px;
     }
-    .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: rgba(23, 162, 184, 0.8);
-    }
 
-    /* Prevent wrapping to ensure scrollbar appears if content is wide */
+    /* Table Styling */
     .table { 
         color: white !important; 
         width: 100% !important; 
@@ -60,99 +55,123 @@ include('header.php');
     .table-bordered { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
     .table-bordered td, .table-bordered th { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
 
-    /* Modal Glass Styling */
+    /* Modal Styling */
     .modal-content {
-        background: rgba(30, 30, 30, 0.9) !important;
+        background: rgba(30, 30, 30, 0.95) !important;
         backdrop-filter: blur(20px);
         border: 1px solid rgba(255, 255, 255, 0.2);
         color: white;
+        border-radius: 15px;
     }
     .form-control {
         background: rgba(255, 255, 255, 0.1) !important;
         border: 1px solid rgba(255, 255, 255, 0.2) !important;
         color: white !important;
+        border-radius: 8px;
     }
-    .form-control option { background: #333; color: white; }
+    .form-control:focus {
+        background: rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    }
 
-    /* DataTables Text Fixes */
+    /* DataTables Pagination & Info */
     .dataTables_wrapper .dataTables_info, 
     .dataTables_wrapper .dataTables_length, 
     .dataTables_wrapper .dataTables_filter, 
     .dataTables_wrapper .dataTables_paginate {
-        color: white !important;
+        color: rgba(255, 255, 255, 0.7) !important;
+        font-size: 0.9rem;
         padding-top: 15px;
     }
     .page-link {
-        background-color: rgba(255,255,255,0.1) !important;
+        background-color: rgba(255,255,255,0.05) !important;
         border-color: rgba(255,255,255,0.1) !important;
         color: white !important;
     }
+    .page-item.active .page-link {
+        background-color: #17a2b8 !important;
+        border-color: #17a2b8 !important;
+    }
+
+    .btn-circle {
+        width: 35px;
+        height: 35px;
+        padding: 6px 0;
+        border-radius: 50%;
+        text-align: center;
+        font-size: 12px;
+        line-height: 1.42857;
+    }
 </style>
 
-<h1 class="h3 mb-4 text-white">Tax Management</h1>
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-white">Tax Management</h1>
 
-<span id="message"></span>
-<div class="card glass-card shadow mb-4">
-    <div class="card-header py-3 bg-transparent border-bottom-0">
-        <div class="row align-items-center">
-            <div class="col">
-                <h6 class="m-0 font-weight-bold text-info">Tax List</h6>
-            </div>
-            <div class="col text-right">
-                <button type="button" name="add_tax" id="add_tax" class="btn btn-success btn-circle btn-sm shadow">
-                    <i class="fas fa-plus"></i>
-                </button>
+    <div id="message"></div>
+
+    <div class="card glass-card shadow mb-4">
+        <div class="card-header py-3 bg-transparent border-bottom-0">
+            <div class="row align-items-center">
+                <div class="col">
+                    <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-percent mr-2"></i>Tax List</h6>
+                </div>
+                <div class="col text-right">
+                    <button type="button" name="add_tax" id="add_tax" class="btn btn-success btn-circle shadow-sm">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered" id="tax_table" width="100%" cellspacing="0">
-                <thead>
-                    <tr>
-                        <th>Tax Name</th>
-                        <th>Tax Percentage</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tax_table" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Tax Name</th>
+                            <th>Tax Percentage (%)</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-
-<?php include('footer.php'); ?>
 
 <div id="taxModal" class="modal fade">
     <div class="modal-dialog">
         <form method="post" id="tax_form">
             <div class="modal-content shadow-lg">
                 <div class="modal-header border-bottom-0">
-                    <h4 class="modal-title" id="modal_title">Add Data</h4>
+                    <h4 class="modal-title" id="modal_title">Add Tax</h4>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body">
                     <span id="form_message"></span>
                     <div class="form-group">
                         <label>Tax Name</label>
-                        <input type="text" name="tax_name" id="tax_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" />
+                        <input type="text" name="tax_name" id="tax_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" placeholder="e.g. VAT" />
                     </div>
                     <div class="form-group">
-                        <label>Tax Percentage</label>
+                        <label>Tax Percentage (%)</label>
                         <input type="text" name="tax_percentage" id="tax_percentage" class="form-control" required data-parsley-pattern="^[0-9]{1,2}\.[0-9]{2}$" data-parsley-trigger="keyup" placeholder="0.00" />
+                        <small class="text-muted">Format: 16.00</small>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0">
                     <input type="hidden" name="hidden_id" id="hidden_id" />
                     <input type="hidden" name="action" id="action" value="Add" />
-                    <input type="submit" name="submit" id="submit_button" class="btn btn-info" value="Add" />
+                    <button type="submit" name="submit" id="submit_button" class="btn btn-info px-4">Add</button>
                     <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<?php include('footer.php'); ?>
 
 <script>
 $(document).ready(function(){
@@ -171,27 +190,27 @@ $(document).ready(function(){
             {
                 "targets":[3],
                 "orderable":false,
+                "className": "text-center"
             },
+            {
+                "targets":[2],
+                "className": "text-center"
+            }
         ],
     });
 
-    // Handle window resize for fluid columns
-    $(window).on('resize', function() {
-        dataTable.columns.adjust();
-    });
-
+    // Reset Form for New Entry
     $('#add_tax').click(function(){
         $('#tax_form')[0].reset();
         $('#tax_form').parsley().reset();
-        $('#modal_title').text('Add Tax');
+        $('#modal_title').text('Add New Tax');
         $('#action').val('Add');
-        $('#submit_button').val('Add');
-        $('#taxModal').modal('show');
+        $('#submit_button').text('Add');
         $('#form_message').html('');
+        $('#taxModal').modal('show');
     });
 
-    $('#tax_form').parsley();
-
+    // Form Submission
     $('#tax_form').on('submit', function(event){
         event.preventDefault();
         if($('#tax_form').parsley().isValid())
@@ -203,20 +222,20 @@ $(document).ready(function(){
                 dataType:'json',
                 beforeSend:function()
                 {
-                    $('#submit_button').attr('disabled', 'disabled').val('wait...');
+                    $('#submit_button').attr('disabled', 'disabled').text('Processing...');
                 },
                 success:function(data)
                 {
                     $('#submit_button').attr('disabled', false);
                     if(data.error != '')
                     {
-                        $('#form_message').html(data.error);
-                        $('#submit_button').val($('#action').val());
+                        $('#form_message').html('<div class="alert alert-danger">'+data.error+'</div>');
+                        $('#submit_button').text($('#action').val());
                     }
                     else
                     {
                         $('#taxModal').modal('hide');
-                        $('#message').html(data.success);
+                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
                         dataTable.ajax.reload();
                         setTimeout(function(){ $('#message').html(''); }, 5000);
                     }
@@ -225,6 +244,7 @@ $(document).ready(function(){
         }
     });
 
+    // Edit Button Click
     $(document).on('click', '.edit_button', function(){
         var tax_id = $(this).data('id');
         $('#tax_form').parsley().reset();
@@ -238,20 +258,21 @@ $(document).ready(function(){
             {
                 $('#tax_name').val(data.tax_name);
                 $('#tax_percentage').val(data.tax_percentage);
-                $('#modal_title').text('Edit Tax');
+                $('#modal_title').text('Edit Tax Settings');
                 $('#action').val('Edit');
-                $('#submit_button').val('Edit');
-                $('#taxModal').modal('show');
+                $('#submit_button').text('Update');
                 $('#hidden_id').val(tax_id);
+                $('#taxModal').modal('show');
             }
         })
     });
 
+    // Status Change
     $(document).on('click', '.status_button', function(){
         var id = $(this).data('id');
         var status = $(this).data('status');
         var next_status = (status == 'Enable') ? 'Disable' : 'Enable';
-        if(confirm("Are you sure you want to "+next_status+" it?"))
+        if(confirm("Change tax status to "+next_status+"?"))
         {
             $.ajax({
                 url:"tax_action.php",
@@ -267,9 +288,10 @@ $(document).ready(function(){
         }
     });
 
+    // Delete Tax
     $(document).on('click', '.delete_button', function(){
         var id = $(this).data('id');
-        if(confirm("Are you sure you want to remove it?"))
+        if(confirm("Are you sure you want to permanently remove this tax?"))
         {
             $.ajax({
                 url:"tax_action.php",
