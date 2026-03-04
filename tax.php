@@ -14,123 +14,117 @@ if(!$object->is_master_user()) {
 include('header.php');
 ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    /* Glassmorphism Card & Container */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 15px;
-        color: white;
+    :root { 
+        --glass-bg: rgba(255, 255, 255, 0.03); 
+        --glass-border: rgba(255, 255, 255, 0.1); 
+        --accent-cyan: #0ea5e9; 
+        --neon-green: #10b981;
+        --neon-red: #ef4444;
+        --neon-yellow: #f59e0b;
     }
 
-    /* Table Responsiveness & Scrollbar */
-    .table-responsive {
-        width: 100% !important;
-        overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 10px;
-        padding-bottom: 15px;
+    body { background-color: #0c0f17; color: #e2e8f0; }
+
+    /* 1. GLASS CARD STYLING */
+    .glass-card { 
+        background: var(--glass-bg) !important; 
+        backdrop-filter: blur(20px); 
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border) !important; 
+        border-radius: 20px; 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
 
-    .table-responsive::-webkit-scrollbar {
-        height: 8px;
-    }
-    .table-responsive::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(23, 162, 184, 0.5);
-        border-radius: 10px;
+    /* 2. TABLE STYLING - FIT CONTENT CONSTRAINT */
+    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; border-collapse: separate !important; border-spacing: 0; }
+    .fit-content { width: 1% !important; white-space: nowrap !important; }
+
+    .table thead th {
+        background: transparent !important;
+        color: var(--accent-cyan) !important;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 2px;
+        border-bottom: 2px solid rgba(14, 165, 233, 0.2) !important;
+        padding: 1.2rem 1rem !important;
     }
 
-    /* Table Styling */
-    .table { 
-        color: white !important; 
-        width: 100% !important; 
-        white-space: nowrap; 
+    .table td {
+        vertical-align: middle !important;
+        padding: 1rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: transparent !important;
     }
-    
-    .table-bordered { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
-    .table-bordered td, .table-bordered th { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
 
-    /* Modal Styling */
+    tr:hover td { background: rgba(14, 165, 233, 0.05) !important; }
+
+    /* 3. MODAL & FORM CONTROL */
     .modal-content {
-        background: rgba(30, 30, 30, 0.95) !important;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        color: white;
-        border-radius: 15px;
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--accent-cyan) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 0 50px rgba(14, 165, 233, 0.2);
+        color: #fff;
     }
+
     .form-control {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(0, 0, 0, 0.2) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px;
         color: white !important;
-        border-radius: 8px;
-    }
-    .form-control:focus {
-        background: rgba(255, 255, 255, 0.15) !important;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+        padding: 12px;
     }
 
-    /* DataTables Pagination & Info */
-    .dataTables_wrapper .dataTables_info, 
-    .dataTables_wrapper .dataTables_length, 
-    .dataTables_wrapper .dataTables_filter, 
-    .dataTables_wrapper .dataTables_paginate {
-        color: rgba(255, 255, 255, 0.7) !important;
-        font-size: 0.9rem;
-        padding-top: 15px;
+    /* 4. COOL SWEETALERT2 OVERRIDES */
+    .swal2-popup.cyber-popup {
+        background: rgba(15, 23, 42, 0.98) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid var(--accent-cyan) !important;
+        border-radius: 24px !important;
+        color: #fff !important;
     }
-    .page-link {
-        background-color: rgba(255,255,255,0.05) !important;
-        border-color: rgba(255,255,255,0.1) !important;
-        color: white !important;
-    }
-    .page-item.active .page-link {
-        background-color: #17a2b8 !important;
-        border-color: #17a2b8 !important;
-    }
+    .swal2-title { color: var(--accent-cyan) !important; text-transform: uppercase; letter-spacing: 1px; }
+    .swal2-html-container { color: #cbd5e1 !important; }
+    
+    .swal2-confirm.cyber-confirm { background: transparent !important; border: 1px solid var(--neon-green) !important; color: var(--neon-green) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: bold; margin: 5px; }
+    .swal2-confirm.cyber-confirm:hover { background: var(--neon-green) !important; color: #000 !important; box-shadow: 0 0 20px var(--neon-green) !important; }
+    
+    .swal2-cancel.cyber-cancel { background: transparent !important; border: 1px solid var(--neon-red) !important; color: var(--neon-red) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: bold; margin: 5px; }
+    .swal2-cancel.cyber-cancel:hover { background: var(--neon-red) !important; color: #fff !important; box-shadow: 0 0 20px var(--neon-red) !important; }
 
-    .btn-circle {
-        width: 35px;
-        height: 35px;
-        padding: 6px 0;
-        border-radius: 50%;
-        text-align: center;
-        font-size: 12px;
-        line-height: 1.42857;
-    }
+    /* Action Buttons */
+    .btn-circle { width: 38px; height: 38px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; transition: 0.3s; border: none; }
+    .btn-success-cyber { background: rgba(16, 185, 129, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); }
+    .btn-success-cyber:hover { background: var(--neon-green); color: #000; box-shadow: 0 0 15px var(--neon-green); }
 </style>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-white">Tax Management</h1>
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 font-weight-bold text-white mb-0">Tax Configuration</h1>
+            <p class="text-white-50 small text-uppercase letter-spacing-1">Manage global taxation parameters</p>
+        </div>
+        <button type="button" id="add_tax" class="btn-circle btn-success-cyber shadow-sm">
+            <i class="fas fa-plus"></i>
+        </button>
+    </div>
 
     <div id="message"></div>
 
-    <div class="card glass-card shadow mb-4">
-        <div class="card-header py-3 bg-transparent border-bottom-0">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-percent mr-2"></i>Tax List</h6>
-                </div>
-                <div class="col text-right">
-                    <button type="button" name="add_tax" id="add_tax" class="btn btn-success btn-circle shadow-sm">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <div class="card-body">
+    <div class="card glass-card">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-bordered" id="tax_table" width="100%" cellspacing="0">
+                <table class="table" id="tax_table" width="100%">
                     <thead>
                         <tr>
-                            <th>Tax Name</th>
-                            <th>Tax Percentage (%)</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th class="pl-4">Tax Name</th>
+                            <th class="fit-content">Tax Percentage (%)</th>
+                            <th class="fit-content text-center">Status</th>
+                            <th class="fit-content text-right pr-4">Action</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -140,31 +134,29 @@ include('header.php');
     </div>
 </div>
 
-<div id="taxModal" class="modal fade">
-    <div class="modal-dialog">
+<div id="taxModal" class="modal fade" data-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
         <form method="post" id="tax_form">
-            <div class="modal-content shadow-lg">
+            <div class="modal-content">
                 <div class="modal-header border-bottom-0">
-                    <h4 class="modal-title" id="modal_title">Add Tax</h4>
+                    <h5 class="modal-title font-weight-bold text-uppercase letter-spacing-2" id="modal_title" style="color: var(--accent-cyan);">Add Tax</h5>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body px-4">
                     <span id="form_message"></span>
-                    <div class="form-group">
-                        <label>Tax Name</label>
+                    <div class="form-group mb-4">
+                        <label class="small text-white-50">Tax Designation</label>
                         <input type="text" name="tax_name" id="tax_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" placeholder="e.g. VAT" />
                     </div>
-                    <div class="form-group">
-                        <label>Tax Percentage (%)</label>
+                    <div class="form-group mb-2">
+                        <label class="small text-white-50">Percentage Value (%)</label>
                         <input type="text" name="tax_percentage" id="tax_percentage" class="form-control" required data-parsley-pattern="^[0-9]{1,2}\.[0-9]{2}$" data-parsley-trigger="keyup" placeholder="0.00" />
-                        <small class="text-muted">Format: 16.00</small>
                     </div>
                 </div>
                 <div class="modal-footer border-top-0">
                     <input type="hidden" name="hidden_id" id="hidden_id" />
                     <input type="hidden" name="action" id="action" value="Add" />
-                    <button type="submit" name="submit" id="submit_button" class="btn btn-info px-4">Add</button>
-                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
+                    <button type="submit" name="submit" id="submit_button" class="btn btn-info px-4 py-2 font-weight-bold" style="border-radius: 10px; background: var(--accent-cyan); border: none;">SAVE SETTINGS</button>
                 </div>
             </div>
         </form>
@@ -180,131 +172,137 @@ $(document).ready(function(){
         "processing" : true,
         "serverSide" : true,
         "order" : [],
-        "autoWidth": false,
-        "ajax" : {
-            url:"tax_action.php",
-            type:"POST",
-            data:{action:'fetch'}
-        },
+        "ajax" : { url:"tax_action.php", type:"POST", data:{action:'fetch'} },
         "columnDefs":[
-            {
-                "targets":[3],
-                "orderable":false,
-                "className": "text-center"
-            },
-            {
-                "targets":[2],
-                "className": "text-center"
-            }
+            { "targets":[1, 2], "className": "fit-content text-center" },
+            { "targets":[3], "orderable":false, "className": "fit-content text-right pr-4" }
         ],
+        "language": {
+            "search": "",
+            "searchPlaceholder": "Filter settings...",
+            "paginate": { "previous": "<", "next": ">" }
+        }
     });
 
-    // Reset Form for New Entry
     $('#add_tax').click(function(){
         $('#tax_form')[0].reset();
         $('#tax_form').parsley().reset();
-        $('#modal_title').text('Add New Tax');
+        $('#modal_title').text('Initialize New Tax');
         $('#action').val('Add');
-        $('#submit_button').text('Add');
-        $('#form_message').html('');
+        $('#submit_button').text('ADD PARAMETER');
         $('#taxModal').modal('show');
     });
 
-    // Form Submission
     $('#tax_form').on('submit', function(event){
         event.preventDefault();
-        if($('#tax_form').parsley().isValid())
-        {       
+        if($('#tax_form').parsley().isValid()) {     
             $.ajax({
                 url:"tax_action.php",
                 method:"POST",
                 data:$(this).serialize(),
                 dataType:'json',
-                beforeSend:function()
-                {
-                    $('#submit_button').attr('disabled', 'disabled').text('Processing...');
-                },
-                success:function(data)
-                {
-                    $('#submit_button').attr('disabled', false);
-                    if(data.error != '')
-                    {
+                success:function(data) {
+                    if(data.error != '') {
                         $('#form_message').html('<div class="alert alert-danger">'+data.error+'</div>');
-                        $('#submit_button').text($('#action').val());
-                    }
-                    else
-                    {
+                    } else {
                         $('#taxModal').modal('hide');
-                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Protocol Updated',
+                            text: data.success,
+                            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm' },
+                            buttonsStyling: false
+                        });
                         dataTable.ajax.reload();
-                        setTimeout(function(){ $('#message').html(''); }, 5000);
                     }
                 }
             })
         }
     });
 
-    // Edit Button Click
     $(document).on('click', '.edit_button', function(){
         var tax_id = $(this).data('id');
-        $('#tax_form').parsley().reset();
-        $('#form_message').html('');
         $.ajax({
             url:"tax_action.php",
             method:"POST",
             data:{tax_id:tax_id, action:'fetch_single'},
             dataType:'JSON',
-            success:function(data)
-            {
+            success:function(data) {
                 $('#tax_name').val(data.tax_name);
                 $('#tax_percentage').val(data.tax_percentage);
-                $('#modal_title').text('Edit Tax Settings');
+                $('#modal_title').text('Modify Tax Settings');
                 $('#action').val('Edit');
-                $('#submit_button').text('Update');
+                $('#submit_button').text('UPDATE SETTINGS');
                 $('#hidden_id').val(tax_id);
                 $('#taxModal').modal('show');
             }
         })
     });
 
-    // Status Change
     $(document).on('click', '.status_button', function(){
         var id = $(this).data('id');
         var status = $(this).data('status');
         var next_status = (status == 'Enable') ? 'Disable' : 'Enable';
-        if(confirm("Change tax status to "+next_status+"?"))
-        {
-            $.ajax({
-                url:"tax_action.php",
-                method:"POST",
-                data:{id:id, action:'change_status', status:status, next_status:next_status},
-                success:function(data)
-                {
-                    $('#message').html(data);
-                    dataTable.ajax.reload();
-                    setTimeout(function(){ $('#message').html(''); }, 5000);
-                }
-            })
-        }
+        
+        Swal.fire({
+            title: 'PROTOCOL CHANGE',
+            text: "Switch status to " + next_status + "?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'CONFIRM',
+            cancelButtonText: 'ABORT',
+            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm', cancelButton: 'cyber-cancel' },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"tax_action.php",
+                    method:"POST",
+                    data:{id:id, action:'change_status', status:status, next_status:next_status},
+                    success:function(data) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Status Synchronized',
+                            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm' },
+                            buttonsStyling: false
+                        });
+                        dataTable.ajax.reload();
+                    }
+                })
+            }
+        });
     });
 
-    // Delete Tax
     $(document).on('click', '.delete_button', function(){
         var id = $(this).data('id');
-        if(confirm("Are you sure you want to permanently remove this tax?"))
-        {
-            $.ajax({
-                url:"tax_action.php",
-                method:"POST",
-                data:{id:id, action:'delete'},
-                success:function(data)
-                {
-                    $('#message').html(data);
-                    dataTable.ajax.reload();
-                    setTimeout(function(){ $('#message').html(''); }, 5000);
-                }
-            })
-        }
+        
+        Swal.fire({
+            title: 'TERMINATE RECORD?',
+            text: "This data will be permanently purged from the system.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'PURGE',
+            cancelButtonText: 'ABORT',
+            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-cancel', cancelButton: 'cyber-confirm' },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"tax_action.php",
+                    method:"POST",
+                    data:{id:id, action:'delete'},
+                    success:function(data) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Record Terminated',
+                            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm' },
+                            buttonsStyling: false
+                        });
+                        dataTable.ajax.reload();
+                    }
+                })
+            }
+        });
     });
 });
 </script>

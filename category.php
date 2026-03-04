@@ -14,117 +14,114 @@ if(!$object->is_master_user()) {
 include('header.php');
 ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
+    :root {
+        --glass-bg: rgba(255, 255, 255, 0.05);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --neon-blue: #0ea5e9;
+    }
+
     /* Glassmorphism Card & Container */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05) !important;
+        background: var(--glass-bg) !important;
         backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 15px;
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 20px;
         color: white;
+        transition: transform 0.3s ease;
     }
 
     /* Table Responsiveness & Scrollbar */
     .table-responsive {
         width: 100% !important;
         overflow-x: auto !important;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 10px;
-        padding-bottom: 15px;
+        border-radius: 12px;
     }
 
-    .table-responsive::-webkit-scrollbar {
-        height: 8px;
-    }
-    .table-responsive::-webkit-scrollbar-track {
-        background: rgba(255, 255, 255, 0.05);
-        border-radius: 10px;
-    }
-    .table-responsive::-webkit-scrollbar-thumb {
-        background: rgba(23, 162, 184, 0.5);
-        border-radius: 10px;
-    }
-
-    /* Table Styling */
+    /* Table Styling - FIT CONTENT CONSTRAINT */
     .table { 
         color: white !important; 
         width: 100% !important; 
-        white-space: nowrap; 
+        margin-bottom: 0 !important;
     }
     
-    .table-bordered { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
-    .table-bordered td, .table-bordered th { border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+    .table td, .table th {
+        white-space: nowrap !important;
+        width: 1% !important; /* Forces columns to shrink to content */
+        vertical-align: middle;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        padding: 1rem 1.5rem !important;
+    }
+    
+    .table thead th {
+        background: rgba(255, 255, 255, 0.03);
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        font-weight: 600;
+        color: var(--neon-blue);
+        border-top: none !important;
+    }
 
     /* Modal Glass Styling */
     .modal-content {
-        background: rgba(30, 30, 30, 0.95) !important;
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(14, 165, 233, 0.3);
         color: white;
-        border-radius: 15px;
+        border-radius: 20px;
     }
     .form-control {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        border-radius: 8px;
-    }
-    .form-control:focus {
-        background: rgba(255, 255, 255, 0.15) !important;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+        border-radius: 10px;
     }
 
-    /* DataTables Pagination & Info */
-    .dataTables_wrapper .dataTables_info, 
-    .dataTables_wrapper .dataTables_length, 
-    .dataTables_wrapper .dataTables_filter, 
-    .dataTables_wrapper .dataTables_paginate {
-        color: rgba(255, 255, 255, 0.7) !important;
-        padding-top: 15px;
-        font-size: 0.9rem;
-    }
-    .page-link {
-        background-color: rgba(255,255,255,0.05) !important;
-        border-color: rgba(255,255,255,0.1) !important;
-        color: white !important;
-    }
-    .page-item.active .page-link {
-        background-color: #17a2b8 !important;
-        border-color: #17a2b8 !important;
-    }
-
+    /* ORIGINAL ACTION BUTTON STYLE */
     .btn-circle {
-        width: 35px;
-        height: 35px;
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        text-align: center;
-        padding: 6px 0;
-        font-size: 12px;
-        line-height: 1.42857;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: 0.3s;
+    }
+    .btn-circle:hover { transform: scale(1.1) rotate(90deg); }
+
+    /* SweetAlert2 Cyber Theme */
+    .swal2-popup.cyber-popup {
+        background: rgba(15, 23, 42, 0.98) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid var(--neon-blue) !important;
+        border-radius: 24px !important;
+        color: #fff !important;
     }
 </style>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-white">Category Management</h1>
+<div class="container-fluid py-4">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h4 mb-0 text-white font-weight-bold" style="letter-spacing: 1px;">
+            <i class="fas fa-layer-group text-info mr-2"></i>CATEGORY ASSETS
+        </h1>
+    </div>
 
     <span id="message"></span>
 
     <div class="card glass-card shadow mb-4">
-        <div class="card-header py-3 bg-transparent border-bottom-0">
-            <div class="row align-items-center">
-                <div class="col">
-                    <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-list mr-2"></i>Category List</h6>
-                </div>
-                <div class="col text-right">
-                    <button type="button" name="add_category" id="add_category" class="btn btn-success btn-circle shadow-sm">
-                        <i class="fas fa-plus"></i>
-                    </button>
-                </div>
-            </div>
+        <div class="card-header py-3 bg-transparent border-bottom-0 d-flex align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-white-50">MANAGE CATEGORIES</h6>
+            <button type="button" name="add_category" id="add_category" class="btn btn-info btn-circle shadow-sm">
+                <i class="fas fa-plus"></i>
+            </button>
         </div>
         <div class="card-body">
             <div class="table-responsive">
-                <table class="table table-bordered" id="category_table" width="100%" cellspacing="0">
+                <table class="table" id="category_table" width="100%" cellspacing="0">
                     <thead>
                         <tr>
                             <th>Category Name</th>
@@ -139,33 +136,33 @@ include('header.php');
     </div>
 </div>
 
-<?php include('footer.php'); ?>
-
-<div id="categoryModal" class="modal fade">
-    <div class="modal-dialog">
+<div id="categoryModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <form method="post" id="category_form">
             <div class="modal-content shadow-lg">
                 <div class="modal-header border-bottom-0">
-                    <h4 class="modal-title" id="modal_title">Add Category</h4>
-                    <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    <h5 class="modal-title font-weight-bold" id="modal_title">Add Category</h5>
+                    <button type="button" class="close text-white opacity-50" data-dismiss="modal">&times;</button>
                 </div>
-                <div class="modal-body">
+                <div class="modal-body px-4">
                     <span id="form_message"></span>
                     <div class="form-group">
-                        <label>Category Name</label>
-                        <input type="text" name="category_name" id="category_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" placeholder="e.g. Main Course" />
+                        <label class="small text-white-50 mb-2">CATEGORY NAME</label>
+                        <input type="text" name="category_name" id="category_name" class="form-control form-control-lg" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" placeholder="e.g. Beverages" />
                     </div>
                 </div>
-                <div class="modal-footer border-top-0">
+                <div class="modal-footer border-top-0 px-4 pb-4">
                     <input type="hidden" name="hidden_id" id="hidden_id" />
                     <input type="hidden" name="action" id="action" value="Add" />
-                    <button type="submit" name="submit" id="submit_button" class="btn btn-info px-4">Add</button>
-                    <button type="button" class="btn btn-outline-light" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-link text-white-50 btn-sm text-decoration-none mr-auto" data-dismiss="modal">Cancel</button>
+                    <button type="submit" name="submit" id="submit_button" class="btn btn-info px-4 rounded-pill">Confirm</button>
                 </div>
             </div>
         </form>
     </div>
 </div>
+
+<?php include('footer.php'); ?>
 
 <script>
 $(document).ready(function(){
@@ -173,7 +170,7 @@ $(document).ready(function(){
         "processing" : true,
         "serverSide" : true,
         "order" : [],
-        "autoWidth": false,
+        "autoWidth": false, // Respects CSS width: 1%
         "ajax" : {
             url:"category_action.php",
             type:"POST",
@@ -185,18 +182,16 @@ $(document).ready(function(){
         ],
     });
 
-    // Reset Form for New Entry
     $('#add_category').click(function(){
         $('#category_form')[0].reset();
         $('#category_form').parsley().reset();
-        $('#modal_title').text('Add New Category');
+        $('#modal_title').text('New Category');
         $('#action').val('Add');
-        $('#submit_button').text('Add');
+        $('#submit_button').text('Save Category');
         $('#form_message').html('');
         $('#categoryModal').modal('show');
     });
 
-    // Handle Form Submission
     $('#category_form').on('submit', function(event){
         event.preventDefault();
         if($('#category_form').parsley().isValid()) {     
@@ -206,25 +201,27 @@ $(document).ready(function(){
                 data:$(this).serialize(),
                 dataType:'json',
                 beforeSend:function() {
-                    $('#submit_button').attr('disabled', 'disabled').text('Wait...');
+                    $('#submit_button').attr('disabled', 'disabled').html('<i class="fas fa-spinner fa-spin"></i>');
                 },
                 success:function(data) {
-                    $('#submit_button').attr('disabled', false);
+                    $('#submit_button').attr('disabled', false).text('Confirm');
                     if(data.error != '') {
                         $('#form_message').html('<div class="alert alert-danger">'+data.error+'</div>');
-                        $('#submit_button').text($('#action').val());
                     } else {
                         $('#categoryModal').modal('hide');
-                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: data.success,
+                            customClass: { popup: 'cyber-popup' }
+                        });
                         dataTable.ajax.reload();
-                        setTimeout(function(){ $('#message').html(''); }, 5000);
                     }
                 }
             })
         }
     });
 
-    // Edit Button Click
     $(document).on('click', '.edit_button', function(){
         var category_id = $(this).data('id');
         $('#category_form').parsley().reset();
@@ -236,49 +233,70 @@ $(document).ready(function(){
             dataType:'JSON',
             success:function(data) {
                 $('#category_name').val(data.category_name);
-                $('#modal_title').text('Edit Category Name');
+                $('#modal_title').text('Update Category');
                 $('#action').val('Edit');
-                $('#submit_button').text('Update');
+                $('#submit_button').text('Update Info');
                 $('#hidden_id').val(category_id);
                 $('#categoryModal').modal('show');
             }
         })
     });
 
-    // Status Toggle
     $(document).on('click', '.status_button', function(){
         var id = $(this).data('id');
         var status = $(this).data('status');
         var next_status = (status == 'Enable') ? 'Disable' : 'Enable';
-        if(confirm("Change category status to "+next_status+"?")) {
-            $.ajax({
-                url:"category_action.php",
-                method:"POST",
-                data:{id:id, action:'change_status', status:status, next_status:next_status},
-                success:function(data) {
-                    $('#message').html(data);
-                    dataTable.ajax.reload();
-                    setTimeout(function(){ $('#message').html(''); }, 5000);
-                }
-            })
-        }
+        
+        Swal.fire({
+            title: 'Change Status?',
+            text: "Set category to " + next_status + "?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#0ea5e9',
+            cancelButtonColor: '#ef4444',
+            confirmButtonText: 'Yes, change it!',
+            customClass: { popup: 'cyber-popup' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"category_action.php",
+                    method:"POST",
+                    data:{id:id, action:'change_status', status:status, next_status:next_status},
+                    success:function(data) {
+                        $('#message').html(data);
+                        dataTable.ajax.reload();
+                        setTimeout(function(){ $('#message').html(''); }, 5000);
+                    }
+                })
+            }
+        });
     });
 
-    // Delete Category
     $(document).on('click', '.delete_button', function(){
         var id = $(this).data('id');
-        if(confirm("Remove this category permanently? This may affect linked products.")) {
-            $.ajax({
-                url:"category_action.php",
-                method:"POST",
-                data:{id:id, action:'delete'},
-                success:function(data) {
-                    $('#message').html(data);
-                    dataTable.ajax.reload();
-                    setTimeout(function(){ $('#message').html(''); }, 5000);
-                }
-            })
-        }
+        Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#ef4444',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            customClass: { popup: 'cyber-popup' }
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"category_action.php",
+                    method:"POST",
+                    data:{id:id, action:'delete'},
+                    success:function(data) {
+                        $('#message').html(data);
+                        dataTable.ajax.reload();
+                        setTimeout(function(){ $('#message').html(''); }, 5000);
+                    }
+                })
+            }
+        });
     });
 });
 </script>

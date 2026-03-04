@@ -24,131 +24,213 @@ include('header.php');
 ?>
 
 <style>
-    /* Glassmorphism Card Styling */
-    .glass-card {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 15px;
-        color: white;
+    :root {
+        --neon-blue: #00d2ff;
+        --deep-cyan: #0080ff;
+        --cyber-black: #06070a;
+        --glass-panel: rgba(0, 210, 255, 0.03);
+        --border-glow: rgba(0, 210, 255, 0.2);
     }
 
-    /* Form Control Glass Styling */
-    .form-control, .form-control:focus {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
-        color: white !important;
-        border-radius: 8px;
-    }
-    
-    .form-control:focus {
-        border-color: #17a2b8 !important;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    body {
+        background: radial-gradient(circle at top right, #0a111a, var(--cyber-black));
+        color: #fff;
     }
 
-    /* Select Dropdown Styling */
-    select.form-control option {
-        background-color: #1a1a1a;
-        color: white;
+    .hud-container {
+        padding: 40px 20px;
     }
 
-    label {
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.9rem;
+    .settings-hud {
+        background: var(--glass-panel);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--border-glow);
+        border-radius: 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 40px rgba(0, 210, 255, 0.1);
+    }
+
+    .settings-hud::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+    }
+
+    /* FIX: AUTO HEIGHT & PADDING FOR COMBOBOX */
+    .cool-input {
+        background: rgba(0, 210, 255, 0.05) !important;
+        border: none !important;
+        border-bottom: 2px solid rgba(0, 210, 255, 0.1) !important;
+        border-radius: 4px !important;
+        color: #fff !important;
+        padding: 10px 12px !important; /* Fixed padding for better vertical alignment */
+        height: auto !important; /* Forces height to fit content */
+        min-height: 45px; /* Ensures consistent height across types */
+        transition: 0.4s;
+    }
+
+    select.cool-input {
+        cursor: pointer;
+        appearance: none; /* Modern reset */
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%2300d2ff' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: calc(100% - 15px) center;
+    }
+
+    select.cool-input option {
+        background-color: #0a111a;
+        color: #fff;
+    }
+
+    .cool-input:focus {
+        background: rgba(0, 210, 255, 0.1) !important;
+        border-bottom: 2px solid var(--neon-blue) !important;
+        box-shadow: 0 5px 15px rgba(0, 210, 255, 0.1) !important;
+        outline: none;
+    }
+
+    .field-label {
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--neon-blue);
+        text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        font-weight: 800;
+        margin-top: 15px;
+        margin-bottom: 5px;
+    }
+
+    .btn-cyber {
+        background: var(--neon-blue);
+        color: #000;
+        font-weight: 900;
+        letter-spacing: 2px;
+        border: none;
+        border-radius: 12px;
+        padding: 15px 30px;
+        text-transform: uppercase;
+        transition: 0.3s;
+        box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+    }
+
+    .btn-cyber:hover {
+        background: #fff;
+        transform: scale(1.02);
+    }
+
+    .logo-vault {
+        border: 2px dashed var(--border-glow);
+        border-radius: 20px;
+        padding: 20px;
+        background: rgba(0, 210, 255, 0.01);
+        min-height: 160px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
     .img-thumbnail {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
+        background: transparent;
+        border: 2px solid var(--neon-blue);
+        box-shadow: 0 0 15px rgba(0, 210, 255, 0.3);
+        max-height: 100px;
+        max-width: 100%;
+        object-fit: contain;
     }
 
-    .btn-info {
-        background-color: #17a2b8;
-        border: none;
-        transition: 0.3s;
-    }
-
-    .btn-info:hover {
-        background-color: #138496;
-        transform: translateY(-1px);
-    }
-
-    input[type="file"] {
-        color: rgba(255, 255, 255, 0.7);
+    .char-counter {
+        font-size: 0.65rem;
+        float: right;
+        color: rgba(255,255,255,0.4);
     }
 </style>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-white">General Settings</h1>
+<div class="hud-container container">
+    <div class="mb-5 border-left pl-3" style="border-color: var(--neon-blue) !important;">
+        <h1 class="h2 font-weight-bold">GENERAL <span style="color: var(--neon-blue);">SETTINGS</span></h1>
+        <div class="small text-uppercase" style="letter-spacing: 4px; color: rgba(0,210,255,0.5);">Wakanesa System Configuration</div>
+    </div>
 
     <span id="message"></span>
 
     <form method="post" id="setting_form" enctype="multipart/form-data">
-        <div class="card glass-card shadow-lg mb-4">
-            <div class="card-header py-3 bg-transparent border-bottom-0">
-                <div class="row align-items-center">
-                    <div class="col">
-                        <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-tools mr-2"></i>Restaurant Configuration</h6>
+        <div class="settings-hud p-4 p-md-5">
+            <div class="row">
+                <div class="col-lg-7 pr-lg-5">
+                    <h5 class="text-white-50 mb-4"><i class="fas fa-fingerprint mr-2 text-info"></i> Restaurant Configuration</h5>
+                    
+                    <div class="form-group">
+                        <p class="field-label">Restaurant Name</p>
+                        <input type="text" name="restaurant_name" id="restaurant_name" class="form-control cool-input" required />
                     </div>
-                    <div class="col text-right">
-                        <button type="submit" name="edit_button" id="edit_button" class="btn btn-info px-4 shadow">
-                            <i class="fas fa-check-circle mr-1"></i> Update Settings
-                        </button>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body px-4 pb-4">
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Restaurant Name</label>
-                            <input type="text" name="restaurant_name" id="restaurant_name" class="form-control" required data-parsley-trigger="keyup" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <p class="field-label">Restaurant Email</p>
+                                <input type="email" name="restaurant_email" id="restaurant_email" class="form-control cool-input" required />
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>Restaurant Email</label>
-                            <input type="email" name="restaurant_email" id="restaurant_email" class="form-control" required data-parsley-type="email" data-parsley-trigger="keyup" />
-                        </div>
-                        <div class="form-group">
-                            <label>Restaurant Contact No.</label>
-                            <input type="text" name="restaurant_contact_no" id="restaurant_contact_no" class="form-control" required data-parsley-trigger="keyup" />
-                        </div>
-                        <div class="form-group">
-                            <label>Restaurant Address</label>
-                            <textarea name="restaurant_address" id="restaurant_address" class="form-control" rows="4" required data-parsley-trigger="keyup"></textarea>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <p class="field-label">Restaurant Contact No.</p>
+                                <input type="text" name="restaurant_contact_no" id="restaurant_contact_no" class="form-control cool-input" required />
+                            </div>
                         </div>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label>Tag Line</label>
-                            <input type="text" name="restaurant_tag_line" id="restaurant_tag_line" class="form-control" placeholder="e.g. Best Food in Town" />
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Currency</label>
-                                    <?php echo $object->Currency_list(); ?>
-                                </div>
+                    <div class="form-group">
+                        <p class="field-label">Restaurant Address</p>
+                        <textarea name="restaurant_address" id="restaurant_address" class="form-control cool-input" rows="3" required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <span class="char-counter" id="tag_counter">0 / 50</span>
+                        <p class="field-label">Tag Line</p>
+                        <input type="text" name="restaurant_tag_line" id="restaurant_tag_line" maxlength="50" class="form-control cool-input" />
+                    </div>
+                </div>
+
+                <div class="col-lg-5">
+                    <h5 class="text-white-50 mb-4"><i class="fas fa-globe mr-2 text-info"></i> GLOBAL SYNC</h5>
+                    
+                    <div class="row">
+                        <div class="col-6">
+                            <div class="form-group">
+                                <p class="field-label">Currency</p>
+                                <?php echo $object->Currency_list(); ?>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label>Timezone</label>
-                                    <?php echo $object->Timezone_list(); ?>
-                                </div>
+                        </div>
+                        <div class="col-6">
+                            <div class="form-group">
+                                <p class="field-label">Timezone</p>
+                                <?php echo $object->Timezone_list(); ?>
                             </div>
                         </div>
-                        
-                        <div class="form-group mt-3">
-                            <label>Business Logo</label><br />
-                            <div class="custom-file mb-3">
-                                <input type="file" name="restaurant_logo" id="restaurant_logo" class="form-control-file" />
+                    </div>
+
+                    <div class="mt-4">
+                        <p class="field-label">Business Logo</p>
+                        <div class="logo-vault text-center">
+                            <div id="uploaded_logo" class="mb-3 w-100">
+                                <i class="fas fa-cloud-upload-alt fa-3x text-white-50"></i>
                             </div>
-                            <small class="text-info"><i class="fas fa-info-circle mr-1"></i> Only .jpg, .png files allowed</small>
-                            <div id="uploaded_logo" class="mt-3 text-center p-3" style="background: rgba(255,255,255,0.03); border-radius: 10px;">
-                                </div>
+                            <input type="file" name="restaurant_logo" id="restaurant_logo" class="d-none" accept="image/*" />
+                            <button type="button" class="btn btn-outline-info btn-sm btn-block" onclick="document.getElementById('restaurant_logo').click();">
+                                <i class="fas fa-microchip mr-2"></i> UPLOAD NEW LOGO
+                            </button>
                         </div>
+                    </div>
+
+                    <div class="mt-5">
+                        <button type="submit" name="edit_button" id="edit_button" class="btn-cyber btn-block">
+                            Authorize Update
+                        </button>
                     </div>
                 </div>
             </div>
@@ -160,90 +242,77 @@ include('header.php');
 
 <script>
 $(document).ready(function(){
+    // Ensure comboboxes use the cool-input style
+    $('select').addClass('form-control cool-input');
 
-    /* ================= POPULATE DATA ================= */
-    <?php
-    foreach($result as $row)
-    {
-    ?>
-    $('#restaurant_name').val("<?php echo addslashes($row['restaurant_name']); ?>");
-    $('#restaurant_email').val("<?php echo $row['restaurant_email']; ?>");
-    $('#restaurant_contact_no').val("<?php echo $row['restaurant_contact_no']; ?>");
-    $('#restaurant_address').val("<?php echo addslashes($row['restaurant_address']); ?>");
-    $('#restaurant_currency').val("<?php echo $row['restaurant_currency']; ?>");
-    $('#restaurant_timezone').val("<?php echo $row['restaurant_timezone']; ?>");
-    $('#restaurant_tag_line').val("<?php echo addslashes($row['restaurant_tag_line']); ?>");
-    <?php
-        if($row["restaurant_logo"] != '')
-        {
-    ?>
-    $('#uploaded_logo').html('<img src="<?php echo $row["restaurant_logo"]; ?>" class="img-thumbnail shadow" width="120" /><input type="hidden" name="hidden_restaurant_logo" value="<?php echo $row["restaurant_logo"]; ?>" />');
-    <?php
-        }
-    }
-    ?>
+    /* Tag Line Character Counter */
+    $('#restaurant_tag_line').on('input', function() {
+        var len = $(this).val().length;
+        $('#tag_counter').text(len + ' / 50');
+    });
 
-    /* ================= FILE VALIDATION ================= */
+    /* Initial Data Load */
+    <?php foreach($result as $row) { ?>
+        $('#restaurant_name').val("<?php echo addslashes($row['restaurant_name']); ?>");
+        $('#restaurant_email').val("<?php echo $row['restaurant_email']; ?>");
+        $('#restaurant_contact_no').val("<?php echo $row['restaurant_contact_no']; ?>");
+        $('#restaurant_address').val("<?php echo addslashes($row['restaurant_address']); ?>");
+        $('#restaurant_currency').val("<?php echo $row['restaurant_currency']; ?>");
+        $('#restaurant_timezone').val("<?php echo $row['restaurant_timezone']; ?>");
+        $('#restaurant_tag_line').val("<?php echo addslashes($row['restaurant_tag_line']); ?>").trigger('input');
+        
+        <?php if($row["restaurant_logo"] != '') { ?>
+            $('#uploaded_logo').html('<img src="<?php echo $row["restaurant_logo"]; ?>?t=<?php echo time(); ?>" class="img-thumbnail" /><input type="hidden" name="hidden_restaurant_logo" value="<?php echo $row["restaurant_logo"]; ?>" />');
+        <?php } ?>
+    <?php } ?>
+
+    /* Live Preview on Selection */
     $('#restaurant_logo').change(function(){
-        var extension = $('#restaurant_logo').val().split('.').pop().toLowerCase();
-        if(extension != '')
-        {
-            if(jQuery.inArray(extension, ['png','jpg','jpeg']) == -1)
-            {
-                alert("Invalid Image File format");
-                $('#restaurant_logo').val('');
-                return false;
+        var file = this.files[0];
+        var ext = $(this).val().split('.').pop().toLowerCase();
+        if(ext != '' && $.inArray(ext, ['png','jpg','jpeg']) == -1) {
+            alert("Format Error: Only JPG, JPEG, or PNG allowed.");
+            $(this).val('');
+        } else {
+            var reader = new FileReader();
+            reader.onload = function(e) {
+                $('#uploaded_logo').html('<img src="'+e.target.result+'" class="img-thumbnail" />');
             }
+            reader.readAsDataURL(file);
         }
     });
 
-    /* ================= FORM SUBMISSION ================= */
-    $('#setting_form').parsley();
-
+    /* AJAX Submission */
     $('#setting_form').on('submit', function(event){
         event.preventDefault();
-        if($('#setting_form').parsley().isValid())
-        {       
-            $.ajax({
-                url:"setting_action.php",
-                method:"POST",
-                data:new FormData(this),
-                dataType:'json',
-                contentType:false,
-                processData:false,
-                beforeSend:function()
-                {
-                    $('#edit_button').attr('disabled', 'disabled');
-                    $('#edit_button').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
-                },
-                success:function(data)
-                {
-                    $('#edit_button').attr('disabled', false);
-                    $('#edit_button').html('<i class="fas fa-check-circle mr-1"></i> Update Settings');
-
-                    if(data.success != '')
-                    {
-                        $('#restaurant_name').val(data.restaurant_name);
-                        $('#restaurant_email').val(data.restaurant_email);
-                        $('#restaurant_contact_no').val(data.restaurant_contact_no);
-                        $('#restaurant_address').val(data.restaurant_address);
-                        $('#restaurant_currency').val(data.restaurant_currency);
-                        $('#restaurant_timezone').val(data.restaurant_timezone);
-                        $('#restaurant_tag_line').val(data.restaurant_tag_line);
-
-                        if(data.restaurant_logo != '')
-                        {
-                            $('#uploaded_logo').html('<img src="'+data.restaurant_logo+'" class="img-thumbnail shadow" width="120" /><input type="hidden" name="hidden_restaurant_logo" value="'+data.restaurant_logo+'" />');
-                        }
-                            
-                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
-                        setTimeout(function(){
-                            $('#message').html('');
-                        }, 5000);
+        $.ajax({
+            url:"setting_action.php",
+            method:"POST",
+            data:new FormData(this),
+            dataType:'json',
+            contentType:false,
+            processData:false,
+            beforeSend:function() {
+                $('#edit_button').attr('disabled', 'disabled').html('<i class="fas fa-sync fa-spin"></i> AUTHORIZING...');
+            },
+            success:function(data) {
+                $('#edit_button').attr('disabled', false).html('Authorize Update');
+                if(data.success != '') {
+                    $('#message').html('<div class="alert alert-info border-0" style="background:rgba(0,210,255,0.2); color:#fff; border-radius:15px;">'+data.success+'</div>');
+                    
+                    // Force update logo image from response
+                    if(data.restaurant_logo && data.restaurant_logo != '') {
+                        $('#uploaded_logo').html('<img src="'+data.restaurant_logo+'?t='+new Date().getTime()+'" class="img-thumbnail" /><input type="hidden" name="hidden_restaurant_logo" value="'+data.restaurant_logo+'" />');
                     }
+                    
+                    setTimeout(function(){ $('#message').html(''); }, 5000);
                 }
-            })
-        }
+            },
+            error: function(xhr) {
+                console.error("System Fault: " + xhr.responseText);
+                $('#edit_button').attr('disabled', false).html('Authorize Update');
+            }
+        });
     });
 });
 </script>

@@ -19,13 +19,16 @@ $object = new rms();
     <style>
         :root {
             --sky-blue: #0ea5e9; 
-            --sky-glow: rgba(14, 165, 233, 0.3);
-            --glass-bg: rgba(255, 255, 255, 0.1);
+            /* Increased opacity for a stronger glow effect */
+            --sky-glow: rgba(14, 165, 233, 0.5);
+            --sky-glow-intense: rgba(14, 165, 233, 0.8);
+            --deep-navy: #0f172a;
+            --glass-core: rgba(15, 23, 42, 0.8);
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #0f172a;
+            background: var(--deep-navy);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -46,17 +49,25 @@ $object = new rms();
 
         @keyframes slowPan { from { transform: scale(1); } to { transform: scale(1.1); } }
 
+        /* INCREASED BORDER GLOW */
         .login-card {
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--glass-core);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border-radius: 24px;
             border: 2px solid var(--sky-blue);
-            box-shadow: 0 0 25px var(--sky-glow);
+            /* Double layered shadow for intense outer glow */
+            box-shadow: 0 0 20px var(--sky-glow), 0 0 40px rgba(0, 0, 0, 0.8);
             width: 100%;
-            max-width: 450px;
+            max-width: 450px; 
+            min-width: 300px;
             animation: floatIn 0.8s ease-out forwards;
             position: relative;
+            transition: box-shadow 0.4s ease;
+        }
+
+        .login-card:hover {
+            box-shadow: 0 0 30px var(--sky-glow-intense), 0 0 50px rgba(0, 0, 0, 0.9);
         }
 
         @keyframes floatIn {
@@ -64,9 +75,16 @@ $object = new rms();
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .login-logo { width: 60px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 5px 15px var(--sky-glow)); }
-        h1 { font-family: 'Playfair Display', serif; color: var(--sky-blue) !important; text-shadow: 0 0 10px var(--sky-glow); }
-        label { color: #e2e8f0 !important; font-size: 0.85rem; margin-left: 5px; }
+        .login-logo { width: 70px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 0px 10px var(--sky-blue)); }
+        
+        h1 { 
+            font-family: 'Playfair Display', serif; 
+            color: #fff !important; 
+            text-shadow: 0 0 15px var(--sky-glow-intense);
+            font-size: 1.75rem;
+        }
+        
+        label { color: #e2e8f0 !important; font-size: 0.85rem; margin-left: 5px; opacity: 0.9; }
         
         .form-control {
             background: rgba(255, 255, 255, 0.05) !important;
@@ -74,16 +92,18 @@ $object = new rms();
             border-radius: 12px;
             color: #fff !important;
             height: 50px;
+            transition: 0.3s;
         }
         
         .form-control:focus {
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: var(--sky-blue) !important;
-            box-shadow: 0 0 15px var(--sky-glow);
+            box-shadow: 0 0 20px var(--sky-glow);
         }
 
+        /* INCREASED BUTTON GLOW */
         .btn-reset {
-            background: var(--sky-blue);
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: #fff;
             border: none;
             border-radius: 12px;
@@ -91,32 +111,36 @@ $object = new rms();
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 1.5px;
-            box-shadow: 0 4px 15px var(--sky-glow);
-            transition: 0.3s;
+            /* Heavy glow effect */
+            box-shadow: 0 0 15px var(--sky-glow), 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
         }
 
         .btn-reset:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px var(--sky-glow);
-            filter: brightness(1.1);
+            /* Pulsing glow on hover */
+            box-shadow: 0 0 25px var(--sky-glow-intense), 0 8px 25px rgba(0, 0, 0, 0.4);
+            filter: brightness(1.2);
             color: #fff;
         }
 
+        .btn-reset:active { transform: translateY(0); }
+
         .btn-reset:disabled {
-            background: #64748b;
+            background: #334155;
             box-shadow: none;
-            transform: none;
+            opacity: 0.5;
         }
 
-        .footer-links a { color: #94a3b8; transition: 0.3s; }
-        .footer-links a:hover { color: var(--sky-blue); text-decoration: none; }
+        .footer-links a { color: #94a3b8; transition: 0.3s; text-shadow: 0 0 5px rgba(0,0,0,0.5); }
+        .footer-links a:hover { color: var(--sky-blue); text-decoration: none; text-shadow: 0 0 10px var(--sky-glow); }
         
         .alert {
             border-radius: 12px;
-            background: rgba(14, 165, 233, 0.1);
-            border: 1px solid var(--sky-blue);
-            color: #fff;
             font-size: 0.85rem;
+            margin-top: 1rem;
+            border: 1px solid transparent;
+            backdrop-filter: blur(5px);
         }
     </style>
 </head>
@@ -127,8 +151,8 @@ $object = new rms();
     <div class="p-4 p-md-5">
         <div class="text-center mb-4">
             <img src="img/logo.png" alt="Logo" class="login-logo">
-            <h1 class="h2 font-weight-bold">Reset Password</h1>
-            <p class="text-white-50 small">An administrator will be notified to reset your password access.</p>
+            <h1 class="font-weight-bold">Reset Password</h1>
+            <p class="text-white-50 small mt-2">Enter your email and an administrator will be notified to reset your access.</p>
             <div id="message"></div>
         </div>
 
@@ -140,7 +164,7 @@ $object = new rms();
             
             <button type="submit" id="reset_button" class="btn btn-reset btn-block">Send Reset Request</button>
             
-            <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.1);">
+            <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.15);">
             
             <div class="text-center footer-links">
                 <a href="index.php"><i class="fas fa-arrow-left mr-2"></i>Back to <strong class="text-white">Login</strong></a>
@@ -164,14 +188,14 @@ $(document).ready(function(){
                 data: $(this).serialize(),
                 dataType: "json",
                 beforeSend: function(){
-                    $('#reset_button').prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i> Processing...');
+                    $('#reset_button').prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin mr-2"></i> Processing...');
                 },
                 success: function(data){
                     $('#reset_button').prop('disabled', false).html('Send Reset Request');
                     if(data.error) {
-                        $('#message').html('<div class="alert alert-danger" style="background:rgba(220,53,69,0.2); border-color:#dc3545;">'+data.error+'</div>');
+                        $('#message').html('<div class="alert" style="background:rgba(220,53,69,0.2); border:1px solid #dc3545; color:#fff;">'+data.error+'</div>');
                     } else {
-                        $('#message').html('<div class="alert alert-success" style="background:rgba(40,167,69,0.2); border-color:#28a745;">'+data.success+'</div>');
+                        $('#message').html('<div class="alert" style="background:rgba(40,167,69,0.2); border:1px solid #28a745; color:#fff;">'+data.success+'</div>');
                         $('#forgot_form')[0].reset();
                     }
                 }

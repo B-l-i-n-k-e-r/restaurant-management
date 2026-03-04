@@ -1,5 +1,5 @@
 <?php
-// rms.php - Centralized Restaurant Management Class (Updated)
+// rms.php - Centralized Restaurant Management Class (Fully Integrated)
 
 class rms
 {
@@ -122,6 +122,37 @@ class rms
         return 'Ksh';
     }
 
+    // --- NEW LIST GENERATORS (FIXED) ---
+    function Currency_list()
+    {
+        $output = '<select name="restaurant_currency" id="restaurant_currency" class="form-control cool-input" required>';
+        $output .= '<option value="">Select Currency</option>';
+        foreach($this->currency_array() as $row)
+        {
+            $output .= '<option value="'.$row['code'].'">'.$row['name'].' ('.$row['symbol'].')</option>';
+        }
+        $output .= '</select>';
+        return $output;
+    }
+
+    function Timezone_list()
+    {
+        $timezones = array(
+            'Africa/Nairobi', 'Africa/Cairo', 'Africa/Johannesburg', 'Africa/Lagos',
+            'America/New_York', 'America/Los_Angeles', 'America/Chicago',
+            'Asia/Dubai', 'Asia/Kolkata', 'Asia/Tokyo', 'Asia/Singapore',
+            'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Australia/Sydney'
+        );
+        $output = '<select name="restaurant_timezone" id="restaurant_timezone" class="form-control cool-input" required>';
+        $output .= '<option value="">Select Timezone</option>';
+        foreach($timezones as $tz)
+        {
+            $output .= '<option value="'.$tz.'">'.$tz.'</option>';
+        }
+        $output .= '</select>';
+        return $output;
+    }
+
     function Get_profile_image()
     {
         if (isset($_SESSION["user_id"])) {
@@ -195,16 +226,12 @@ class rms
         return $this->row_count();
     }
 
-    // --- KITCHEN SPECIFIC METHODS (FIXED) ---
-
-    // FIX: Include 'Preparing' so the kitchen knows how many active orders are in the room total
     function Get_total_kitchen_queue() {
         $this->query = "SELECT order_id FROM order_table WHERE order_status IN ('In Process', 'Preparing')";
         $this->execute();
         return $this->row_count();
     }
 
-    // FIX: Ensure 'Ready' orders are counted properly for service
     function Get_total_ready_orders() {
         $this->query = "SELECT order_id FROM order_table WHERE order_status = 'Completed'";
         $this->execute();
@@ -278,5 +305,5 @@ class rms
     {
         return date("Y-m-d H:i:s");
     }
-}
+} // End of class rms
 ?>

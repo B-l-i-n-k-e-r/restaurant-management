@@ -14,125 +14,155 @@ if(!$object->is_master_user()) {
 include('header.php');
 ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
-    :root {
-        --glass-bg: rgba(255, 255, 255, 0.05);
-        --glass-border: rgba(255, 255, 255, 0.12);
-        --accent-color: #00d2ff;
+    :root { 
+        --glass-bg: rgba(255, 255, 255, 0.03); 
+        --glass-border: rgba(255, 255, 255, 0.1); 
+        --accent-cyan: #0ea5e9; 
+        --neon-green: #10b981;
+        --neon-yellow: #f59e0b;
+        --neon-red: #ef4444;
+        --dropdown-bg: #111827; /* Deep midnight for select options */
     }
-
-    /* Glassmorphism Card Effect */
-    .glass-card {
-        background: var(--glass-bg) !important;
-        backdrop-filter: blur(15px);
-        -webkit-backdrop-filter: blur(15px);
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 20px;
-        overflow: hidden;
-    }
-
-    /* Table Styling */
-    .table { color: #e0e0e0 !important; border-collapse: separate; border-spacing: 0 8px; }
-    .table thead th { 
-        background: rgba(255, 255, 255, 0.03);
-        border: none !important; 
-        text-transform: uppercase; 
-        font-size: 0.75rem; 
-        letter-spacing: 1px;
-        color: var(--accent-color);
-        padding: 15px;
-    }
-    .table tbody tr { 
-        background: rgba(255, 255, 255, 0.02);
-        transition: all 0.3s ease;
-    }
-    .table tbody tr:hover { 
-        background: rgba(255, 255, 255, 0.07);
-        transform: translateY(-2px);
-    }
-    .table td { vertical-align: middle !important; border: none !important; padding: 15px; }
     
-    /* Profile Circle */
+    body { background-color: #0c0f17; color: #e2e8f0; }
+
+    /* 1. GLASS CARD STYLING */
+    .glass-card { 
+        background: var(--glass-bg) !important; 
+        backdrop-filter: blur(20px); 
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border) !important; 
+        border-radius: 20px; 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    /* 2. TABLE STYLING - FIT CONTENT CONSTRAINT */
+    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; border-collapse: separate !important; border-spacing: 0; }
+    .fit-content { width: 1% !important; white-space: nowrap !important; }
+
+    .table thead th {
+        background: transparent !important;
+        color: var(--accent-cyan) !important;
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 2px;
+        border-bottom: 2px solid rgba(14, 165, 233, 0.2) !important;
+        padding: 1.2rem 1rem !important;
+    }
+
+    .table td {
+        vertical-align: middle !important;
+        padding: 1rem !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: transparent !important;
+    }
+
+    tr:hover td { background: rgba(14, 165, 233, 0.05) !important; }
+
     .user-profile-img {
         width: 40px;
         height: 40px;
-        border-radius: 50%;
-        object-fit: cover;
-        border: 2px solid var(--accent-color);
-        box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
-    }
-
-    /* Form & Modal Styling */
-    .modal-content {
-        background: linear-gradient(145deg, rgba(30, 30, 30, 0.95), rgba(15, 15, 15, 0.95)) !important;
-        backdrop-filter: blur(25px);
-        border: 1px solid var(--glass-border);
-        border-radius: 25px;
-        color: white;
-    }
-    .form-control {
-        background: rgba(0, 0, 0, 0.2) !important;
-        border: 1px solid var(--glass-border) !important;
         border-radius: 10px;
-        color: white !important;
-        padding: 12px;
-    }
-    .form-control:focus {
-        border-color: var(--accent-color) !important;
-        box-shadow: 0 0 8px rgba(0, 210, 255, 0.3);
+        object-fit: cover;
+        border: 1px solid var(--glass-border);
     }
 
-    /* DataTables Pagination & Search */
+    /* 3. DATATABLE OVERRIDES */
     .dataTables_wrapper .dataTables_filter input {
-        background: var(--glass-bg);
-        border: 1px solid var(--glass-border);
-        color: white;
-        border-radius: 20px;
-        padding: 5px 15px;
-        outline: none;
-    }
-    .dataTables_info, .dataTables_length, .dataTables_filter { color: rgba(255,255,255,0.6) !important; margin-bottom: 15px; }
-    .page-link {
-        background: var(--glass-bg) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid var(--glass-border) !important;
         color: white !important;
-        margin: 0 3px;
-        border-radius: 5px;
+        border-radius: 10px;
+        padding: 8px 15px;
     }
-    .page-item.active .page-link { background: var(--accent-color) !important; border-color: var(--accent-color) !important; }
+    .dataTables_info { color: #64748b !important; font-size: 0.8rem; padding-top: 15px; }
 
-    /* Action Buttons */
-    .btn-action { width: 32px; height: 32px; padding: 0; line-height: 32px; border-radius: 8px; margin: 0 2px; }
-    
-    /* Animation for Requests */
-    .row-request-active { border-left: 4px solid #ffc107 !important; background: rgba(255, 193, 7, 0.05) !important; }
+    .page-link { background: var(--glass-bg) !important; border: 1px solid var(--glass-border) !important; color: #94a3b8 !important; border-radius: 8px !important; margin: 0 3px; }
+    .page-item.active .page-link { background: var(--accent-cyan) !important; color: #000 !important; border-color: var(--accent-cyan) !important; font-weight: bold; }
+
+    /* 4. MODAL & COMBOBOX STYLING */
+    .modal-content {
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(25px);
+        border: 1px solid var(--accent-cyan) !important;
+        border-radius: 24px !important;
+        box-shadow: 0 0 50px rgba(14, 165, 233, 0.2);
+        color: #fff;
+    }
+    .modal-header { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
+    .modal-footer { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+    .form-control {
+        background: rgba(0, 0, 0, 0.3) !important;
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 12px;
+        color: white !important;
+        height: auto;
+        padding: 10px 15px;
+    }
+    .form-control:focus { border-color: var(--accent-cyan) !important; box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+
+    /* Friendly Combobox Overrides */
+    select.form-control {
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%230ea5e9' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14 2.451 5.658C1.885 5.013 2.345 4 3.204 4h9.592a1 1 0 0 1 .753 1.659l-4.796 5.48a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 15px center;
+    }
+    select.form-control option {
+        background-color: var(--dropdown-bg);
+        color: #fff;
+    }
+
+    /* 5. STATUS BADGES */
+    .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); padding: 6px 12px; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 0.65rem; }
+    .badge-inactive { background: rgba(239, 68, 68, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); padding: 6px 12px; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 0.65rem; }
+
+    /* 6. SWEETALERT2 OVERRIDES */
+    .swal2-popup.cyber-popup {
+        background: rgba(15, 23, 42, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid var(--accent-cyan) !important;
+        border-radius: 24px !important;
+        color: #fff !important;
+    }
+    .swal2-confirm.cyber-confirm { background: transparent !important; border: 1px solid var(--neon-green) !important; color: var(--neon-green) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: 800; text-transform: uppercase; margin: 5px; }
+    .swal2-confirm.cyber-confirm:hover { background: var(--neon-green) !important; color: #000 !important; box-shadow: 0 0 20px var(--neon-green) !important; }
+    .swal2-cancel.cyber-cancel { background: transparent !important; border: 1px solid var(--neon-red) !important; color: var(--neon-red) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: 800; text-transform: uppercase; margin: 5px; }
 </style>
 
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h4 mb-0 text-white font-weight-bold">Staff & User Control</h1>
-        <button type="button" id="add_user" class="btn btn-info shadow-sm" style="border-radius: 10px; padding: 8px 20px;">
-            <i class="fas fa-user-plus fa-sm mr-2"></i> Add New User
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 font-weight-bold text-white mb-0">User Management</h1>
+            <p class="text-white-50 small text-uppercase letter-spacing-1">System clearance levels & personnel logs</p>
+        </div>
+        <button type="button" id="add_user" class="btn btn-info shadow-sm" style="border-radius: 12px; font-weight: bold; background: var(--accent-cyan); border: none;">
+            <i class="fas fa-user-shield mr-2"></i>ADD NEW USER
         </button>
     </div>
 
-    <span id="message"></span>
+    <div id="message"></div>
 
-    <div class="card glass-card shadow-lg">
-        <div class="card-body p-4">
+    <div class="card glass-card">
+        <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table" id="user_table" width="100%">
                     <thead>
                         <tr>
-                            <th>Staff</th>
-                            <th>Username</th>
-                            <th>Contact</th>
-                            <th>Email</th>
-                            <th>Credentials</th>
-                            <th>Role</th>
-                            <th>Joined</th>
-                            <th>Status</th>
-                            <th>Action</th>
+                            <th class="pl-4 fit-content">STAFF</th>
+                            <th class="fit-content">USERNAME</th>
+                            <th class="fit-content">CONTACT</th>
+                            <th>EMAIL ADDRESS</th>
+                            <th class="fit-content">CREDENTIALS</th>
+                            <th class="fit-content">ROLE</th>
+                            <th class="fit-content">JOINED</th>
+                            <th class="fit-content">STATUS</th>
+                            <th class="text-right pr-4 fit-content">ACTION</th>
                         </tr>
                     </thead>
                     <tbody></tbody>
@@ -145,19 +175,21 @@ include('header.php');
 <div id="userModal" class="modal fade" data-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <form method="post" id="user_form" enctype="multipart/form-data">
-            <div class="modal-content shadow-2xl">
-                <div class="modal-header border-0 px-4 pt-4">
-                    <h5 class="modal-title font-weight-bold text-info" id="modal_title">Add Staff Member</h5>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title font-weight-bold text-uppercase letter-spacing-2" id="modal_title" style="color: var(--accent-cyan);">
+                        <i class="fas fa-id-badge mr-2"></i>Access Provisioning
+                    </h5>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body px-4">
                     <span id="form_message"></span>
                     <div class="row">
-                        <div class="col-md-12 text-center mb-3">
+                        <div class="col-md-12 text-center mb-4">
                             <div id="user_uploaded_image"></div>
                             <input type="file" name="user_image" id="user_image" class="d-none" accept="image/*" />
-                            <label for="user_image" class="btn btn-sm btn-outline-info mt-2" style="cursor: pointer;">
-                                <i class="fas fa-camera mr-1"></i> Upload Photo
+                            <label for="user_image" class="btn btn-sm btn-outline-info mt-2" style="border-radius: 20px; font-size: 0.7rem;">
+                                <i class="fas fa-sync-alt mr-1"></i> UPDATE AVATAR
                             </label>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -165,7 +197,7 @@ include('header.php');
                             <input type="text" name="user_name" id="user_name" class="form-control" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="small text-white-50">Contact No.</label>
+                            <label class="small text-white-50">Contact</label>
                             <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" required />
                         </div>
                         <div class="col-md-12 mb-3">
@@ -175,12 +207,12 @@ include('header.php');
                         <div class="col-md-6 mb-3">
                             <label class="small text-white-50">Role</label>
                             <select name="user_type" id="user_type" class="form-control" required>
-                                <option value="">Select Type</option>
-                                <option value="Master">Master (Admin)</option>
+                                <option value="" disabled selected>Select Role</option>
+                                <option value="Master">Admin</option>
                                 <option value="Waiter">Waiter</option>
                                 <option value="Cashier">Cashier</option>
+                                <option value="User">User</option>
                                 <option value="Kitchen">Kitchen Staff</option>
-                                <option value="User">Regular User</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -188,7 +220,7 @@ include('header.php');
                             <div class="input-group">
                                 <input type="password" name="user_password" id="user_password" class="form-control" />
                                 <div class="input-group-append">
-                                    <span class="input-group-text bg-dark border-0 text-white" id="toggleModalPassword" style="cursor:pointer;">
+                                    <span class="input-group-text bg-dark border-0 text-white-50" id="toggleModalPassword" style="cursor:pointer;">
                                         <i class="fas fa-eye" id="modalEyeIcon"></i>
                                     </span>
                                 </div>
@@ -196,11 +228,11 @@ include('header.php');
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer border-0 px-4 pb-4">
+                <div class="modal-footer">
                     <input type="hidden" name="hidden_id" id="hidden_id" />
                     <input type="hidden" name="hidden_user_image" id="hidden_user_image" />
                     <input type="hidden" name="action" id="action" value="Add" />
-                    <button type="submit" name="submit" id="submit_button" class="btn btn-info btn-block py-2 font-weight-bold" style="border-radius: 12px;">Save Staff Details</button>
+                    <button type="submit" name="submit" id="submit_button" class="btn btn-info btn-block py-2 font-weight-bold" style="border-radius: 12px; background: var(--accent-cyan); border: none;">SAVE USER</button>
                 </div>
             </div>
         </form>
@@ -216,33 +248,19 @@ $(document).ready(function(){
         "serverSide": true,
         "order": [],
         "ajax": { url:"user_action.php", type:"POST", data:{action:'fetch'} },
-        "columnDefs":[{ "targets":[0,4,8], "orderable":false }],
+        "columnDefs":[
+            { "targets":[0, 1, 2, 4, 5, 6, 7], "className": "fit-content" },
+            { "targets":[8], "orderable":false, "className": "text-right pr-4 fit-content" }
+        ],
         "language": {
-            "search": "_INPUT_",
-            "searchPlaceholder": "Search staff..."
-        },
-        "createdRow": function(row, data, dataIndex) {
-            if (data[1].indexOf('Requested') > -1) {
-                $(row).addClass('row-request-active');
-            }
+            "search": "",
+            "searchPlaceholder": "Search Identities...",
+            "paginate": { "previous": "<", "next": ">" }
         }
     });
 
     $('#user_form').parsley();
 
-    // Image Preview logic
-    $('#user_image').change(function(){
-        const file = this.files[0];
-        if (file){
-            let reader = new FileReader();
-            reader.onload = function(event){
-                $('#user_uploaded_image').html('<img src="'+event.target.result+'" class="rounded-circle img-thumbnail" width="100" style="height:100px; object-fit:cover;"/>');
-            }
-            reader.readAsDataURL(file);
-        }
-    });
-
-    // Toggle Password in Modal
     $('#toggleModalPassword').on('click', function() {
         const passInput = $('#user_password');
         const eyeIcon = $('#modalEyeIcon');
@@ -251,7 +269,6 @@ $(document).ready(function(){
         eyeIcon.toggleClass('fa-eye fa-eye-slash');
     });
 
-    // Toggle Password in Table Row
     $(document).on('click', '.view_password', function(){
         var password = $(this).data('password');
         var targetId = $(this).data('id');
@@ -268,10 +285,10 @@ $(document).ready(function(){
     $('#add_user').click(function(){
         $('#user_form')[0].reset();
         $('#user_form').parsley().reset();
-        $('#modal_title').text('Add Staff Member');
+        $('#modal_title').html('<i class="fas fa-user-plus mr-2"></i>Register User');
         $('#action').val('Add');
-        $('#submit_button').html('Save Staff Details');
-        $('#user_uploaded_image').html('<div class="mx-auto bg-dark rounded-circle" style="width:100px; height:100px; line-height:100px; border:2px dashed #444"><i class="fas fa-user fa-3x text-secondary mt-4"></i></div>');
+        $('#submit_button').html('SAVE USER');
+        $('#user_uploaded_image').html('<div class="mx-auto rounded-circle d-flex align-items-center justify-content-center" style="width:80px; height:80px; background: rgba(255,255,255,0.05); border:1px dashed var(--glass-border)"><i class="fas fa-user-shield fa-2x text-white-50"></i></div>');
         $('#password_label').show();
         $('#user_password').attr('required', true);
         $('#userModal').modal('show');
@@ -289,11 +306,11 @@ $(document).ready(function(){
                 $('#user_email').val(data.user_email);
                 $('#user_contact_no').val(data.user_contact_no);
                 $('#user_type').val(data.user_type);
-                $('#user_uploaded_image').html('<img src="'+data.user_profile+'" class="rounded-circle img-thumbnail" width="100" style="height:100px; object-fit:cover;"/>');
+                $('#user_uploaded_image').html('<img src="'+data.user_profile+'" class="rounded user-profile-img" width="80" style="height:80px;"/>');
                 $('#hidden_user_image').val(data.user_profile);
-                $('#modal_title').text('Edit Staff Details');
+                $('#modal_title').html('<i class="fas fa-user-edit mr-2"></i>Modify User');
                 $('#action').val('Edit');
-                $('#submit_button').html('Update Details');
+                $('#submit_button').html('UPDATE RECORD');
                 $('#hidden_id').val(user_id);
                 $('#password_label').hide();
                 $('#user_password').attr('required', false).val('');
@@ -313,17 +330,22 @@ $(document).ready(function(){
                 contentType:false,
                 processData:false,
                 beforeSend:function(){
-                    $('#submit_button').attr('disabled', 'disabled').html('<i class="fas fa-spinner fa-spin"></i> Processing...');
+                    $('#submit_button').attr('disabled', 'disabled').html('<i class="fas fa-spinner fa-spin"></i> ENCRYPTING...');
                 },
                 success:function(data){
-                    $('#submit_button').attr('disabled', false).html('Save Staff Details');
+                    $('#submit_button').attr('disabled', false).html('SAVE USER');
                     if(data.error != ''){
                         $('#form_message').html('<div class="alert alert-danger">'+data.error+'</div>');
                     } else {
                         $('#userModal').modal('hide');
-                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'DATABASE UPDATED',
+                            text: data.success,
+                            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm' },
+                            buttonsStyling: false
+                        });
                         dataTable.ajax.reload();
-                        setTimeout(()=>{$('#message').html('');}, 5000);
                     }
                 }
             });
@@ -333,32 +355,55 @@ $(document).ready(function(){
     $(document).on('click', '.status_button', function(){
         var id = $(this).data('id');
         var status = $(this).data('status');
-        if(confirm("Change staff status to "+status+"?")){
-            $.ajax({
-                url:"user_action.php",
-                method:"POST",
-                data:{id:id, action:'change_status', next_status:status},
-                dataType: 'JSON',
-                success:function(data){
-                    dataTable.ajax.reload();
-                }
-            });
-        }
+        Swal.fire({
+            title: 'OVERRIDE STATUS?',
+            text: "Personnel status will be updated to " + status,
+            icon: 'info',
+            showCancelButton: true,
+            confirmButtonText: 'PROCEED',
+            cancelButtonText: 'ABORT',
+            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-confirm', cancelButton: 'cyber-cancel' },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"user_action.php",
+                    method:"POST",
+                    data:{id:id, action:'change_status', next_status:status},
+                    dataType: 'JSON',
+                    success:function(data){
+                        dataTable.ajax.reload();
+                    }
+                });
+            }
+        });
     });
 
     $(document).on('click', '.delete_button', function(){
         var id = $(this).data('id');
-        if(confirm("Permanently remove this user? This cannot be undone.")){
-            $.ajax({
-                url:"user_action.php",
-                method:"POST",
-                data:{id:id, action:'true_delete'},
-                dataType: 'JSON',
-                success:function(data){
-                    dataTable.ajax.reload();
-                }
-            });
-        }
+        Swal.fire({
+            title: 'TERMINATE ACCESS?',
+            text: "Warning: This purge is irreversible.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'PURGE',
+            cancelButtonText: 'ABORT',
+            customClass: { popup: 'cyber-popup', confirmButton: 'cyber-cancel', cancelButton: 'cyber-confirm' },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url:"user_action.php",
+                    method:"POST",
+                    data:{id:id, action:'true_delete'},
+                    dataType: 'JSON',
+                    success:function(data){
+                        Swal.fire({ icon: 'success', title: 'IDENTITY PURGED', customClass: { popup: 'cyber-popup' }});
+                        dataTable.ajax.reload();
+                    }
+                });
+            }
+        });
     });
 });
 </script>

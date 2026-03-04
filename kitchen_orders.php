@@ -17,219 +17,244 @@ include('header.php');
 ?>
 
 <style>
-    /* Dark Theme UI Overrides */
+    :root {
+        --neon-blue: #00d2ff;
+        --neon-purple: #9d50bb;
+        --cyber-black: #050608;
+        --glass-bg: rgba(255, 255, 255, 0.02);
+        --neon-gradient: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+    }
+
     body {
-        background-color: #0d0d0d; 
+        background: radial-gradient(circle at top right, #0d1117, var(--cyber-black));
         color: #fff;
+        font-family: 'Inter', -apple-system, sans-serif;
         overflow-x: hidden;
     }
 
-    #content-wrapper {
-        background: transparent;
+    #content-wrapper { background: transparent; }
+
+    /* HUD Title Section */
+    .kds-header-border {
+        border-left: 5px solid;
+        border-image: linear-gradient(to bottom, var(--neon-blue), var(--neon-purple)) 1;
+        padding-left: 20px;
     }
 
-    /* Filter Pills */
+    .display-5 {
+        background: var(--neon-gradient);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        font-weight: 900 !important;
+        letter-spacing: -1px;
+    }
+
+    /* Filter Pills - Glowing Style */
     .filter-pills-container {
         display: flex;
         gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 25px;
+        margin-bottom: 30px;
     }
 
     .btn-filter {
         border-radius: 50px;
-        padding: 10px 24px;
-        font-weight: 600;
+        padding: 10px 22px;
+        font-weight: 700;
         text-transform: uppercase;
-        font-size: 0.8rem;
-        border: 1px solid rgba(255,255,255,0.2);
-        background: rgba(255,255,255,0.05);
-        color: #fff;
-        transition: 0.3s ease;
-        cursor: pointer;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        border: 1px solid rgba(0, 210, 255, 0.2);
+        background: rgba(0, 210, 255, 0.05);
+        color: var(--neon-blue);
+        transition: 0.3s all ease;
     }
 
     .btn-filter.active {
-        background: #ff5e57; 
-        border-color: #ff5e57;
-        box-shadow: 0 0 15px rgba(255, 94, 87, 0.4);
+        background: var(--neon-gradient);
+        border-color: transparent;
+        color: #fff;
+        box-shadow: 0 0 20px rgba(157, 80, 187, 0.4);
     }
 
-    /* Kitchen Grid - Column fit content logic */
+    /* Grid Layout: Masonry content-fit */
     .kitchen-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(max-content, 350px));
-        gap: 20px;
-        width: 100%;
+        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+        grid-auto-rows: min-content;
+        gap: 25px;
         align-items: start;
     }
 
-    /* Ticket Card - Dark Glassmorphism */
+    /* Ticket Card - Cyber Glass */
     .ticket-card {
-        background: rgba(25, 25, 25, 0.95); 
+        background: rgba(13, 14, 18, 0.9);
         backdrop-filter: blur(10px);
-        border-radius: 12px;
-        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
         overflow: hidden;
         display: flex;
         flex-direction: column;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-        transition: transform 0.2s ease;
-        width: fit-content;
-        min-width: 300px;
+        height: fit-content; 
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        position: relative;
+    }
+
+    .ticket-card::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 3px;
+        background: var(--neon-gradient);
     }
 
     .ticket-header {
-        padding: 15px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.02);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        background: rgba(255, 255, 255, 0.03);
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
-    .order-id { color: #ff5e57; font-weight: 800; font-size: 1.1rem; }
-    .table-label { text-transform: uppercase; font-size: 0.9rem; font-weight: 700; color: #fff; }
+    .order-id { color: var(--neon-blue); font-weight: 800; font-family: monospace; font-size: 1.2rem; }
+    .table-label { font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
 
     .ticket-info {
-        padding: 8px 15px;
+        padding: 10px 20px;
+        background: rgba(0, 0, 0, 0.3);
         display: flex;
         justify-content: space-between;
         font-size: 0.8rem;
         color: #888;
-        background: rgba(0,0,0,0.2);
     }
 
-    .time-badge { color: #ff5e57; font-weight: bold; }
+    .time-badge { color: var(--neon-purple); font-weight: 800; }
 
     .ticket-body {
-        padding: 15px;
-        max-height: 400px;
-        overflow-y: auto;
+        padding: 20px;
     }
-
-    /* Custom Scrollbar */
-    .ticket-body::-webkit-scrollbar { width: 5px; }
-    .ticket-body::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
 
     .order-item {
         font-size: 1.15rem;
         margin-bottom: 12px;
         display: flex;
         align-items: flex-start;
-        border-bottom: 1px solid rgba(255,255,255,0.05);
-        padding-bottom: 8px;
-        white-space: nowrap;
+        padding-bottom: 10px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
     }
 
     .item-qty { 
-        background: #ff5e57; 
-        color: #fff; 
-        min-width: 28px; 
-        height: 28px; 
+        background: rgba(157, 80, 187, 0.2); 
+        color: var(--neon-purple); 
+        min-width: 30px; 
+        height: 30px; 
         display: flex; 
         align-items: center; 
         justify-content: center; 
-        border-radius: 4px; 
-        font-weight: bold; 
-        margin-right: 12px;
-        font-size: 0.9rem;
+        border-radius: 8px; 
+        font-weight: 900; 
+        margin-right: 15px;
     }
 
-    /* Action Button Styling */
+    /* HUD Counter Circle */
+    .queue-box {
+        text-align: right;
+        border-right: 4px solid var(--neon-purple);
+        padding-right: 20px;
+    }
+
+    /* Buttons */
     .btn-status {
         width: 100%;
         padding: 18px;
         border: none;
-        font-weight: 800;
+        font-weight: 900;
         text-transform: uppercase;
-        font-size: 1rem;
-        letter-spacing: 1.5px;
-        cursor: pointer;
+        letter-spacing: 2px;
         transition: 0.3s;
-        margin-top: auto;
+        cursor: pointer;
+        background: rgba(255,255,255,0.03);
+        color: #fff;
     }
 
-    .btn-start { background: #2ecc71; color: #fff; }
-    .btn-start:hover { background: #27ae60; }
+    .btn-start { border-top: 1px solid var(--neon-blue); color: var(--neon-blue); }
+    .btn-start:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
     
-    .btn-ready { background: #f1c40f; color: #000; } /* Yellow for Ready status */
-    .btn-ready:hover { background: #d4ac0d; }
+    .btn-ready { border-top: 1px solid var(--neon-purple); color: var(--neon-purple); }
+    .btn-ready:hover { background: var(--neon-purple); color: #fff; box-shadow: 0 0 20px rgba(157, 80, 187, 0.4); }
 
-    .btn-waiting { background: #34495e; color: #fff; cursor: not-allowed; }
-
-    /* Search Bar */
-    .search-container {
-        position: relative;
-        max-width: 500px;
-        margin-bottom: 30px;
-    }
-
+    /* Search */
     .search-input {
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.15);
-        border-radius: 10px;
-        padding: 14px 15px 14px 45px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(0, 210, 255, 0.2);
+        border-radius: 15px;
+        padding: 16px 20px 16px 50px;
         color: #fff;
         width: 100%;
-        font-size: 1rem;
+        transition: 0.3s;
     }
 
-    .search-icon { position: absolute; left: 18px; top: 18px; color: #888; }
+    .search-input:focus {
+        border-color: var(--neon-purple);
+        background: rgba(255, 255, 255, 0.06);
+        outline: none;
+        box-shadow: 0 0 15px rgba(157, 80, 187, 0.2);
+    }
 </style>
 
-<div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap">
-        <div>
-            <h1 class="h2 mb-1 text-white font-weight-bold">Kitchen Display</h1>
-            <p class="text-white-50 mb-0"><?php echo date('l, d M Y'); ?> • <span id="sync_status">Live Updates</span></p>
+<div class="container-fluid py-5 px-md-5">
+    <div class="row align-items-center mb-5">
+        <div class="col-md-8">
+            <div class="kds-header-border">
+                <h1 class="display-5 mb-0">KITCHEN DISPLAY</h1>
+                <p class="text-white-50 mb-0">
+                    <span id="sync_status" style="color: var(--neon-blue); font-weight: bold;">LIVE UPDATES</span> 
+                    • <?php echo date('l, d M'); ?>
+                </p>
+            </div>
         </div>
-        <div class="text-right pb-1">
-            <span class="text-white-50 font-weight-bold small">ACTIVE ORDERS: <span id="active_count_text" class="text-white" style="font-size: 1.2rem;">0</span></span>
+        <div class="col-md-4">
+            <div class="queue-box">
+                <div class="small font-weight-bold text-muted text-uppercase">Active Orders</div>
+                <div id="active_count_text" style="font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1;">0</div>
+            </div>
         </div>
     </div>
 
     <div class="filter-pills-container">
-        <button class="btn-filter active" data-filter="All">All Active</button>
-        <button class="btn-filter" data-filter="In Process">New Orders</button>
-        <button class="btn-filter" data-filter="Preparing">Preparing</button>
-        <button class="btn-filter" data-filter="Ready">Ready (Waiting for Cashier)</button>
+        <button class="btn-filter active" data-filter="All">All ACTIVE</button>
+        <button class="btn-filter" data-filter="In Process">NEW ORDERS</button>
+        <button class="btn-filter" data-filter="Preparing">PREPARING</button>
+        <button class="btn-filter" data-filter="Ready">READY</button>
     </div>
 
     <div class="search-container">
-        <i class="fas fa-search search-icon"></i>
-        <input type="text" id="search_orders" class="search-input" placeholder="Search Table # or Order ID..." autocomplete="off">
+        <i class="fas fa-search search-icon" style="position: absolute; left: 20px; top: 20px; color: var(--neon-blue);"></i>
+        <input type="text" id="search_orders" class="search-input" placeholder="Filter by Table or Order ID...">
     </div>
 
-    <div class="kitchen-container" id="kitchen_load">
-    </div>
+    <div class="kitchen-container mt-4" id="kitchen_load">
+        </div>
 </div>
 
 <audio id="bell" preload="auto">
-    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.mp3" type="audio/mpeg">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3" type="audio/mpeg">
 </audio>
-
-<?php include('footer.php'); ?>
 
 <script>
 $(document).ready(function(){
     let currentOrderCount = 0;
     let activeFilter = 'All';
-    let isRequesting = false;
 
     function fetch_kitchen_orders() {
-        if(isRequesting) return;
-        isRequesting = true;
-        
         let searchText = $('#search_orders').val();
-        
         $.ajax({
             url: "order_action.php",
             method: "POST",
             data: { 
                 action: 'fetch_kitchen_grid', 
                 filter: activeFilter,
-                search: searchText
+                search: searchText,
+                view: 'full_display'
             },
             success: function(data) {
                 $('#kitchen_load').html(data);
@@ -237,15 +262,9 @@ $(document).ready(function(){
                 $('#active_count_text').text(newCount);
 
                 if(newCount > currentOrderCount && currentOrderCount !== 0) {
-                    let audio = document.getElementById('bell');
-                    audio.play().catch(e => console.log("Audio waiting for interaction."));
+                    document.getElementById('bell').play().catch(e => {});
                 }
                 currentOrderCount = newCount;
-                isRequesting = false;
-            },
-            error: function() {
-                isRequesting = false;
-                $('#sync_status').text('Connection Lost').css('color', 'red');
             }
         });
     }
@@ -257,50 +276,13 @@ $(document).ready(function(){
         fetch_kitchen_orders();
     });
 
-    let searchTimer;
-    $("#search_orders").on("keyup", function() {
-        clearTimeout(searchTimer);
-        searchTimer = setTimeout(fetch_kitchen_orders, 300);
+    $('#search_orders').on('input', function() {
+        fetch_kitchen_orders();
     });
 
-    // Modified Status Logic
-    $(document).on('click', '.change_status', function(){
-        let order_id = $(this).data('id');
-        let current_status = $(this).data('current'); // You'll need to ensure your order_action.php sends this
-        let next_status = $(this).data('next');
-        let btn = $(this);
-
-        // If it's already "Ready", we disable the button for the kitchen
-        // and let them know it's waiting for the cashier.
-        if(next_status === 'Ready') {
-            // Update to "Ready" status
-        } else if (next_status === 'Completed') {
-            // We want to prevent the kitchen from completing it if that's the cashier's job
-            // For now, let's process the transition to 'Ready'
-        }
-        
-        btn.prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i>');
-        
-        $.ajax({
-            url: "order_action.php",
-            method: "POST",
-            data: { 
-                action: 'update_order_status', 
-                order_id: order_id, 
-                status: next_status 
-            },
-            success: function(response) {
-                if(response.trim() == 'success') {
-                    fetch_kitchen_orders();
-                } else {
-                    alert("Update failed.");
-                    fetch_kitchen_orders();
-                }
-            }
-        });
-    });
-
-    setInterval(fetch_kitchen_orders, 10000);
+    setInterval(fetch_kitchen_orders, 8000);
     fetch_kitchen_orders();
 });
 </script>
+
+<?php include('footer.php'); ?>

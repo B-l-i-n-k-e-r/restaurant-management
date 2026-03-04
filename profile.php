@@ -19,177 +19,199 @@ include('header.php');
 
 <style>
     :root {
-        --glass: rgba(255, 255, 255, 0.03);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --neon-gold: #f39c12;
         --neon-blue: #00d2ff;
-        --bg-deep: #050505;
+        --deep-cyan: #0080ff;
+        --cyber-black: #06070a;
+        --glass-panel: rgba(0, 210, 255, 0.03);
+        --border-glow: rgba(0, 210, 255, 0.2);
     }
 
-    body { background-color: var(--bg-deep); color: #e0e0e0; }
-
-    /* Glassmorphism Card Styling */
-    .glass-card {
-        background: var(--glass) !important;
-        backdrop-filter: blur(20px);
-        border: 1px solid var(--glass-border) !important;
-        border-radius: 24px;
-        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    body {
+        background: radial-gradient(circle at top right, #0a111a, var(--cyber-black));
+        color: #fff;
+        font-family: 'Inter', 'Segoe UI', sans-serif;
     }
 
-    /* Form Input Styling */
-    .form-control {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        color: white !important;
-        border-radius: 12px;
-        padding: 12px 15px;
-        transition: all 0.3s ease;
-    }
-    
-    .form-control:focus {
-        background: rgba(255, 255, 255, 0.08) !important;
-        border-color: var(--neon-gold) !important;
-        box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
-    }
-
-    label {
-        font-weight: 600;
-        color: rgba(255, 255, 255, 0.6);
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 0.5rem;
-    }
-
-    .profile-avatar-container {
+    .hud-container {
         position: relative;
-        display: inline-block;
+        padding: 60px 20px;
     }
 
-    .img-thumbnail {
-        background-color: var(--glass);
-        border: 2px solid var(--glass-border);
-        border-radius: 50% !important; /* Circular profile */
-        padding: 5px;
+    .profile-hud {
+        background: var(--glass-panel);
+        backdrop-filter: blur(25px);
+        -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--border-glow);
+        border-radius: 40px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 0 40px rgba(0, 210, 255, 0.1);
+    }
+
+    .profile-hud::before {
+        content: "";
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 3px;
+        background: linear-gradient(90deg, transparent, var(--neon-blue), transparent);
+    }
+
+    .avatar-wrapper {
+        position: relative;
+        width: 160px;
+        height: 160px;
+        margin: 0 auto;
+    }
+
+    .avatar-wrapper img {
+        width: 100%;
+        height: 100%;
         object-fit: cover;
-        transition: transform 0.3s ease;
+        border-radius: 50%;
+        border: 2px solid transparent;
+        background: linear-gradient(var(--cyber-black), var(--cyber-black)) padding-box,
+                    linear-gradient(135deg, var(--neon-blue), var(--deep-cyan)) border-box;
+        box-shadow: 0 0 30px rgba(0, 210, 255, 0.25);
     }
 
-    .img-thumbnail:hover {
-        transform: scale(1.05);
-        border-color: var(--neon-gold);
+    .cool-input {
+        background: rgba(0, 210, 255, 0.02) !important;
+        border: none !important;
+        border-bottom: 2px solid rgba(0, 210, 255, 0.1) !important;
+        border-radius: 0 !important;
+        color: #fff !important;
+        font-size: 1.1rem;
+        padding: 15px 0 !important;
+        transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Input Group Styling */
-    .input-group-append .btn {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-left: none !important;
-        color: var(--neon-gold) !important;
-        border-radius: 0 12px 12px 0;
+    .cool-input:focus {
+        background: transparent !important;
+        border-bottom: 2px solid var(--neon-blue) !important;
+        box-shadow: none !important;
+        transform: translateX(5px);
     }
 
-    .btn-info {
-        background: var(--neon-gold);
-        border: none;
+    .field-label {
+        font-size: 0.7rem;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--neon-blue);
+        text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+        font-weight: 800;
+        margin-bottom: 5px;
+    }
+
+    .btn-update {
+        background: var(--neon-blue);
         color: #000;
-        font-weight: 700;
+        font-weight: 900;
+        letter-spacing: 2px;
+        border: none;
         border-radius: 12px;
+        padding: 20px;
+        width: 100%;
+        text-transform: uppercase;
+        position: relative;
         transition: 0.3s;
+        box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
     }
 
-    .btn-info:hover {
-        background: #e67e22;
-        transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+    .btn-update:hover {
+        background: #fff;
+        transform: scale(1.02);
+        box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
     }
 
-    .parsley-errors-list {
-        color: #ff4757;
-        font-size: 0.8rem;
-        list-style: none;
-        padding-left: 0;
-        margin-top: 5px;
+    /* THE HUD TEXT DECORATION */
+    .data-deco {
+        font-family: 'Courier New', monospace;
+        font-size: 10px;
+        color: var(--neon-blue);
+        opacity: 0.5;
+        position: absolute;
+        top: 25px;
+        right: 45px;
+        text-align: right;
+        animation: pulseText 2s infinite ease-in-out;
+    }
+
+    @keyframes pulseText {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.7; }
     }
 </style>
 
-<div class="container py-5">
-    <div class="row mb-4">
-        <div class="col-md-10 col-lg-8 mx-auto">
-            <h1 class="h2 font-weight-bold mb-0">ACCOUNT <span style="color: var(--neon-gold);">PROFILE</span></h1>
-            <p class="text-muted">Manage your personal information and security settings.</p>
-        </div>
-    </div>
+<div class="hud-container container">
+    <div class="row justify-content-center">
+        <div class="col-lg-9">
+            
+            <div class="text-center mb-5">
+                <h1 class="display-4 font-weight-bold" style="letter-spacing: -2px;">PROFILE <span style="color: var(--neon-blue); text-shadow: 0 0 20px rgba(0,210,255,0.6);">SETTINGS</span></h1>
+                <div class="small text-uppercase mt-2" style="letter-spacing: 5px; color: rgba(0,210,255,0.5);">Edit Personal Details</div>
+            </div>
 
-    <form method="post" id="profile_form" enctype="multipart/form-data">
-        <div class="row">
-            <div class="col-md-10 col-lg-8 mx-auto">
-                <div id="message"></div>
-                
-                <div class="card glass-card mb-4">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="row">
-                            <div class="col-md-4 text-center mb-4 mb-md-0">
-                                <div class="profile-avatar-container mb-3">
-                                    <div id="uploaded_image"></div>
-                                </div>
-                                <div class="form-group mt-3">
-                                    <input type="file" name="user_image" id="user_image" class="d-none" accept="image/*" />
-                                    <button type="button" class="btn btn-outline-light btn-sm px-4 rounded-pill" onclick="document.getElementById('user_image').click();">
-                                        <i class="fas fa-camera mr-2"></i> CHANGE PHOTO
-                                    </button>
-                                    <small class="text-muted d-block mt-2">JPG or PNG (Max 2MB)</small>
-                                </div>
+            <form method="post" id="profile_form" enctype="multipart/form-data">
+                <div class="profile-hud p-4 p-md-5">
+                    
+                    <div class="data-deco">
+                        SYSTEM_STATUS: ONLINE<br>
+                        ENCRYPTION: ACTIVE<br>
+                        NODE_ID: <?php echo $_SESSION["user_id"]; ?>
+                    </div>
+                    
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-5 mb-md-0">
+                            <div class="avatar-wrapper mb-4">
+                                <div id="uploaded_image"></div>
                             </div>
+                            <input type="file" name="user_image" id="user_image" class="d-none" accept="image/*" />
+                            <button type="button" class="btn btn-sm text-info font-weight-bold" onclick="document.getElementById('user_image').click();" style="letter-spacing: 1px; background: rgba(0,210,255,0.1); border-radius: 20px; padding: 5px 15px;">
+                                <i class="fas fa-camera mr-2"></i> NEW PHOTO
+                            </button>
+                        </div>
 
-                            <div class="col-md-8">
-                                <div class="form-group mb-4">
-                                    <label>Full Name</label>
-                                    <input type="text" name="user_name" id="user_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" />
+                        <div class="col-md-8">
+                            <div class="row">
+                                <div class="col-12 mb-4">
+                                    <p class="field-label">Full Name</p>
+                                    <input type="text" name="user_name" id="user_name" class="form-control cool-input" required />
                                 </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-4">
-                                            <label>Contact Number</label>
-                                            <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" required data-parsley-type="integer" data-parsley-trigger="keyup" />
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="form-group mb-4">
-                                            <label>Email Address</label>
-                                            <input type="email" name="user_email" id="user_email" class="form-control" required data-parsley-trigger="keyup" />
-                                        </div>
-                                    </div>
+                                <div class="col-md-6 mb-4">
+                                    <p class="field-label">Email Address</p>
+                                    <input type="email" name="user_email" id="user_email" class="form-control cool-input" required />
                                 </div>
-                                
-                                <div class="form-group mb-4">
-                                    <label>Account Password</label>
+                                <div class="col-md-6 mb-4">
+                                    <p class="field-label">Contact</p>
+                                    <input type="text" name="user_contact_no" id="user_contact_no" class="form-control cool-input" required />
+                                </div>
+                                <div class="col-12 mb-5">
+                                    <p class="field-label">Password</p>
                                     <div class="input-group">
-                                        <input type="password" name="user_password" id="user_password" class="form-control" required data-parsley-minlength="6" data-parsley-trigger="keyup" />
+                                        <input type="password" name="user_password" id="user_password" class="form-control cool-input" required />
                                         <div class="input-group-append">
-                                            <button class="btn" type="button" id="toggle_password">
+                                            <button class="btn text-info" type="button" id="toggle_password">
                                                 <i class="fas fa-eye" id="password_icon"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <small class="text-muted">Password must be at least 6 characters.</small>
                                 </div>
+                            </div>
 
-                                <div class="mt-5">
-                                    <input type="hidden" name="action" value="profile" />
-                                    <button type="submit" name="edit_button" id="edit_button" class="btn btn-info btn-block py-3">
-                                        <i class="fas fa-save mr-2"></i> UPDATE PROFILE
-                                    </button>
-                                </div>
+                            <div class="text-right">
+                                <input type="hidden" name="action" value="profile" />
+                                <button type="submit" name="edit_button" id="edit_button" class="btn-update">
+                                    Update Changes
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </form>
+            
+            <div id="message" class="mt-4"></div>
         </div>
-    </form>
+    </div>
 </div>
 
 <?php include('footer.php'); ?>
@@ -197,20 +219,19 @@ include('header.php');
 <script>
 $(document).ready(function(){
 
-    /* ================= POPULATE FORM ================= */
+    /* DATA POPULATION */
     <?php foreach($result as $row) { ?>
         $('#user_name').val("<?php echo $row['user_name']; ?>");
         $('#user_contact_no').val("<?php echo $row['user_contact_no']; ?>");
         $('#user_email').val("<?php echo $row['user_email']; ?>");
         $('#user_password').val("<?php echo $row['user_password']; ?>");
         <?php if($row["user_profile"] != '') { ?>
-            $('#uploaded_image').html('<img src="<?php echo $row["user_profile"]; ?>" class="img-thumbnail shadow" style="width: 140px; height: 140px;" /><input type="hidden" name="hidden_user_profile" value="<?php echo $row["user_profile"]; ?>" />');
+            $('#uploaded_image').html('<img src="<?php echo $row["user_profile"]; ?>" /> <input type="hidden" name="hidden_user_profile" value="<?php echo $row["user_profile"]; ?>" />');
         <?php } else { ?>
-            $('#uploaded_image').html('<img src="img/undraw_profile.svg" class="img-thumbnail shadow" width="140" height="140" />');
+            $('#uploaded_image').html('<img src="img/undraw_profile.svg" />');
         <?php } ?>
     <?php } ?>
 
-    /* ================= TOGGLE PASSWORD ================= */
     $('#toggle_password').click(function(){
         let passwordField = $('#user_password');
         let icon = $('#password_icon');
@@ -219,62 +240,33 @@ $(document).ready(function(){
         icon.toggleClass('fa-eye fa-eye-slash');
     });
 
-    /* ================= PREVIEW IMAGE ================= */
-    $('#user_image').change(function(e){
-        let extension = $(this).val().split('.').pop().toLowerCase();
-        if(jQuery.inArray(extension, ['png','jpg','jpeg']) == -1) {
-            Swal.fire('Error', 'Invalid Image Format (Use JPG/PNG)', 'error');
-            $(this).val('');
-            return false;
-        }
-        // Simple preview if desired, but AJAX update handles it on success below
-    });
-
-    /* ================= SUBMIT FORM ================= */
-    $('#profile_form').parsley();
-
+    /* AJAX SUBMIT */
     $('#profile_form').on('submit', function(event){
         event.preventDefault();
-        if($('#profile_form').parsley().isValid()) {       
-            $.ajax({
-                url:"user_action.php",
-                method:"POST",
-                data:new FormData(this),
-                dataType:'json',
-                contentType:false,
-                processData:false,
-                beforeSend:function() {
-                    $('#edit_button').attr('disabled', 'disabled').html('<i class="fas fa-circle-notch fa-spin mr-2"></i> SAVING...');
-                },
-                success:function(data) {
-                    $('#edit_button').attr('disabled', false).html('<i class="fas fa-save mr-2"></i> UPDATE PROFILE');
-
-                    if(data.success != '') {
-                        // Sync with Header UI (Immediate feedback)
-                        $('.text-white.small').text($('#user_name').val()); 
-                        
-                        if(data.user_profile != '') {
-                            $('#uploaded_image img').attr('src', data.user_profile);
-                            $('.img-profile').attr('src', data.user_profile); 
-                            $('input[name="hidden_user_profile"]').val(data.user_profile);
-                        }
-                        
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Profile Updated',
-                            text: data.success,
-                            background: '#1a1a1a',
-                            color: '#fff',
-                            confirmButtonColor: '#f39c12'
-                        });
-                    }
-
-                    if(data.error != '') {
-                        $('#message').html('<div class="alert alert-danger">'+data.error+'</div>');
+        $.ajax({
+            url:"user_action.php",
+            method:"POST",
+            data:new FormData(this),
+            dataType:'json',
+            contentType:false,
+            processData:false,
+            beforeSend:function() {
+                $('#edit_button').attr('disabled', 'disabled').text('UPDATING...');
+            },
+            success:function(data) {
+                $('#edit_button').attr('disabled', false).text('Update Changes');
+                if(data.success != '') {
+                    // MESSAGE CHANGE HERE
+                    let customSuccessMsg = "UPDATED SUCCESSFULLY";
+                    
+                    $('#message').html('<div class="alert alert-info border-0 bg-info text-white" style="border-radius:15px; background: rgba(0,210,255,0.2) !important;">'+customSuccessMsg+'</div>');
+                    
+                    if(data.user_profile != '') {
+                        $('#uploaded_image img').attr('src', data.user_profile);
                     }
                 }
-            })
-        }
+            }
+        });
     });
 });
 </script>

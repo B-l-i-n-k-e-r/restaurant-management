@@ -6,13 +6,12 @@ $object = new rms();
 if(isset($_POST["action"]))
 {
     // ==========================================
-    // NEW: PROFILE UPDATE LOGIC (For profile.php)
+    // PROFILE UPDATE LOGIC (For profile.php)
     // ==========================================
     if($_POST["action"] == 'profile')
     {
         $error = ''; $success = ''; $user_profile = $_POST["hidden_user_profile"];
 
-        // Check if email already exists for another user
         $object->query = "SELECT * FROM user_table WHERE user_email = :user_email AND user_id != :user_id";
         $object->execute([
             ':user_email' => $_POST["user_email"],
@@ -22,16 +21,13 @@ if(isset($_POST["action"]))
         if($object->row_count() > 0) {
             $error = 'Email already exists';
         } else {
-            // Handle Image Upload
             if($_FILES["user_image"]["name"] != '') {
-                // Delete old image if it's not the default avatar
-                if(file_exists($user_profile) && strpos($user_profile, 'undraw_profile') === false) {
+                if(file_exists($user_profile) && strpos($user_profile, 'undraw') === false) {
                     @unlink($user_profile);
                 }
                 $user_profile = upload_image();
             }
 
-            // Update Database
             $object->query = "
             UPDATE user_table 
             SET user_name = :user_name, 
@@ -46,31 +42,30 @@ if(isset($_POST["action"]))
                 ':user_name'       => $_POST["user_name"],
                 ':user_contact_no' => $_POST["user_contact_no"],
                 ':user_email'      => $_POST["user_email"],
-                ':user_password'   => $_POST["user_password"], // Note: If using hashing, use password_hash() here
+                ':user_password'   => $_POST["user_password"],
                 ':user_profile'    => $user_profile,
                 ':user_id'         => $_SESSION["user_id"]
             ]);
 
-            $success = 'Profile Updated Successfully';
+            $success = 'Profile Synchronized Successfully';
         }
 
-        $output = array(
-            'error'           => $error,
-            'success'         => $success,
-            'user_name'       => $_POST["user_name"],
-            'user_contact_no' => $_POST["user_contact_no"],
-            'user_email'      => $_POST["user_email"],
-            'user_password'   => $_POST["user_password"],
-            'user_profile'    => $user_profile
-        );
-
-        echo json_encode($output);
+        echo json_encode([
+            'error' => $error,
+            'success' => $success,
+            'user_name' => $_POST["user_name"],
+            'user_profile' => $user_profile
+        ]);
     }
 
-    // FETCH USERS (Admin Table)
+    // ==========================================
+    // FETCH USERS (Matches user.php columns)
+    // ==========================================
     if($_POST["action"] == 'fetch')
     {
-        $order_column = array('user_name', 'user_contact_no', 'user_email', 'user_password', 'user_type', 'user_created_on', 'user_status');
+        // Sort mapping for DataTables
+        $order_column = array(null, 'user_name', 'user_contact_no', 'user_email', null, 'user_type', 'user_created_on', 'user_status', null);
+        
         $main_query = "SELECT * FROM user_table WHERE 1=1 "; 
         $search_query = '';
         $params = [];
@@ -103,50 +98,53 @@ if(isset($_POST["action"]))
         $data = [];
         foreach($result as $row) {
             $sub_array = [];
-            $sub_array[] = '<img src="'.$row["user_profile"].'" class="user-profile-img" width="40" height="40" style="border-radius:50%; object-fit:cover;" />';
             
-            $userNameHTML = '<b>' . htmlspecialchars($row["user_name"]) . '</b>';
-            if(isset($row["reset_request"]) && $row["reset_request"] == 1) {
-                $userNameHTML .= '<br><span class="badge badge-danger" style="font-size:10px;"><i class="fas fa-key"></i> Reset Requested</span>';
-            }
-            $sub_array[] = $userNameHTML;
-            $sub_array[] = htmlspecialchars($row["user_contact_no"]);
-            $sub_array[] = htmlspecialchars($row["user_email"]);
+            // 1. STAFF (Image)
+            $sub_array[] = '<img src="'.$row["user_profile"].'" class="user-profile-img" />';
+            
+            // 2. USERNAME (REMOVED RESET REQ BADGE)
+            $sub_array[] = '<span class="text-white font-weight-bold">' . htmlspecialchars($row["user_name"]) . '</span>';
+
+            // 3. CONTACT
+            $sub_array[] = '<span class="text-white-50 small">'.htmlspecialchars($row["user_contact_no"]).'</span>';
+
+            // 4. EMAIL
+            $sub_array[] = '<span class="text-info small">'.htmlspecialchars($row["user_email"]).'</span>';
+
+            // 5. CREDENTIALS
             $sub_array[] = '
-                <div class="d-flex align-items-center justify-content-between" style="min-width:100px;">
-                    <span id="pass_'.$row["user_id"].'" class="text-monospace">********</span>
-                    <button type="button" class="btn btn-link btn-sm view_password" data-id="'.$row["user_id"].'" data-password="'.$row["user_password"].'">
-                        <i class="fas fa-eye text-info"></i>
+                <div class="d-flex align-items-center justify-content-between bg-dark-50 p-1 px-2 rounded" style="min-width:110px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
+                    <span id="pass_'.$row["user_id"].'" class="text-monospace small" style="letter-spacing:2px;">********</span>
+                    <button type="button" class="btn btn-link btn-sm view_password p-0 ml-2" data-id="'.$row["user_id"].'" data-password="'.$row["user_password"].'">
+                        <i class="fas fa-eye text-info" style="font-size:12px;"></i>
                     </button>
                 </div>';
             
+            // 6. ROLE
             $role = $row["user_type"];
-            if($role == 'Kitchen') {
-                $role_badge = '<span class="badge badge-warning text-dark"><i class="fas fa-fire-alt mr-1"></i>Kitchen</span>';
-            } elseif($role == 'Master' || $role == 'Admin') {
-                $role_badge = '<span class="badge badge-info"><i class="fas fa-user-shield mr-1"></i>Master</span>';
-            } elseif($role == 'Waiter') {
-                $role_badge = '<span class="badge badge-primary"><i class="fas fa-concierge-bell mr-1"></i>Waiter</span>';
-            } elseif($role == 'Cashier') {
-                $role_badge = '<span class="badge badge-success"><i class="fas fa-cash-register mr-1"></i>Cashier</span>';
-            } else {
-                $role_badge = '<span class="badge badge-secondary">'.$role.'</span>';
-            }
-            $sub_array[] = $role_badge;
-            $sub_array[] = date('M d, Y', strtotime($row["user_created_on"]));
+            $badge_class = 'badge-secondary';
+            $icon = 'fa-user';
             
-            if(isset($row["reset_request"]) && $row["reset_request"] == 1) {
-                $sub_array[] = '<button type="button" class="btn btn-sm btn-warning edit_button" data-id="'.$row["user_id"].'">Pending Reset</button>';
-            } else {
-                $next_status = ($row["user_status"] == 'Enable') ? 'Disable' : 'Enable';
-                $btn_class = ($row["user_status"] == 'Enable') ? 'btn-success' : 'btn-danger';
-                $sub_array[] = '<button type="button" class="btn btn-sm '.$btn_class.' status_button" data-id="'.$row["user_id"].'" data-status="'.$next_status.'">'.$row["user_status"].'</button>';
-            }
+            if($role == 'Master') { $badge_class = 'badge-info'; $icon = 'fa-user-shield'; }
+            elseif($role == 'Kitchen') { $badge_class = 'badge-warning text-dark'; $icon = 'fa-fire'; }
+            elseif($role == 'Waiter') { $badge_class = 'badge-primary'; $icon = 'fa-concierge-bell'; }
+            elseif($role == 'Cashier') { $badge_class = 'badge-success'; $icon = 'fa-cash-register'; }
+
+            $sub_array[] = '<span class="badge '.$badge_class.'"><i class="fas '.$icon.' mr-1"></i>'.$role.'</span>';
             
+            // 7. JOINED
+            $sub_array[] = '<span class="text-white-50 small">'.date('M d, Y', strtotime($row["user_created_on"])).'</span>';
+
+            // 8. STATUS
+            $btn_class = ($row["user_status"] == 'Enable') ? 'btn-success' : 'btn-danger';
+            $next_status = ($row["user_status"] == 'Enable') ? 'Disable' : 'Enable';
+            $sub_array[] = '<button type="button" class="btn btn-sm '.$btn_class.' status_button py-0 px-2" style="font-size:10px; border-radius:4px;" data-id="'.$row["user_id"].'" data-status="'.$next_status.'">'.strtoupper($row["user_status"]).'</button>';
+            
+            // 9. ACTION
             $sub_array[] = '
                 <div class="btn-group">
-                    <button type="button" class="btn btn-warning btn-sm edit_button" data-id="'.$row["user_id"].'"><i class="fas fa-edit"></i></button>
-                    <button type="button" class="btn btn-danger btn-sm delete_button" data-id="'.$row["user_id"].'"><i class="fas fa-trash"></i></button>
+                    <button type="button" class="btn btn-outline-warning btn-sm edit_button" data-id="'.$row["user_id"].'"><i class="fas fa-edit"></i></button>
+                    <button type="button" class="btn btn-outline-danger btn-sm delete_button" data-id="'.$row["user_id"].'"><i class="fas fa-trash"></i></button>
                 </div>';
             
             $data[] = $sub_array;
@@ -160,7 +158,9 @@ if(isset($_POST["action"]))
         ]);
     }
 
+    // ==========================================
     // ADD USER
+    // ==========================================
     if($_POST["action"] == 'Add')
     {
         $error = ''; $success = '';
@@ -168,7 +168,7 @@ if(isset($_POST["action"]))
         $object->execute(['user_email' => $_POST["user_email"]]);
 
         if($object->row_count() > 0) {
-            $error = 'User Email Already Exists';
+            $error = 'Email already registered.';
         } else {
             if(!empty($_FILES["user_image"]["name"])) {
                 $user_image = upload_image();
@@ -188,12 +188,14 @@ if(isset($_POST["action"]))
                 'user_type' => $_POST["user_type"], 
                 'user_created_on' => $object->get_datetime()
             ]);
-            $success = 'User Added Successfully';
+            $success = 'Staff identity created.';
         }
         echo json_encode(['error'=>$error, 'success'=>$success]);
     }
 
-    // EDIT USER (From Admin Panel)
+    // ==========================================
+    // EDIT USER
+    // ==========================================
     if($_POST["action"] == 'Edit')
     {
         $error = ''; $success = '';
@@ -203,7 +205,7 @@ if(isset($_POST["action"]))
         $object->execute(['user_email' => $_POST["user_email"], 'user_id' => $user_id]);
 
         if($object->row_count() > 0) {
-            $error = 'Email already exists';
+            $error = 'Email conflict detected.';
         } else {
             $user_image = $_POST["hidden_user_image"];
             if(!empty($_FILES["user_image"]["name"])) {
@@ -228,12 +230,14 @@ if(isset($_POST["action"]))
                 'user_type' => $_POST["user_type"], 
                 'user_id' => $user_id
             ]);
-            $success = 'User Updated Successfully';
+            $success = 'Staff profile updated.';
         }
         echo json_encode(['error'=>$error, 'success'=>$success]);
     }
 
-    // CHANGE STATUS
+    // ==========================================
+    // CHANGE STATUS & DELETE
+    // ==========================================
     if($_POST["action"] == 'change_status')
     {
         $object->query = "UPDATE user_table SET user_status = :user_status WHERE user_id = :user_id";
@@ -241,7 +245,6 @@ if(isset($_POST["action"]))
         echo json_encode(['success'=>'Status updated']);
     }
 
-    // DELETE
     if($_POST["action"] == 'true_delete')
     {
         $object->query = "SELECT user_profile FROM user_table WHERE user_id = :id";
@@ -251,10 +254,9 @@ if(isset($_POST["action"]))
 
         $object->query = "DELETE FROM user_table WHERE user_id = :id";
         $object->execute(['id' => $_POST["id"]]);
-        echo json_encode(['success' => 'User deleted']);
+        echo json_encode(['success' => 'Purged from system']);
     }
 
-    // FETCH SINGLE
     if($_POST["action"] == 'fetch_single')
     {
         $object->query = "SELECT * FROM user_table WHERE user_id = :user_id";
@@ -277,17 +279,14 @@ function upload_image() {
 function make_avatar($character) {
     $path = "img/" . time() . rand(10,99) . ".png";
     if (!is_dir('img')) { mkdir('img', 0777, true); }
-    
     $image = imagecreate(200, 200);
-    $bg = imagecolorallocate($image, rand(0,100), rand(0,100), rand(0,100));
+    $bg = imagecolorallocate($image, rand(0,80), rand(0,80), rand(0,80));
     $white = imagecolorallocate($image, 255, 255, 255);
-    
     $font = 5;
     $text_width = imagefontwidth($font) * strlen($character);
     $text_height = imagefontheight($font);
     $x = (200 - $text_width) / 2;
     $y = (200 - $text_height) / 2;
-
     imagestring($image, $font, $x, $y, $character, $white);
     imagepng($image, $path);
     imagedestroy($image);

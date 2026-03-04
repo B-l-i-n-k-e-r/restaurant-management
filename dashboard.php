@@ -12,68 +12,124 @@ include('header.php');
 ?>
 
 <style>
-    :root { --glass: rgba(255, 255, 255, 0.05); --glass-border: rgba(255, 255, 255, 0.1); --accent: #17a2b8; }
-    body { background-color: #0c0c0c; color: white; }
+    :root { 
+        --sky-blue: #0ea5e9; 
+        --sky-glow: rgba(14, 165, 233, 0.4);
+        --deep-navy: #0f172a;
+        --glass: rgba(255, 255, 255, 0.03); 
+        --glass-border: rgba(255, 255, 255, 0.1); 
+        --accent-green: #22c55e;
+    }
     
-    .glass-card { background: var(--glass) !important; backdrop-filter: blur(15px); border: 1px solid var(--glass-border) !important; border-radius: 15px; }
-    .glass-card-modal { background: #1a1a2e !important; border: 1px solid var(--glass-border); border-radius: 20px; }
+    body { background-color: var(--deep-navy); color: white; font-family: 'Poppins', sans-serif; }
     
-    /* Constraint: Fit content for table columns */
-    .fit-content { width: 1% !important; white-space: nowrap !important; }
+    /* Global Glass Cards */
+    .glass-card { 
+        background: rgba(15, 23, 42, 0.7) !important; 
+        backdrop-filter: blur(15px); 
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border) !important; 
+        border-radius: 20px; 
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    }
 
-    /* Waiter UI Elements */
-    .category-pill { padding: 8px 18px; background: rgba(255,255,255,0.05); color: #aaa; border: 1px solid var(--glass-border); border-radius: 50px; text-decoration: none !important; transition: 0.3s; font-size: 0.9rem; }
-    .category-pill:hover { background: rgba(255,255,255,0.1); color: white; }
-    .category-pill.active { background: #e74c3c; color: white; border-color: #e74c3c; box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3); }
+    .glass-card-modal { 
+        background: #0f172a !important; 
+        border: 1px solid var(--sky-blue); 
+        border-radius: 24px; 
+        box-shadow: 0 0 30px var(--sky-glow);
+    }
     
-    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 15px; }
-    .product-card { background: var(--glass); border-radius: 15px; overflow: hidden; position: relative; border: 1px solid var(--glass-border); transition: 0.3s; height: 100%; }
-    .product-card:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.2); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-    .product-img { width: 100%; height: 140px; object-fit: cover; }
-    .product-overlay { padding: 10px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); position: absolute; bottom: 0; width: 100%; }
-    
-    .btn-circle-add { position: absolute; top: 10px; right: 10px; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-    .place-order-btn { position: fixed; bottom: 30px; right: 30px; border-radius: 50px; padding: 12px 25px; z-index: 1000; box-shadow: 0 8px 25px rgba(28, 200, 138, 0.4); font-weight: bold; letter-spacing: 0.5px; }
+    /* CONSTRAINT: Fit content for table columns */
+    .table td, .table th { 
+        white-space: nowrap !important; 
+        width: 1% !important; 
+        vertical-align: middle;
+    }
+    .table td.expand, .table th.expand { width: auto !important; white-space: normal !important; }
 
-    /* Admin/Cashier Table Styles */
-    .custom-table thead th { border: none; font-size: 11px; letter-spacing: 1px; color: #888; text-transform: uppercase; background: rgba(255,255,255,0.02); }
-    .custom-table td { border-top: 1px solid rgba(255,255,255,0.05) !important; vertical-align: middle; }
+    /* Category Navigation */
+    .category-pill { 
+        padding: 10px 22px; 
+        background: rgba(255,255,255,0.05); 
+        color: #94a3b8; 
+        border: 1px solid var(--glass-border); 
+        border-radius: 12px; 
+        text-decoration: none !important; 
+        transition: 0.3s ease; 
+        font-size: 0.85rem; 
+        font-weight: 600;
+    }
+    .category-pill:hover { background: var(--sky-blue); color: white; border-color: var(--sky-blue); box-shadow: 0 0 15px var(--sky-glow); }
+    .category-pill.active { background: var(--sky-blue); color: white; border-color: var(--sky-blue); box-shadow: 0 0 20px var(--sky-glow); }
     
-    .dashboard-card { transition: 0.3s; }
-    .dashboard-card:hover { background: rgba(255,255,255,0.08) !important; }
+    /* Product Grid Styling */
+    .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 20px; }
+    .product-card { 
+        background: rgba(255, 255, 255, 0.03); 
+        border-radius: 20px; 
+        overflow: hidden; 
+        position: relative; 
+        border: 1px solid var(--glass-border); 
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+    }
+    .product-card:hover { transform: translateY(-8px); border-color: var(--sky-blue); box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px var(--sky-glow); }
+    .product-img { width: 100%; height: 160px; object-fit: cover; transition: 0.5s; }
+    .product-card:hover .product-img { transform: scale(1.1); }
+    .product-overlay { padding: 15px; background: linear-gradient(transparent, rgba(15, 23, 42, 1)); position: absolute; bottom: 0; width: 100%; }
+    
+    .btn-circle-add { 
+        position: absolute; top: 12px; right: 12px; border-radius: 50%; width: 38px; height: 38px; 
+        display: flex; align-items: center; justify-content: center; border: none; 
+        background: var(--sky-blue); color: white; box-shadow: 0 0 15px var(--sky-glow); transition: 0.3s;
+    }
+    .btn-circle-add:hover { transform: rotate(90deg) scale(1.1); background: #fff; color: var(--sky-blue); }
 
-    /* Settlement Styles */
-    .bg-black-soft { background: rgba(0,0,0,0.3); border-radius: 10px; padding: 15px; }
+    .place-order-btn { 
+        position: fixed; bottom: 40px; right: 40px; border-radius: 50px; padding: 15px 35px; z-index: 1000; 
+        background: var(--accent-green); border: none; color: white; font-weight: 800; 
+        box-shadow: 0 0 25px rgba(34, 197, 94, 0.5); text-transform: uppercase; letter-spacing: 1px;
+    }
+
+    /* Admin & Cashier Table Aesthetic */
+    .custom-table { border-collapse: separate; border-spacing: 0 8px; }
+    .custom-table thead th { border: none; font-size: 0.75rem; color: #64748b; text-transform: uppercase; letter-spacing: 1.5px; padding-bottom: 15px; }
+    .custom-table tbody tr { background: rgba(255, 255, 255, 0.02); transition: 0.3s; }
+    .custom-table tbody tr:hover { background: rgba(255, 255, 255, 0.05); }
+    .custom-table td { border: none !important; padding: 18px 15px; }
+    .custom-table td:first-child { border-radius: 12px 0 0 12px; }
+    .custom-table td:last-child { border-radius: 0 12px 12px 0; }
+    
+    /* Stats Cards */
+    .stat-icon-box { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; }
 </style>
 
-<div class="container-fluid mt-3">
-    <div class="mb-4 d-flex justify-content-between align-items-center">
+<div class="container-fluid mt-4 pb-5">
+    <div class="mb-5 d-flex justify-content-between align-items-end">
         <div>
-            <h1 class="h3 mb-0 font-weight-bold">
+            <h6 class="text-sky-blue font-weight-bold mb-1" style="color: var(--sky-blue); letter-spacing: 2px; text-transform: uppercase;">
+                System Dashboard
+            </h6>
+            <h1 class="h2 mb-0 font-weight-bold text-white">
                 <?php 
                 if($object->is_waiter_user()) {
-                    echo (!isset($_GET['cat'])) ? '<i class="fas fa-fire text-danger mr-2"></i>Popular Items' : '<i class="fas fa-utensils text-info mr-2"></i>Menu Category'; 
+                    echo (!isset($_GET['cat'])) ? '<i class="fas fa-bolt mr-2 text-warning"></i>Popular Menu' : '<i class="fas fa-utensils mr-2"></i>Select Items'; 
                 } elseif($object->is_cashier_user()) {
-                    echo '<i class="fas fa-cash-register text-success mr-2"></i>Cashier Desk';
+                    echo '<i class="fas fa-wallet mr-2 text-success"></i>Billing Terminal';
                 } else {
-                    echo '<i class="fas fa-chart-pie text-primary mr-2"></i>Management Hub';
+                    echo '<i class="fas fa-rocket mr-2 text-info"></i>Operations Control';
                 }
                 ?>
             </h1>
-        </div>
-        <div class="text-right">
-            <span class="badge glass-card px-3 py-2 text-white-50 font-weight-normal">
-                <i class="far fa-calendar-alt mr-2"></i><?php echo date('l, d M Y'); ?>
-            </span>
         </div>
     </div>
 
     <?php if($object->is_waiter_user()) { ?>
     <div class="row">
         <div class="col-12">
-            <div class="category-pills mb-4 d-flex flex-wrap" style="gap: 10px;">
+            <div class="category-pills mb-4 d-flex flex-wrap" style="gap: 12px;">
                 <a href="dashboard.php" class="category-pill <?php echo !isset($_GET['cat']) ? 'active' : ''; ?>">
-                    All Popular
+                    <i class="fas fa-star mr-2"></i>All Popular
                 </a>
                 <?php
                 $object->query = "SELECT * FROM product_category_table WHERE category_status = 'Enable' ORDER BY category_name ASC";
@@ -86,19 +142,19 @@ include('header.php');
             </div>
 
             <div class="product-area">
-                <div class="row mb-4 align-items-center">
-                    <div class="col-md-6 mb-3 mb-md-0">
-                        <div class="input-group search-container glass-card px-2 py-1">
+                <div class="row mb-5 align-items-center">
+                    <div class="col-md-5 mb-3 mb-md-0">
+                        <div class="input-group glass-card border-0 px-3 py-1">
                             <div class="input-group-prepend">
                                 <span class="input-group-text bg-transparent border-0 text-white-50"><i class="fas fa-search"></i></span>
                             </div>
-                            <input type="text" id="search_item" class="form-control bg-transparent text-white border-0" placeholder="Find food or drinks...">
+                            <input type="text" id="search_item" class="form-control bg-transparent text-white border-0" placeholder="Search menu items...">
                         </div>
                     </div>
-                    <div class="col-md-6 text-md-right">
-                        <button type="button" class="btn btn-info rounded-pill px-4 shadow-sm" id="open_cart">
-                            <i class="fas fa-shopping-basket mr-2"></i>View Cart 
-                            <span class="badge badge-light ml-2" id="cart_count"><?php echo $object->Get_cart_count(); ?></span>
+                    <div class="col-md-7 text-md-right">
+                        <button type="button" class="btn glass-card px-4 py-3 text-white" id="open_cart" style="border-color: var(--sky-blue) !important;">
+                            <i class="fas fa-shopping-bag mr-2 text-sky-blue"></i>Cart
+                            <span class="badge badge-pill badge-primary ml-2 py-1 px-2" id="cart_count"><?php echo $object->Get_cart_count(); ?></span>
                         </button>
                     </div>
                 </div>
@@ -117,13 +173,16 @@ include('header.php');
                         ?>
                         <div class="product-card">
                             <img src="<?php echo $img; ?>" class="product-img" loading="lazy">
-                            <div class="product-overlay">
-                                <h6 class="text-white mb-0 small font-weight-bold"><?php echo $product['product_name']; ?></h6>
-                                <span class="text-success small"><?php echo $object->cur . ' ' . $product['product_price']; ?></span>
-                            </div>
-                            <button class="btn btn-success btn-circle-add add_to_cart" data-id="<?php echo $product['product_id']; ?>" data-name="<?php echo $product['product_name']; ?>">
-                                <i class="fas fa-plus fa-sm"></i>
+                            <button class="btn btn-circle-add add_to_cart" data-id="<?php echo $product['product_id']; ?>" data-name="<?php echo $product['product_name']; ?>">
+                                <i class="fas fa-plus"></i>
                             </button>
+                            <div class="product-overlay">
+                                <h6 class="text-white mb-1 font-weight-bold"><?php echo $product['product_name']; ?></h6>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="text-sky-blue font-weight-bold"><?php echo $object->cur . ' ' . $product['product_price']; ?></span>
+                                    <span class="badge badge-dark opacity-50 small" style="font-size: 10px;">IN STOCK</span>
+                                </div>
+                            </div>
                         </div>
                     <?php } ?>
                 </div>
@@ -131,38 +190,41 @@ include('header.php');
         </div>
     </div>
 
-    <a href="order.php?mode=select_table" class="btn btn-success btn-lg shadow-lg place-order-btn animate__animated animate__bounceIn">
-        <i class="fas fa-chevron-right mr-2"></i> CHOOSE TABLE
+    <a href="order.php?mode=select_table" class="btn btn-success place-order-btn">
+        <i class="fas fa-chair mr-2"></i> Select Table
     </a>
 
     <?php } elseif($object->is_cashier_user()) { ?>
     <div class="row">
         <div class="col-lg-4 mb-4">
-            <div class="glass-card p-4 text-center border-warning h-100 d-flex flex-column justify-content-center">
-                <i class="fas fa-clock fa-3x text-warning mb-3"></i>
-                <h5 class="text-white-50 text-uppercase small font-weight-bold">Awaiting Settlement</h5>
-                <h1 class="display-4 font-weight-bold text-white mb-0" id="pendingCount">0</h1>
-                <p class="mt-2 mb-0 small text-warning">Orders ready for billing</p>
+            <div class="glass-card p-5 text-center h-100 d-flex flex-column justify-content-center" style="border-left: 5px solid #f6e05e !important;">
+                <div class="mx-auto mb-4 stat-icon-box bg-warning-soft" style="background: rgba(246, 224, 94, 0.1);">
+                    <i class="fas fa-receipt fa-2x text-warning"></i>
+                </div>
+                <h6 class="text-white-50 text-uppercase small font-weight-bold mb-2">Pending Invoices</h6>
+                <h1 class="display-3 font-weight-bold text-white mb-0" id="pendingCount">0</h1>
+                <p class="mt-3 mb-0 text-warning opacity-75"><i class="fas fa-sync fa-spin mr-2"></i>Live updates active</p>
             </div>
         </div>
 
         <div class="col-lg-8 mb-4">
-            <div class="card glass-card shadow-lg border-0">
+            <div class="glass-card shadow-lg">
                 <div class="card-header bg-transparent border-0 d-flex justify-content-between align-items-center pt-4 px-4">
-                    <h5 class="text-white mb-0 font-weight-bold">Active Billing Queue</h5>
-                    <button class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="load_cashier_queue()">
-                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    <h5 class="text-white mb-0 font-weight-bold"><i class="fas fa-stream mr-2 text-sky-blue"></i>Billing Queue</h5>
+                    <button class="btn btn-sm btn-outline-light border-0 rounded-pill px-3" onclick="load_cashier_queue()">
+                        <i class="fas fa-redo-alt mr-2"></i>Sync
                     </button>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-4">
                     <div class="table-responsive">
                         <table class="table custom-table mb-0">
                             <thead>
                                 <tr>
-                                    <th class="pl-4 fit-content">Order ID</th>
-                                    <th class="fit-content text-center">Table</th>
-                                    <th>Assigned Waiter</th>
-                                    <th class="text-right pr-4 fit-content">Total Amount</th>
+                                    <th>Order #</th>
+                                    <th class="text-center">Table</th>
+                                    <th class="expand">Staff</th>
+                                    <th class="text-right">Total</th>
+                                    <th class="text-center">Action</th>
                                 </tr>
                             </thead>
                             <tbody id="cashier_billing_list">
@@ -178,33 +240,38 @@ include('header.php');
     <div class="row">
         <?php 
         $stats = [
-            ["Revenue (Today)", "primary", "chart-line", $object->Get_total_today_sales()],
-            ["Total Orders", "success", "shopping-bag", $object->Get_total_orders()],
-            ["Active Tables", "warning", "chair", $object->Get_total_tables()],
-            ["Net Growth", "info", "rocket", "12%"]
+            ["Revenue (Today)", "sky-blue", "chart-line", $object->Get_total_today_sales()],
+            ["Active Orders", "success", "shopping-bag", $object->Get_total_orders()],
+            ["Total Tables", "warning", "chair", $object->Get_total_tables()],
+            ["Performance", "info", "rocket", "Peak"]
         ];
         foreach($stats as $s) { ?>
             <div class="col-xl-3 col-md-6 mb-4">
-                <div class="card glass-card dashboard-card h-100">
-                    <div class="card-body d-flex align-items-center justify-content-between">
+                <div class="glass-card h-100 p-3 border-0" style="transition: 0.3s hover;">
+                    <div class="d-flex align-items-center justify-content-between">
                         <div>
-                            <div class="text-xs font-weight-bold text-<?php echo $s[1]; ?> text-uppercase mb-1"><?php echo $s[0]; ?></div>
+                            <div class="text-xs font-weight-bold text-uppercase mb-1" style="color: var(--<?php echo $s[1]; ?>); letter-spacing: 1px;"><?php echo $s[0]; ?></div>
                             <div class="h3 mb-0 font-weight-bold text-white"><?php echo $s[3]; ?></div>
                         </div>
-                        <i class="fas fa-<?php echo $s[2]; ?> fa-2x text-white-50"></i>
+                        <div class="stat-icon-box" style="background: rgba(255,255,255,0.05);">
+                            <i class="fas fa-<?php echo $s[2]; ?> text-white-50"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         <?php } ?>
     </div>
 
-    <div class="card glass-card mb-4 border-0">
+    <div class="glass-card mb-4 mt-2">
         <div class="card-header bg-transparent border-0 pt-4 px-4">
-            <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-signal mr-2 text-success"></i> Live Restaurant Pulse</h6>
+            <h5 class="m-0 font-weight-bold text-white">
+                <span class="mr-2" style="display:inline-block; width:10px; height:10px; border-radius:50%; background:var(--accent-green); box-shadow:0 0 10px var(--accent-green);"></span>
+                Live Dining Status
+            </h5>
         </div>
-        <div class="card-body">
+        <div class="card-body p-4">
             <div id="admin_table_status" class="row no-gutters">
-            </div>
+                </div>
         </div>
     </div>
     <?php } ?>
@@ -213,14 +280,16 @@ include('header.php');
 <div class="modal fade" id="cartModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
         <div class="modal-content glass-card-modal text-white">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title font-weight-bold"><i class="fas fa-shopping-cart mr-2"></i>Items in Cart</h5>
-                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+            <div class="modal-header border-bottom border-secondary px-4 py-4">
+                <h5 class="modal-title font-weight-bold"><i class="fas fa-shopping-basket mr-3 text-sky-blue"></i>Order Summary</h5>
+                <button type="button" class="close text-white opacity-50" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body" id="cart_details_area"></div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-outline-light rounded-pill" data-dismiss="modal">Add More</button>
-                <a href="order.php?mode=select_table" class="btn btn-success rounded-pill px-4">ASSIGN TO TABLE</a>
+            <div class="modal-body p-4" id="cart_details_area"></div>
+            <div class="modal-footer border-0 px-4 pb-4">
+                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-dismiss="modal">Add More Items</button>
+                <a href="order.php?mode=select_table" class="btn btn-primary rounded-pill px-5 shadow-lg" style="background: var(--sky-blue); border:none;">
+                    PROCEED TO TABLE <i class="fas fa-arrow-right ml-2"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -229,49 +298,48 @@ include('header.php');
 <div class="modal fade" id="settleModal" tabindex="-1" role="dialog" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content glass-card-modal text-white">
-            <div class="modal-header border-bottom border-secondary">
-                <h5 class="modal-title font-weight-bold"><i class="fas fa-file-invoice-dollar mr-2 text-success"></i>Payment Details</h5>
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title font-weight-bold text-success">Finalize Settlement</h5>
                 <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body p-4">
-                <div class="text-center mb-4">
-                    <span class="text-white-50 small text-uppercase font-weight-bold">Amount to Pay</span>
-                    <h1 class="display-4 font-weight-bold text-success mt-1" id="display_total">0.00</h1>
-                </div>
+            <div class="modal-body p-5 text-center">
+                <p class="text-white-50 small text-uppercase mb-1 font-weight-bold">Amount Outstanding</p>
+                <h1 class="display-3 font-weight-bold text-white mb-5" id="display_total" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">0.00</h1>
 
-                <div class="form-group">
-                    <label class="small text-white-50">Payment Method</label>
-                    <select id="payment_method" class="form-control bg-dark text-white border-secondary">
-                        <option value="Cash">Cash</option>
-                        <option value="Card">Credit/Debit Card</option>
-                        <option value="M-Pesa">Mobile Money (M-Pesa)</option>
+                <div class="form-group text-left mb-4">
+                    <label class="small text-white-50 ml-1">Payment Method</label>
+                    <select id="payment_method" class="form-control glass-card border-secondary text-white" style="height: 55px; background: rgba(0,0,0,0.3) !important;">
+                        <option value="Cash">💵 Cash Payment</option>
+                        <option value="Card">💳 Credit / Debit Card</option>
+                        <option value="M-Pesa">📱 Mobile Money (M-Pesa)</option>
                     </select>
                 </div>
 
-                <div id="cash_only_section">
+                <div id="cash_only_section" class="text-left">
                     <div class="form-group">
-                        <label class="small text-white-50">Cash Received</label>
-                        <input type="number" id="amount_received" class="form-control form-control-lg bg-white text-dark font-weight-bold" placeholder="0.00">
+                        <label class="small text-white-50 ml-1">Cash Received</label>
+                        <input type="number" id="amount_received" class="form-control form-control-lg glass-card text-white border-secondary" placeholder="0.00" style="height: 60px; font-size: 1.5rem; background: rgba(255,255,255,0.05) !important;">
                     </div>
-                    <div class="bg-black-soft d-flex justify-content-between align-items-center">
-                        <span class="text-white-50">Change to Return:</span>
-                        <h4 class="mb-0 text-warning font-weight-bold" id="display_change">0.00</h4>
+                    <div class="p-3 rounded-xl d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.2); border-radius: 15px;">
+                        <span class="text-white-50">Change Due:</span>
+                        <h3 class="mb-0 text-warning font-weight-bold" id="display_change">0.00</h3>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0">
+            <div class="modal-footer border-0 p-4">
                 <input type="hidden" id="settle_order_id">
-                <button type="button" class="btn btn-outline-light rounded-pill px-4" data-dismiss="modal">Cancel</button>
-                <button type="button" id="confirm_settlement_btn" class="btn btn-success rounded-pill px-4">COMPLETE ORDER</button>
+                <button type="button" id="confirm_settlement_btn" class="btn btn-block py-3 font-weight-bold" style="background: var(--accent-green); color: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);">
+                    COMPLETE & PRINT RECEIPT
+                </button>
             </div>
         </div>
     </div>
 </div>
 
-<div id="addToCartToast" class="toast glass-card text-white border-0 position-fixed bottom-0 right-0 m-3" style="z-index: 9999;" role="alert" data-delay="1500">
-    <div class="toast-body d-flex align-items-center">
-        <i class="fas fa-check-circle text-success mr-2 fa-lg"></i> 
-        <span id="toastMessage"></span>
+<div id="addToCartToast" class="toast glass-card text-white border-0 position-fixed bottom-0 right-0 m-4" style="z-index: 9999; border-left: 4px solid var(--accent-green) !important;" role="alert" data-delay="1500">
+    <div class="toast-body d-flex align-items-center py-3">
+        <i class="fas fa-check-circle text-success mr-3 fa-lg"></i> 
+        <span id="toastMessage" class="font-weight-bold"></span>
     </div>
 </div>
 
@@ -279,7 +347,7 @@ include('header.php');
 
 <script>
 $(document).ready(function(){
-    // Universal Search
+    // Search Logic
     $("#search_item").on("keyup", function() {
         var value = $(this).val().toLowerCase();
         $(".product-card").filter(function() {
@@ -288,7 +356,6 @@ $(document).ready(function(){
     });
 
     <?php if($object->is_waiter_user()) { ?>
-        // --- WAITER INTERACTION ---
         $(document).on('click', '.add_to_cart', function(){
             var id = $(this).data('id');
             var name = $(this).data('name');
@@ -299,7 +366,7 @@ $(document).ready(function(){
                 dataType: 'json',
                 success: function(data){
                     $('#cart_count').text(data.cart_count);
-                    $('#toastMessage').text(name + ' added to basket');
+                    $('#toastMessage').text(name + ' added');
                     $('#addToCartToast').toast('show');
                 }
             });
@@ -335,7 +402,6 @@ $(document).ready(function(){
     <?php } ?>
 
     <?php if($object->is_cashier_user()) { ?>
-        // --- CASHIER QUEUE & SETTLEMENT ---
         let currentTotal = 0;
 
         function load_cashier_queue() {
@@ -355,10 +421,8 @@ $(document).ready(function(){
             });
         }
 
-        // Open Settlement Modal
         $(document).on('click', '.settle_order_btn', function(){
             let id = $(this).data('id');
-            // Extract numerical value from the amount span
             let amountText = $(this).closest('td').find('span.font-weight-bold').text();
             let amount = amountText.replace(/[^0-9.]/g, ''); 
             
@@ -370,30 +434,27 @@ $(document).ready(function(){
             $('#settleModal').modal('show');
         });
 
-        // Live Change Calculation
         $('#amount_received').on('keyup change', function(){
             let received = parseFloat($(this).val()) || 0;
             let change = received - currentTotal;
             $('#display_change').text(change >= 0 ? change.toFixed(2) : '0.00');
         });
 
-        // Hide cash section if Card/Mobile is selected
         $('#payment_method').change(function(){
             if($(this).val() !== 'Cash') {
-                $('#cash_only_section').fadeOut();
+                $('#cash_only_section').fadeOut(200);
             } else {
-                $('#cash_only_section').fadeIn();
+                $('#cash_only_section').fadeIn(200);
             }
         });
 
-        // Confirm Payment
         $('#confirm_settlement_btn').click(function(){
             let id = $('#settle_order_id').val();
             let method = $('#payment_method').val();
             let received = $('#amount_received').val();
 
             if(method === 'Cash' && (parseFloat(received) < currentTotal)) {
-                alert("The amount received is less than the total due.");
+                alert("Insufficient cash received.");
                 return;
             }
 
@@ -419,7 +480,6 @@ $(document).ready(function(){
     <?php } ?>
 
     <?php if($object->is_master_user()) { ?>
-        // --- ADMIN LIVE MONITOR ---
         function load_admin_monitor() {
             $.ajax({
                 url: "order_action.php",

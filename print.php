@@ -12,7 +12,7 @@ if(!$object->is_login())
 $action = isset($_GET["action"]) ? $_GET["action"] : 'print';
 
 /* =========================================================
-   MODE 1: PRINT ALL BILLS (REPORT MODE)
+   MODE 1: MASTER SALES REPORT (UPGRADED)
 ========================================================= */
 if($action == 'print_all')
 {
@@ -20,7 +20,6 @@ if($action == 'print_all')
     $object->execute();
     $result = $object->statement_result();
     
-    // Fetch Restaurant Details for Header
     $object->query = "SELECT * FROM restaurant_table LIMIT 1";
     $object->execute();
     $res_info = $object->statement_result();
@@ -29,39 +28,60 @@ if($action == 'print_all')
     <!DOCTYPE html>
     <html>
     <head>
-        <title>All Bills Report - <?php echo date('Y-m-d'); ?></title>
+        <title>Sales_Report_<?php echo date('Y-m-d'); ?></title>
         <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
         <style>
-            body { background: white; font-family: sans-serif; padding: 20px; color: #333; }
-            .report-header { border-bottom: 3px solid #17a2b8; margin-bottom: 20px; padding-bottom: 10px; }
-            .table thead th { background: #f8f9fa; color: #17a2b8; border-bottom: 2px solid #dee2e6; }
-            @media print { .no-print { display: none; } }
+            body { background: #fff; font-family: 'Inter', sans-serif; padding: 30px; color: #1a202c; }
+            .report-header { border-bottom: 4px solid #000; margin-bottom: 30px; padding-bottom: 15px; }
+            .brand-color { color: #0ea5e9; font-weight: 900; letter-spacing: -1px; }
+            
+            /* Constraint: Force columns to fit content */
+            .fit-content { width: 1% !important; white-space: nowrap !important; }
+            
+            .table thead th { 
+                background: #f8fafc; 
+                color: #64748b; 
+                text-transform: uppercase; 
+                font-size: 0.7rem; 
+                letter-spacing: 1px;
+                border-top: none !important;
+                border-bottom: 2px solid #e2e8f0 !important;
+            }
+            .table td { vertical-align: middle !important; font-size: 0.85rem; border-bottom: 1px solid #f1f5f9; }
+            .summary-box { background: #f8fafc; border-radius: 12px; padding: 20px; border: 1px solid #e2e8f0; }
+            
+            @media print { 
+                @page { margin: 1cm; }
+                .no-print { display: none; } 
+                body { padding: 0; }
+            }
         </style>
     </head>
     <body onload="window.print()">
-        <div class="report-header d-flex justify-content-between align-items-center">
+        <div class="report-header d-flex justify-content-between align-items-end">
             <div>
-                <h2 class="mb-0 text-info"><?php echo strtoupper($restaurant_name); ?></h2>
-                <h5 class="text-muted">Master Sales Report</h5>
+                <h1 class="mb-0 brand-color"><?php echo strtoupper($restaurant_name); ?></h1>
+                <p class="text-muted mb-0 font-weight-bold">MASTER REVENUE ARCHIVE</p>
             </div>
             <div class="text-right">
-                <p class="mb-0"><strong>Generated:</strong> <?php echo date('d M, Y H:i A'); ?></p>
-                <p class="mb-0"><strong>Total Records:</strong> <?php echo count($result); ?></p>
+                <div class="summary-box">
+                    <small class="text-uppercase text-muted d-block">Generation Timestamp</small>
+                    <strong><?php echo date('d M Y | H:i'); ?></strong>
+                </div>
             </div>
         </div>
 
-        <table class="table table-bordered table-striped">
+        <table class="table table-hover">
             <thead>
                 <tr>
-                    <th>Order No.</th>
-                    <th>Table</th>
-                    <th>Date / Time</th>
-                    <th>Waiter</th>
-                    <th>Cashier</th>
-                    <th>Method</th> 
-                    <th class="text-right">Gross Amount</th>
-                    <th class="text-right">Tax</th>
-                    <th class="text-right">Net Amount</th>
+                    <th class="fit-content"># ORDER</th>
+                    <th class="fit-content">UNIT</th>
+                    <th class="fit-content">TIMESTAMP</th>
+                    <th>STAKEHOLDERS</th>
+                    <th class="fit-content text-center">PAYMENT</th> 
+                    <th class="text-right fit-content">GROSS</th>
+                    <th class="text-right fit-content">TAX</th>
+                    <th class="text-right fit-content">NET TOTAL</th>
                 </tr>
             </thead>
             <tbody>
@@ -69,20 +89,23 @@ if($action == 'print_all')
                 $total_gross = 0; $total_tax = 0; $total_net = 0;
                 foreach($result as $row)
                 {
-                    // Logic: Self-Service check for Report Table
-                    $waiter_display = ($row["order_table"] == 'Self-Order') ? '<span class="badge badge-info">Self-Service</span>' : $row["order_waiter"];
+                    $waiter = ($row["order_table"] == 'Self-Order') ? 'Self-Service' : $row["order_waiter"];
                     
                     echo '
                     <tr>
-                        <td>'.$row["order_number"].'</td>
-                        <td>'.$row["order_table"].'</td>
-                        <td>'.$row["order_date"].' '.$row["order_time"].'</td>
-                        <td>'.$waiter_display.'</td>
-                        <td>'.$row["order_cashier"].'</td>
-                        <td><span class="badge badge-secondary">'.($row["payment_method"] ?? "N/A").'</span></td>
-                        <td class="text-right">'.number_format($row["order_gross_amount"], 2).'</td>
-                        <td class="text-right">'.number_format($row["order_tax_amount"], 2).'</td>
-                        <td class="text-right font-weight-bold">'.number_format($row["order_net_amount"], 2).'</td>
+                        <td class="font-weight-bold fit-content">'.$row["order_number"].'</td>
+                        <td class="fit-content"><span class="badge badge-dark">'.$row["order_table"].'</span></td>
+                        <td class="fit-content text-muted">'.date('d/m H:i', strtotime($row["order_date"].' '.$row["order_time"])).'</td>
+                        <td>
+                            <small class="d-block"><b>W:</b> '.$waiter.'</small>
+                            <small class="d-block text-muted"><b>C:</b> '.$row["order_cashier"].'</small>
+                        </td>
+                        <td class="text-center fit-content">
+                            <span class="badge border border-info text-info px-2">'.($row["payment_method"] ?? "CASH").'</span>
+                        </td>
+                        <td class="text-right fit-content">'.number_format($row["order_gross_amount"], 2).'</td>
+                        <td class="text-right fit-content text-muted">'.number_format($row["order_tax_amount"], 2).'</td>
+                        <td class="text-right fit-content font-weight-bold">'.number_format($row["order_net_amount"], 2).'</td>
                     </tr>';
                     $total_gross += $row["order_gross_amount"];
                     $total_tax += $row["order_tax_amount"];
@@ -90,17 +113,21 @@ if($action == 'print_all')
                 }
                 ?>
             </tbody>
-            <tfoot class="bg-light">
-                <tr class="h5">
-                    <td colspan="6" class="text-right font-weight-bold">GRAND TOTALS:</td>
-                    <td class="text-right text-dark"><?php echo number_format($total_gross, 2); ?></td>
-                    <td class="text-right text-dark"><?php echo number_format($total_tax, 2); ?></td>
-                    <td class="text-right text-info font-weight-bold"><?php echo $object->cur . ' ' . number_format($total_net, 2); ?></td>
+            <tfoot>
+                <tr style="background: #f1f5f9;">
+                    <td colspan="5" class="text-right font-weight-bold text-uppercase p-3">Consolidated Revenue:</td>
+                    <td class="text-right font-weight-bold p-3"><?php echo number_format($total_gross, 2); ?></td>
+                    <td class="text-right font-weight-bold p-3"><?php echo number_format($total_tax, 2); ?></td>
+                    <td class="text-right p-3">
+                        <span class="h5 font-weight-bold text-info"><?php echo $object->cur . ' ' . number_format($total_net, 2); ?></span>
+                    </td>
                 </tr>
             </tfoot>
         </table>
-        <div class="mt-4 text-center text-muted small">
-            End of Report - System Powered by WAKANESA
+
+        <div class="mt-5 pt-4 border-top text-center text-muted">
+            <p class="small mb-0">WAKANESA DIGITAL TERMINAL | END OF REPORT</p>
+            <p style="font-size: 10px;">Security Hash: <?php echo md5(time()); ?></p>
         </div>
     </body>
     </html>
@@ -109,19 +136,14 @@ if($action == 'print_all')
 }
 
 /* =========================================================
-   MODE 2: SINGLE RECEIPT
+   MODE 2: SINGLE THERMAL RECEIPT (UPGRADED)
 ========================================================= */
-if(!isset($_GET["order_id"]))
-{
-    die("Invalid Request");
-}
+if(!isset($_GET["order_id"])) { die("ACCESS_DENIED: MISSING_ID"); }
 
 $object->query = "SELECT * FROM order_table WHERE order_id = :order_id";
 $object->execute(['order_id' => $_GET["order_id"]]);
 $order_result = $object->statement_result();
-
-if(empty($order_result)) { die("Order Not Found"); }
-
+if(empty($order_result)) { die("NOT_FOUND"); }
 $row = $order_result[0];
 
 $object->query = "SELECT * FROM restaurant_table LIMIT 1";
@@ -129,68 +151,58 @@ $object->execute();
 $restaurant_result = $object->statement_result();
 $restaurant = !empty($restaurant_result) ? $restaurant_result[0] : [];
 
-// Logic: Self-Service check for Receipt
-$receipt_waiter = ($row["order_table"] == 'Self-Order') ? 'Self-Service' : $row["order_waiter"];
-
-$qr_data = "Order No: {$row['order_number']}\n"
-         . "Table: {$row['order_table']}\n"
-         . "Total: {$object->cur}{$row['order_net_amount']}\n"
-         . "Date: {$row['order_date']} {$row['order_time']}";
-$qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=".urlencode($qr_data);
+$receipt_waiter = ($row["order_table"] == 'Self-Order') ? 'SYSTEM_ORDER' : $row["order_waiter"];
+$qr_data = "WAKANESA:{$row['order_number']}|TOTAL:{$row['order_net_amount']}";
+$qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=".urlencode($qr_data);
 ?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Invoice - <?php echo $row["order_number"]; ?></title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Rec_<?php echo $row["order_number"]; ?></title>
     <style>
         @page { size: 80mm auto; margin: 0; }
-        body { font-family: 'Courier New', Courier, monospace; background: #f4f7f6; color: #2c3e50; font-size: 13px; padding: 20px; }
-        .receipt { width: 80mm; background: #fff; margin: 0 auto; padding: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); position: relative; border-radius: 4px; }
-        .watermark { position: absolute; top: 40%; left: 50%; transform: translate(-50%, -50%) rotate(-30deg); font-size: 40px; font-weight: bold; color: rgba(78, 205, 196, 0.1); white-space: nowrap; pointer-events: none; z-index: 1; }
-        .header { text-align: center; border-bottom: 2px solid #4ecdc4; padding-bottom: 10px; margin-bottom: 10px; z-index: 2; position: relative; }
-        .header h3 { margin: 0; font-size: 16px; font-weight: bold; color: #2c3e50; }
-        .info { margin-bottom: 10px; border-bottom: 1px dashed #ddd; padding-bottom: 5px; }
-        .info div { display: flex; justify-content: space-between; line-height: 1.4; }
-        .info-label { color: #16a085; font-weight: bold; }
-        .items-table { width: 100%; margin-bottom: 10px; }
-        .items-table th { border-bottom: 2px solid #2c3e50; color: #16a085; padding: 5px 0; }
-        .items-table td { padding: 5px 0; border-bottom: 1px dashed #eee; }
-        .totals-section { border-top: 1px solid #2c3e50; padding-top: 5px; }
-        .totals-section div { display: flex; justify-content: space-between; padding: 2px 0; }
-        .net-total { background: #2c3e50; color: #fff; padding: 8px 5px !important; margin-top: 5px; font-weight: bold; font-size: 15px; }
+        body { font-family: 'Courier New', Courier, monospace; background: #eee; color: #000; font-size: 12px; margin: 0; padding: 20px; }
+        .receipt { width: 72mm; background: #fff; margin: 0 auto; padding: 10px; border-radius: 2px; }
+        .header { text-align: center; border-bottom: 1px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
+        .header h2 { margin: 5px 0; font-size: 18px; text-transform: uppercase; font-weight: 900; }
+        .info { margin-bottom: 10px; line-height: 1.2; font-size: 11px; }
+        .info div { display: flex; justify-content: space-between; }
+        .items-table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        .items-table th { border-bottom: 1px dashed #000; text-align: left; padding: 4px 0; font-size: 10px; }
+        .items-table td { padding: 4px 0; font-size: 11px; vertical-align: top; }
+        .totals { border-top: 1px solid #000; padding-top: 5px; }
+        .totals div { display: flex; justify-content: space-between; padding: 2px 0; }
+        .grand-total { border-top: 1px double #000; margin-top: 5px; padding: 8px 0 !important; font-size: 16px; font-weight: bold; }
         .qr { text-align: center; margin: 15px 0; }
-        .footer { text-align: center; font-size: 11px; color: #7f8c8d; border-top: 1px dashed #ddd; padding-top: 10px; }
-        @media print { body { background: #fff; padding: 0; } .receipt { box-shadow: none; width: 100%; margin: 0; padding: 10px; } }
+        .footer { text-align: center; font-size: 10px; border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; }
+        
+        @media print { 
+            body { background: #fff; padding: 0; } 
+            .receipt { width: 100%; padding: 5mm; } 
+        }
     </style>
 </head>
 <body onload="window.print()">
 <div class="receipt">
-    <div class="watermark">WAKANESA</div>
     <div class="header">
-        <?php if(!empty($restaurant['restaurant_logo'])): ?>
-            <img src="<?php echo $restaurant['restaurant_logo']; ?>" style="max-width: 70px; border-radius: 50%; margin-bottom: 5px;">
-        <?php endif; ?>
-        <h3><?php echo strtoupper($restaurant['restaurant_name'] ?? 'RESTAURANT'); ?></h3>
-        <div style="font-size: 11px;"><?php echo $restaurant['restaurant_address'] ?? ''; ?></div>
-        <div style="font-size: 11px; font-weight: bold;">Tel: <?php echo $restaurant['restaurant_contact_no'] ?? ''; ?></div>
+        <h2><?php echo strtoupper($restaurant['restaurant_name'] ?? 'RESTAURANT'); ?></h2>
+        <div style="font-size: 10px;"><?php echo $restaurant['restaurant_address'] ?? ''; ?></div>
+        <div style="font-weight: bold;">TEL: <?php echo $restaurant['restaurant_contact_no'] ?? ''; ?></div>
     </div>
+    
     <div class="info">
-        <div><span class="info-label">Order:</span> <span><?php echo $row["order_number"]; ?></span></div>
-        <div><span class="info-label">Table:</span> <span><?php echo $row["order_table"]; ?></span></div>
-        <div><span class="info-label">Waiter:</span><span><?php echo $receipt_waiter; ?></span></div>
-        <?php if($row['order_status'] == 'Completed'): ?>
-        <div><span class="info-label">Paid Via:</span><span><?php echo $row["payment_method"]; ?></span></div>
-        <?php endif; ?>
-        <div><span class="info-label">Date:</span>  <span><?php echo $row["order_date"]; ?></span></div>
-        <div><span class="info-label">Time:</span>  <span><?php echo $row["order_time"]; ?></span></div>
+        <div><span>ORDER NO:</span> <strong>#<?php echo $row["order_number"]; ?></strong></div>
+        <div><span>UNIT/TABLE:</span> <strong><?php echo $row["order_table"]; ?></strong></div>
+        <div><span>PROTOCOL:</span> <span><?php echo $receipt_waiter; ?></span></div>
+        <div><span>DATETIME:</span> <span><?php echo date('d/m/y H:i', strtotime($row["order_date"].' '.$row["order_time"])); ?></span></div>
     </div>
+
     <table class="items-table">
         <thead>
             <tr>
-                <th>ITEM</th>
-                <th class="text-center">QTY</th>
-                <th class="text-right">AMT</th>
+                <th width="60%">ITEM</th>
+                <th width="10%">QTY</th>
+                <th width="30%" style="text-align: right;">AMT</th>
             </tr>
         </thead>
         <tbody>
@@ -200,33 +212,43 @@ $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=".urlen
         foreach($object->statement_result() as $item):
         ?>
             <tr>
-                <td><?php echo $item["product_name"]; ?></td>
-                <td class="text-center"><?php echo $item["product_quantity"]; ?></td>
-                <td class="text-right"><?php echo $object->cur.number_format($item["product_amount"], 2); ?></td>
+                <td><?php echo strtoupper($item["product_name"]); ?></td>
+                <td><?php echo $item["product_quantity"]; ?></td>
+                <td style="text-align: right;"><?php echo number_format($item["product_amount"], 2); ?></td>
             </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
-    <div class="totals-section">
-        <div style="font-weight: bold;"><span>SUBTOTAL</span><span><?php echo $object->cur.number_format($row["order_gross_amount"], 2); ?></span></div>
+
+    <div class="totals">
+        <div><span>SUBTOTAL</span><span><?php echo number_format($row["order_gross_amount"], 2); ?></span></div>
         <?php
+        $tax_total = 0;
         $object->query = "SELECT * FROM tax_table WHERE tax_status = 'Enable'";
         $object->execute();
         foreach($object->statement_result() as $tax):
-            $tax_amount = ($row["order_gross_amount"] * $tax["tax_percentage"]) / 100;
+            $tax_val = ($row["order_gross_amount"] * $tax["tax_percentage"]) / 100;
+            $tax_total += $tax_val;
         ?>
-        <div style="font-size: 12px; color: #555; border-top: 1px dotted #eee;">
-            <span><?php echo $tax["tax_name"]; ?> (<?php echo number_format($tax["tax_percentage"], 2); ?>%)</span>
-            <span><?php echo $object->cur.number_format($tax_amount, 2); ?></span>
+        <div style="font-size: 10px;">
+            <span><?php echo $tax["tax_name"]; ?> (<?php echo (float)$tax["tax_percentage"]; ?>%)</span>
+            <span><?php echo number_format($tax_val, 2); ?></span>
         </div>
         <?php endforeach; ?>
-        <div class="net-total"><span>NET PAYABLE</span><span><?php echo $object->cur.number_format($row["order_net_amount"], 2); ?></span></div>
+        <div class="grand-total">
+            <span>TOTAL (<?php echo $object->cur; ?>)</span>
+            <span><?php echo number_format($row["order_net_amount"], 2); ?></span>
+        </div>
     </div>
-    <div class="qr"><img src="<?php echo $qr_url; ?>" width="100"><div style="font-size: 10px; margin-top: 5px;">Scan to Verify Order</div></div>
+
+    <div class="qr">
+        <img src="<?php echo $qr_url; ?>" width="90">
+        <div style="font-size: 8px; margin-top: 5px; letter-spacing: 1px;">DIGITAL VERIFICATION CODE</div>
+    </div>
+
     <div class="footer">
-        <strong style="color: #1abc9c;">THANK YOU FOR DINING WITH US!</strong><br>
-        <small>System Powered by WAKANESA</small><br>
-        <small><?php echo date('Y-m-d H:i:s'); ?></small>
+        <strong>THANKS FOR YOUR PATRONAGE</strong><br>
+        <span>WAKANESA POS v3.0</span>
     </div>
 </div>
 </body>

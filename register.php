@@ -22,14 +22,15 @@ $setup_done = $object->Is_set_up_done();
     <style>
         :root {
             --sky-blue: #0ea5e9;
-            --sky-glow: rgba(14, 165, 233, 0.3);
-            --brand-dark: rgba(15, 23, 42, 0.9);
-            --glass-white: rgba(255, 255, 255, 0.1);
+            --sky-glow: rgba(14, 165, 233, 0.5);
+            --sky-glow-intense: rgba(14, 165, 233, 0.8);
+            --deep-navy: #0f172a;
+            --glass-core: rgba(15, 23, 42, 0.85);
         }
 
         body {
             font-family: 'Poppins', sans-serif;
-            background: #0f172a;
+            background: var(--deep-navy);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -48,23 +49,27 @@ $setup_done = $object->Is_set_up_done();
             animation: slowZoom 20s infinite alternate;
         }
 
-        @keyframes slowZoom {
-            from { transform: scale(1); }
-            to { transform: scale(1.1); }
-        }
+        @keyframes slowZoom { from { transform: scale(1); } to { transform: scale(1.1); } }
 
+        /* INTENSE CONTAINER GLOW */
         .glass-container {
-            background: var(--glass-white);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: var(--glass-core);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
             border: 2px solid var(--sky-blue);
             border-radius: 30px;
             overflow: hidden;
-            box-shadow: 0 0 30px var(--sky-glow);
+            /* Layered glow and depth shadow */
+            box-shadow: 0 0 20px var(--sky-glow), 0 30px 60px rgba(0, 0, 0, 0.7);
             width: 100%;
             max-width: 1000px; 
-            margin: auto;
             animation: fadeIn 0.8s ease-out;
+            position: relative;
+            transition: box-shadow 0.4s ease;
+        }
+
+        .glass-container:hover {
+            box-shadow: 0 0 30px var(--sky-glow-intense), 0 30px 70px rgba(0, 0, 0, 0.8);
         }
 
         @keyframes fadeIn {
@@ -73,9 +78,9 @@ $setup_done = $object->Is_set_up_done();
         }
 
         .promo-sidebar {
-            background: var(--brand-dark);
+            background: rgba(14, 165, 233, 0.03);
             color: white;
-            padding: 40px;
+            padding: 50px 40px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -84,40 +89,39 @@ $setup_done = $object->Is_set_up_done();
 
         .promo-sidebar h2 {
             font-family: 'Playfair Display', serif;
-            color: var(--sky-blue);
-            font-size: 2.2rem;
+            color: #fff;
+            font-size: 2.4rem;
             margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--sky-glow-intense);
         }
 
         .perk-item {
             display: flex;
             align-items: flex-start;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
         }
 
         .perk-icon {
             background: var(--sky-glow);
-            color: var(--sky-blue);
-            padding: 10px;
+            color: #fff;
+            width: 45px; height: 45px;
+            display: flex; align-items: center; justify-content: center;
             border-radius: 12px;
             margin-right: 15px;
             flex-shrink: 0;
+            border: 1px solid var(--sky-blue);
+            box-shadow: 0 0 10px var(--sky-glow);
         }
 
-        label {
-            color: #e2e8f0 !important;
-            font-size: 0.85rem;
-            font-weight: 500;
-        }
+        label { color: #e2e8f0 !important; font-size: 0.8rem; margin-left: 5px; opacity: 0.9; }
 
         .form-control, .custom-select {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            border-radius: 12px;
-            height: 48px;
+            border-radius: 14px;
+            height: 50px;
             color: #fff !important;
-            transition: 0.3s;
-            font-size: 16px;
+            transition: 0.3s ease;
         }
 
         .form-control:focus, .custom-select:focus {
@@ -126,26 +130,24 @@ $setup_done = $object->Is_set_up_done();
             box-shadow: 0 0 15px var(--sky-glow);
         }
 
-        /* Fix for select text color in dark mode */
-        select option { background: #1e293b; color: white; }
-
+        /* INTENSE BUTTON GLOW */
         .btn-customer {
-            background: var(--sky-blue);
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: white;
-            border-radius: 12px;
+            border-radius: 14px;
             height: 55px;
             font-weight: 700;
             border: none;
-            transition: all 0.3s;
-            box-shadow: 0 4px 15px var(--sky-glow);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            box-shadow: 0 0 15px var(--sky-glow), 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .btn-customer:hover {
-            background: #38bdf8;
-            transform: translateY(-2px);
-            color: white;
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 0 25px var(--sky-glow-intense), 0 10px 25px rgba(0, 0, 0, 0.4);
+            filter: brightness(1.2);
+            color: #fff;
         }
 
         .input-group-text {
@@ -153,27 +155,17 @@ $setup_done = $object->Is_set_up_done();
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-left: none !important;
             color: var(--sky-blue) !important;
-            border-radius: 0 12px 12px 0 !important;
+            border-radius: 0 14px 14px 0 !important;
         }
 
-        .back-link {
-            color: #94a3b8;
-            text-decoration: none !important;
-            transition: 0.3s;
-        }
+        .back-link { color: #94a3b8; transition: 0.3s; }
+        .back-link:hover { color: var(--sky-blue); text-decoration: none; text-shadow: 0 0 8px var(--sky-glow); }
 
-        .back-link:hover { color: var(--sky-blue); }
+        hr { border-top: 1px solid rgba(255,255,255,0.15); }
 
         @media (max-width: 991px) {
             .promo-sidebar { display: none !important; }
-            .glass-container { max-width: 600px; }
-        }
-
-        @media (max-width: 576px) {
-            body { align-items: flex-start; }
-            .glass-container { border-radius: 20px; }
-            .p-md-5 { padding: 1.5rem !important; }
-            h3 { font-size: 1.5rem; }
+            .glass-container { max-width: 550px; }
         }
     </style>
 </head>
@@ -181,35 +173,35 @@ $setup_done = $object->Is_set_up_done();
 <body>
     <div class="bg-video-wrap"></div>
     
-    <div class="container-fluid d-flex justify-content-center">
+    <div class="container-fluid d-flex justify-content-center py-4">
         <div class="glass-container">
             <div class="row no-gutters">
                 <div class="col-lg-5 promo-sidebar d-none d-lg-flex">
                     <h2>Welcome to Wakanesa.</h2>
-                    <p class="text-white-50 mb-4">Start your journey with Us today.</p>
+                    <p class="text-white-50 mb-5">Join our exclusive circle for a premium dining experience.</p>
                     
                     <div class="perk-item">
                         <div class="perk-icon"><i class="fas fa-star"></i></div>
                         <div>
-                            <h6 class="mb-0 text-white">Easy Access</h6>
-                            <p class="small text-white-50">Early bird bookings and special seating.</p>
+                            <h6 class="mb-0 text-white font-weight-bold">Easy Access</h6>
+                            <p class="small text-white-50">Early bird bookings and special seating priority.</p>
                         </div>
                     </div>
                     <div class="perk-item">
                         <div class="perk-icon"><i class="fas fa-bell"></i></div>
                         <div>
-                            <h6 class="mb-0 text-white">Instant Updates</h6>
-                            <p class="small text-white-50">Real-time order tracking and alerts.</p>
+                            <h6 class="mb-0 text-white font-weight-bold">Instant Updates</h6>
+                            <p class="small text-white-50">Real-time order tracking and personalized alerts.</p>
                         </div>
                     </div>
                 </div>
 
                 <div class="col-lg-7 p-4 p-md-5">
-                    <div class="mb-4 text-center text-lg-left">
-                        <h3 class="text-white font-weight-bold">
+                    <div class="mb-4">
+                        <h3 class="text-white font-weight-bold" style="text-shadow: 0 0 10px var(--sky-glow);">
                             <?php echo $setup_done ? 'Create Account' : 'System Setup'; ?>
                         </h3>
-                        <p class="text-white-50 small">Fill in the details below to get started.</p>
+                        <p class="text-white-50 small">Enter your details to register.</p>
                     </div>
 
                     <span id="message"></span>
@@ -218,55 +210,49 @@ $setup_done = $object->Is_set_up_done();
                         <div class="row">
                             <?php if(!$setup_done): ?>
                                 <div class="col-md-6 mb-3">
-                                    <label for="restaurant_name">Restaurant Name</label>
-                                    <input type="text" name="restaurant_name" id="restaurant_name" class="form-control" placeholder="Wakanesa Main" required />
+                                    <label>Restaurant Name</label>
+                                    <input type="text" name="restaurant_name" class="form-control" placeholder="Wakanesa Main" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="restaurant_contact_no">Restaurant Phone</label>
-                                    <input type="text" name="restaurant_contact_no" id="restaurant_contact_no" class="form-control" placeholder="+123..." required />
+                                    <label>Restaurant Phone</label>
+                                    <input type="text" name="restaurant_contact_no" class="form-control" placeholder="+123..." required />
                                 </div>
                                 <div class="col-12 mb-3">
-                                    <label for="restaurant_address">Restaurant Address</label>
-                                    <textarea name="restaurant_address" id="restaurant_address" class="form-control" style="height: auto;" rows="2" placeholder="Street, City..." required></textarea>
+                                    <label>Restaurant Address</label>
+                                    <textarea name="restaurant_address" class="form-control" rows="2" placeholder="Street, City..." required></textarea>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="restaurant_currency">Currency</label>
-                                    <select name="restaurant_currency" id="restaurant_currency" class="form-control custom-select" required>
-                                        <option value="">Select Currency</option>
+                                    <label>Currency</label>
+                                    <select name="restaurant_currency" class="form-control custom-select" required>
+                                        <option value="">Select</option>
                                         <option value="$">USD ($)</option>
                                         <option value="UGX">UGX (Shs)</option>
-                                        <option value="KSH">KSH (Ksh)</option>
                                     </select>
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label for="restaurant_timezone">Timezone</label>
-                                    <select name="restaurant_timezone" id="restaurant_timezone" class="form-control custom-select" required>
-                                        <option value="">Select Timezone</option>
+                                    <label>Timezone</label>
+                                    <select name="restaurant_timezone" class="form-control custom-select" required>
                                         <option value="Africa/Nairobi">Africa/Nairobi</option>
                                         <option value="UTC">UTC</option>
                                     </select>
                                 </div>
-                                <div class="col-12 mb-3">
-                                    <label for="restaurant_tag_line">Tagline (Optional)</label>
-                                    <input type="text" name="restaurant_tag_line" id="restaurant_tag_line" class="form-control" placeholder="The best food in town" />
-                                </div>
-                                <hr class="col-12 border-secondary opacity-25">
+                                <div class="col-12 mb-3"><hr></div>
                             <?php endif; ?>
 
                             <div class="col-md-6 mb-3">
-                                <label for="user_name">Full Name</label>
-                                <input type="text" name="user_name" id="user_name" class="form-control" placeholder="Mariba V" required />
+                                <label>Full Name</label>
+                                <input type="text" name="user_name" class="form-control" placeholder="Name" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label for="user_contact_no">Mobile No.</label>
-                                <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" placeholder="07. . ." required />
+                                <label>Mobile No.</label>
+                                <input type="text" name="user_contact_no" class="form-control" placeholder="07..." required />
                             </div>
                             <div class="col-12 mb-3">
-                                <label for="user_email">Email Address</label>
-                                <input type="email" name="user_email" id="user_email" class="form-control" placeholder="email@example.com" required />
+                                <label>Email Address</label>
+                                <input type="email" name="user_email" class="form-control" placeholder="email@example.com" required />
                             </div>
                             <div class="col-12 mb-4">
-                                <label for="user_password">Password</label>
+                                <label>Password</label>
                                 <div class="input-group">
                                     <input type="password" name="user_password" id="user_password" class="form-control" placeholder="••••••••" required />
                                     <div class="input-group-append">
@@ -278,11 +264,9 @@ $setup_done = $object->Is_set_up_done();
                             </div>
 
                             <div class="col-12">
-                                <button type="submit" id="register_button" class="btn btn-customer btn-block">
-                                    CREATE ACCOUNT
-                                </button>
+                                <button type="submit" id="register_button" class="btn btn-customer btn-block">CREATE ACCOUNT</button>
                                 <div class="text-center mt-4">
-                                    <a href="index.php" class="small back-link">Already a member? <strong>Login</strong></a>
+                                    <a href="index.php" class="small back-link">Already a member? <strong class="text-white">Login</strong></a>
                                 </div>
                             </div>
                         </div>
@@ -299,8 +283,6 @@ $setup_done = $object->Is_set_up_done();
 
     <script>
     $(document).ready(function(){
-        $('#register_form').parsley();
-
         $('#togglePassword').on('click', function() {
             const field = $('#user_password');
             const icon = $('#eyeIcon');
@@ -309,8 +291,8 @@ $setup_done = $object->Is_set_up_done();
             icon.toggleClass('fa-eye fa-eye-slash');
         });
 
-        $('#register_form').on('submit', function(event){
-            event.preventDefault();
+        $('#register_form').on('submit', function(e){
+            e.preventDefault();
             if($(this).parsley().isValid()) {
                 $.ajax({
                     url:"register_action.php",
@@ -318,20 +300,15 @@ $setup_done = $object->Is_set_up_done();
                     data:$(this).serialize(),
                     dataType:'json',
                     beforeSend:function() {
-                        $('#register_button').attr('disabled', 'disabled').html('<i class="fas fa-circle-notch fa-spin"></i> PREPARING...');
+                        $('#register_button').attr('disabled', 'disabled').html('<i class="fas fa-circle-notch fa-spin mr-2"></i> PROCESSING...');
                     },
                     success:function(data) {
                         $('#register_button').attr('disabled', false).html('CREATE ACCOUNT');
                         if(data.error != '') {
-                            $('#message').html('<div class="alert alert-danger border-0 small mt-3">'+data.error+'</div>');
+                            $('#message').html('<div class="alert mt-3" style="background: rgba(251,113,133,0.15); border: 1px solid #fb7185; color: #fff; border-radius: 12px; font-size:0.85rem;">'+data.error+'</div>');
                         } else {
                             window.location.href="index.php";
                         }
-                    },
-                    error: function(xhr) {
-                        $('#register_button').attr('disabled', false).html('CREATE ACCOUNT');
-                        console.log(xhr.responseText); // Check console for the real PHP error
-                        $('#message').html('<div class="alert alert-danger border-0 small mt-3">Server connection failed. Check console.</div>');
                     }
                 });
             }
