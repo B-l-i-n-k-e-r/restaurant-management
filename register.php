@@ -35,11 +35,10 @@ $setup_done = $object->Is_set_up_done();
             align-items: center;
             justify-content: center;
             margin: 0;
-            padding: 20px 10px; /* Responsive padding */
+            padding: 20px 10px;
             overflow-x: hidden;
         }
 
-        /* Animated Background */
         .bg-video-wrap {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
@@ -54,7 +53,6 @@ $setup_done = $object->Is_set_up_done();
             to { transform: scale(1.1); }
         }
 
-        /* Main Container - Adjusted for better scaling */
         .glass-container {
             background: var(--glass-white);
             backdrop-filter: blur(20px);
@@ -74,7 +72,6 @@ $setup_done = $object->Is_set_up_done();
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Left Sidebar - Hidden on smaller tablets and mobile */
         .promo-sidebar {
             background: var(--brand-dark);
             color: white;
@@ -107,28 +104,30 @@ $setup_done = $object->Is_set_up_done();
             flex-shrink: 0;
         }
 
-        /* Form Styling */
         label {
             color: #e2e8f0 !important;
             font-size: 0.85rem;
             font-weight: 500;
         }
 
-        .form-control {
+        .form-control, .custom-select {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
             border-radius: 12px;
             height: 48px;
             color: #fff !important;
             transition: 0.3s;
-            font-size: 16px; /* Best for mobile input */
+            font-size: 16px;
         }
 
-        .form-control:focus {
+        .form-control:focus, .custom-select:focus {
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: var(--sky-blue) !important;
             box-shadow: 0 0 15px var(--sky-glow);
         }
+
+        /* Fix for select text color in dark mode */
+        select option { background: #1e293b; color: white; }
 
         .btn-customer {
             background: var(--sky-blue);
@@ -165,14 +164,13 @@ $setup_done = $object->Is_set_up_done();
 
         .back-link:hover { color: var(--sky-blue); }
 
-        /* RESPONSIVE BREAKPOINTS */
         @media (max-width: 991px) {
-            .promo-sidebar { display: none !important; } /* Hide sidebar for tablets */
+            .promo-sidebar { display: none !important; }
             .glass-container { max-width: 600px; }
         }
 
         @media (max-width: 576px) {
-            body { align-items: flex-start; } /* Allow natural scroll from top */
+            body { align-items: flex-start; }
             .glass-container { border-radius: 20px; }
             .p-md-5 { padding: 1.5rem !important; }
             h3 { font-size: 1.5rem; }
@@ -187,13 +185,13 @@ $setup_done = $object->Is_set_up_done();
         <div class="glass-container">
             <div class="row no-gutters">
                 <div class="col-lg-5 promo-sidebar d-none d-lg-flex">
-                    <h2>Welcome to the Table.</h2>
-                    <p class="text-white-50 mb-4">Start your journey with Wakanesa today.</p>
+                    <h2>Welcome to Wakanesa.</h2>
+                    <p class="text-white-50 mb-4">Start your journey with Us today.</p>
                     
                     <div class="perk-item">
                         <div class="perk-icon"><i class="fas fa-star"></i></div>
                         <div>
-                            <h6 class="mb-0 text-white">VIP Access</h6>
+                            <h6 class="mb-0 text-white">Easy Access</h6>
                             <p class="small text-white-50">Early bird bookings and special seating.</p>
                         </div>
                     </div>
@@ -220,33 +218,59 @@ $setup_done = $object->Is_set_up_done();
                         <div class="row">
                             <?php if(!$setup_done): ?>
                                 <div class="col-md-6 mb-3">
-                                    <label>Restaurant Name</label>
-                                    <input type="text" name="restaurant_name" class="form-control" placeholder="Wakanesa Main" required />
+                                    <label for="restaurant_name">Restaurant Name</label>
+                                    <input type="text" name="restaurant_name" id="restaurant_name" class="form-control" placeholder="Wakanesa Main" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label>Contact No.</label>
-                                    <input type="text" name="restaurant_contact_no" class="form-control" placeholder="+123..." required />
+                                    <label for="restaurant_contact_no">Restaurant Phone</label>
+                                    <input type="text" name="restaurant_contact_no" id="restaurant_contact_no" class="form-control" placeholder="+123..." required />
                                 </div>
+                                <div class="col-12 mb-3">
+                                    <label for="restaurant_address">Restaurant Address</label>
+                                    <textarea name="restaurant_address" id="restaurant_address" class="form-control" style="height: auto;" rows="2" placeholder="Street, City..." required></textarea>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="restaurant_currency">Currency</label>
+                                    <select name="restaurant_currency" id="restaurant_currency" class="form-control custom-select" required>
+                                        <option value="">Select Currency</option>
+                                        <option value="$">USD ($)</option>
+                                        <option value="UGX">UGX (Shs)</option>
+                                        <option value="KSH">KSH (Ksh)</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="restaurant_timezone">Timezone</label>
+                                    <select name="restaurant_timezone" id="restaurant_timezone" class="form-control custom-select" required>
+                                        <option value="">Select Timezone</option>
+                                        <option value="Africa/Nairobi">Africa/Nairobi</option>
+                                        <option value="UTC">UTC</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label for="restaurant_tag_line">Tagline (Optional)</label>
+                                    <input type="text" name="restaurant_tag_line" id="restaurant_tag_line" class="form-control" placeholder="The best food in town" />
+                                </div>
+                                <hr class="col-12 border-secondary opacity-25">
                             <?php endif; ?>
 
                             <div class="col-md-6 mb-3">
-                                <label>Full Name</label>
-                                <input type="text" name="user_name" class="form-control" placeholder="John Doe" required />
+                                <label for="user_name">Full Name</label>
+                                <input type="text" name="user_name" id="user_name" class="form-control" placeholder="Mariba V" required />
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label>Mobile No.</label>
-                                <input type="text" name="user_contact_no" class="form-control" placeholder="07..." required />
+                                <label for="user_contact_no">Mobile No.</label>
+                                <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" placeholder="07. . ." required />
                             </div>
                             <div class="col-12 mb-3">
-                                <label>Email Address</label>
-                                <input type="email" name="user_email" class="form-control" placeholder="email@example.com" required />
+                                <label for="user_email">Email Address</label>
+                                <input type="email" name="user_email" id="user_email" class="form-control" placeholder="email@example.com" required />
                             </div>
                             <div class="col-12 mb-4">
-                                <label>Password</label>
+                                <label for="user_password">Password</label>
                                 <div class="input-group">
                                     <input type="password" name="user_password" id="user_password" class="form-control" placeholder="••••••••" required />
                                     <div class="input-group-append">
-                                        <span class="input-group-text" id="togglePassword">
+                                        <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
                                             <i class="fas fa-eye" id="eyeIcon"></i>
                                         </span>
                                     </div>
@@ -303,6 +327,11 @@ $setup_done = $object->Is_set_up_done();
                         } else {
                             window.location.href="index.php";
                         }
+                    },
+                    error: function(xhr) {
+                        $('#register_button').attr('disabled', false).html('CREATE ACCOUNT');
+                        console.log(xhr.responseText); // Check console for the real PHP error
+                        $('#message').html('<div class="alert alert-danger border-0 small mt-3">Server connection failed. Check console.</div>');
                     }
                 });
             }

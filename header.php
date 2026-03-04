@@ -69,9 +69,16 @@
             font-size: 0.65rem !important;
             letter-spacing: 1px;
             margin-top: 1.5rem;
+            text-transform: uppercase;
         }
 
-        /* 3. TOPBAR */
+        /* 3. TABLE STYLING: Fit Content */
+        .table td, .table th { 
+            white-space: nowrap !important; 
+            width: 1% !important; 
+        }
+
+        /* 4. TOPBAR */
         .topbar {
             background: rgba(255, 255, 255, 0.03) !important;
             backdrop-filter: blur(15px);
@@ -84,7 +91,7 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        /* 4. PROFILE DROPDOWN */
+        /* 5. PROFILE DROPDOWN */
         .dropdown-menu {
             background: rgba(30, 30, 35, 0.98) !important;
             backdrop-filter: blur(20px) !important;
@@ -100,20 +107,6 @@
         .dropdown-item:hover { 
             background: rgba(23, 162, 184, 0.2) !important; 
             color: #17a2b8 !important; 
-        }
-
-        /* 5. NOTIFICATION BADGE */
-        @keyframes pulse-badge {
-            0% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.2); opacity: 0.8; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-        .badge-counter-reset { 
-            animation: pulse-badge 2s infinite; 
-            font-size: 0.7rem;
-            position: absolute;
-            top: 10px;
-            right: 5px;
         }
 
         .img-profile {
@@ -140,76 +133,114 @@
             <hr class="sidebar-divider my-0">
 
             <?php 
-                $dash_link = ($object->is_user()) ? 'user_dashboard.php' : 'dashboard.php';
-                $dash_label = ($object->is_user()) ? 'Main Menu' : 'Dashboard';
-                $is_active = (basename($_SERVER['PHP_SELF']) == $dash_link) ? 'active' : '';
+                $current_page = basename($_SERVER['PHP_SELF']);
+                
+                // --- KITCHEN SIDEBAR (Checks User Type instead of Page Name) ---
+                if($_SESSION['user_type'] == 'Kitchen') { 
             ?>
-            <li class="nav-item <?php echo $is_active; ?>">
-                <a class="nav-link" href="<?php echo $dash_link; ?>">
-                    <i class="fas fa-fw fa-th-large"></i>
-                    <span><?php echo $dash_label; ?></span>
-                </a>
-            </li>
-
-            <?php if($object->is_master_user()) { 
-                $object->query = "SELECT COUNT(user_id) as total FROM user_table WHERE reset_request = 1";
-                $res_count = $object->get_result();
-                $reset_total = 0;
-                foreach($res_count as $row_c) { $reset_total = $row_c['total']; }
-            ?>
-                <div class="sidebar-heading">ADMINISTRATION</div>
-                
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'category.php') echo 'active'; ?>">
-                    <a class="nav-link" href="category.php"><i class="fas fa-th-list"></i> <span>Categories</span></a>
-                </li>
-                
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'table.php') echo 'active'; ?>">
-                    <a class="nav-link" href="table.php"><i class="fas fa-couch"></i> <span>Tables</span></a>
-                </li>
-                
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'tax.php') echo 'active'; ?>">
-                    <a class="nav-link" href="tax.php"><i class="fas fa-percent"></i> <span>Taxes</span></a>
-                </li>
-                
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'product.php') echo 'active'; ?>">
-                    <a class="nav-link" href="product.php"><i class="fas fa-utensils"></i> <span>Products</span></a>
-                </li>
-                
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'user.php') echo 'active'; ?>">
-                    <a class="nav-link position-relative" href="user.php">
-                        <i class="fas fa-users-cog"></i> 
-                        <span>Users</span>
-                        <?php if($reset_total > 0) { ?>
-                            <span class="badge badge-danger badge-counter-reset"><?php echo $reset_total; ?></span>
-                        <?php } ?>
+                <li class="nav-item <?php if($current_page == 'kitchen_dashboard.php') echo 'active'; ?>">
+                    <a class="nav-link" href="kitchen_dashboard.php">
+                        <i class="fas fa-fw fa-th-large"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
-            <?php } ?>
+                <li class="nav-item <?php if($current_page == 'kitchen_orders.php') echo 'active'; ?>">
+                    <a class="nav-link" href="kitchen_orders.php">
+                        <i class="fas fa-fw fa-utensils"></i>
+                        <span>Kitchen Orders</span>
+                    </a>
+                </li>
 
-            <?php if($object->is_user()) { ?>
+<li class="nav-item <?php if($current_page == 'kitchen_history.php') echo 'active'; ?>">
+    <a class="nav-link" href="kitchen_history.php">
+        <i class="fas fa-fw fa-history"></i>
+        <span>Order History</span>
+    </a>
+</li>
+
+            <?php 
+                } else {
+                    // --- 1. USER (CUSTOMER) SIDEBAR ---
+                    if($object->is_user()) { 
+            ?>
+                <li class="nav-item <?php if($current_page == 'user_dashboard.php') echo 'active'; ?>">
+                    <a class="nav-link" href="user_dashboard.php">
+                        <i class="fas fa-fw fa-th-large"></i>
+                        <span>Main Menu</span>
+                    </a>
+                </li>
                 <div class="sidebar-heading">PERSONAL</div>
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'my_orders.php') echo 'active'; ?>">
+                <li class="nav-item <?php if($current_page == 'my_orders.php') echo 'active'; ?>">
                     <a class="nav-link" href="my_orders.php"><i class="fas fa-receipt"></i> <span>My Orders</span></a>
                 </li>
-            <?php } ?>
 
-            <?php if($object->is_waiter_user() || $object->is_master_user()) { ?>
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'order.php') echo 'active'; ?>">
-                    <a class="nav-link" href="order.php">
-                        <i class="fas fa-concierge-bell"></i> 
-                        <span>Service Orders</span>
+            <?php 
+                // --- 2. CASHIER SIDEBAR ---
+                } elseif($object->is_cashier_user() && !$object->is_master_user()) { 
+            ?>
+                <li class="nav-item <?php if($current_page == 'dashboard.php') echo 'active'; ?>">
+                    <a class="nav-link" href="dashboard.php">
+                        <i class="fas fa-fw fa-th-large"></i>
+                        <span>Dashboard</span>
                     </a>
                 </li>
-            <?php } ?>
-
-            <?php if($object->is_cashier_user() || $object->is_master_user()) { ?>
-                <li class="nav-item <?php if(basename($_SERVER['PHP_SELF']) == 'billing.php') echo 'active'; ?>">
+                <li class="nav-item <?php if($current_page == 'billing.php') echo 'active'; ?>">
                     <a class="nav-link" href="billing.php">
                         <i class="fas fa-file-invoice-dollar"></i> 
                         <span>Billing Area</span>
                     </a>
                 </li>
-            <?php } ?>
+
+            <?php 
+                // --- 3. WAITER SIDEBAR ---
+                } elseif($object->is_waiter_user() && !$object->is_master_user()) { 
+            ?>
+                <li class="nav-item <?php if($current_page == 'dashboard.php') echo 'active'; ?>">
+                    <a class="nav-link" href="dashboard.php">
+                        <i class="fas fa-fw fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'order.php') echo 'active'; ?>">
+                    <a class="nav-link" href="order.php">
+                        <i class="fas fa-concierge-bell"></i> 
+                        <span>Service Orders</span>
+                    </a>
+                </li>
+
+            <?php 
+                // --- 4. ADMIN / MASTER SIDEBAR ---
+                } elseif($object->is_master_user()) { 
+            ?>
+                <li class="nav-item <?php if($current_page == 'dashboard.php') echo 'active'; ?>">
+                    <a class="nav-link" href="dashboard.php">
+                        <i class="fas fa-fw fa-th-large"></i>
+                        <span>Dashboard</span>
+                    </a>
+                </li>
+                <div class="sidebar-heading">ADMINISTRATION</div>
+                <li class="nav-item <?php if($current_page == 'category.php') echo 'active'; ?>">
+                    <a class="nav-link" href="category.php"><i class="fas fa-th-list"></i> <span>Categories</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'table.php') echo 'active'; ?>">
+                    <a class="nav-link" href="table.php"><i class="fas fa-couch"></i> <span>Tables</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'tax.php') echo 'active'; ?>">
+                    <a class="nav-link" href="tax.php"><i class="fas fa-percent"></i> <span>Taxes</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'product.php') echo 'active'; ?>">
+                    <a class="nav-link" href="product.php"><i class="fas fa-utensils"></i> <span>Products</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'user.php') echo 'active'; ?>">
+                    <a class="nav-link" href="user.php"><i class="fas fa-users-cog"></i> <span>Users</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'order.php') echo 'active'; ?>">
+                    <a class="nav-link" href="order.php"><i class="fas fa-concierge-bell"></i> <span>Service Orders</span></a>
+                </li>
+                <li class="nav-item <?php if($current_page == 'billing.php') echo 'active'; ?>">
+                    <a class="nav-link" href="billing.php"><i class="fas fa-file-invoice-dollar"></i> <span>Billing Area</span></a>
+                </li>
+            <?php } } ?>
 
             <hr class="sidebar-divider d-none d-md-block">
             <div class="text-center d-none d-md-inline">

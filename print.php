@@ -58,6 +58,7 @@ if($action == 'print_all')
                     <th>Date / Time</th>
                     <th>Waiter</th>
                     <th>Cashier</th>
+                    <th>Method</th> 
                     <th class="text-right">Gross Amount</th>
                     <th class="text-right">Tax</th>
                     <th class="text-right">Net Amount</th>
@@ -68,13 +69,17 @@ if($action == 'print_all')
                 $total_gross = 0; $total_tax = 0; $total_net = 0;
                 foreach($result as $row)
                 {
+                    // Logic: Self-Service check for Report Table
+                    $waiter_display = ($row["order_table"] == 'Self-Order') ? '<span class="badge badge-info">Self-Service</span>' : $row["order_waiter"];
+                    
                     echo '
                     <tr>
                         <td>'.$row["order_number"].'</td>
                         <td>'.$row["order_table"].'</td>
                         <td>'.$row["order_date"].' '.$row["order_time"].'</td>
-                        <td>'.$row["order_waiter"].'</td>
+                        <td>'.$waiter_display.'</td>
                         <td>'.$row["order_cashier"].'</td>
+                        <td><span class="badge badge-secondary">'.($row["payment_method"] ?? "N/A").'</span></td>
                         <td class="text-right">'.number_format($row["order_gross_amount"], 2).'</td>
                         <td class="text-right">'.number_format($row["order_tax_amount"], 2).'</td>
                         <td class="text-right font-weight-bold">'.number_format($row["order_net_amount"], 2).'</td>
@@ -87,7 +92,7 @@ if($action == 'print_all')
             </tbody>
             <tfoot class="bg-light">
                 <tr class="h5">
-                    <td colspan="5" class="text-right font-weight-bold">GRAND TOTALS:</td>
+                    <td colspan="6" class="text-right font-weight-bold">GRAND TOTALS:</td>
                     <td class="text-right text-dark"><?php echo number_format($total_gross, 2); ?></td>
                     <td class="text-right text-dark"><?php echo number_format($total_tax, 2); ?></td>
                     <td class="text-right text-info font-weight-bold"><?php echo $object->cur . ' ' . number_format($total_net, 2); ?></td>
@@ -104,7 +109,7 @@ if($action == 'print_all')
 }
 
 /* =========================================================
-   MODE 2: SINGLE RECEIPT (YOUR ORIGINAL LOGIC)
+   MODE 2: SINGLE RECEIPT
 ========================================================= */
 if(!isset($_GET["order_id"]))
 {
@@ -123,6 +128,9 @@ $object->query = "SELECT * FROM restaurant_table LIMIT 1";
 $object->execute();
 $restaurant_result = $object->statement_result();
 $restaurant = !empty($restaurant_result) ? $restaurant_result[0] : [];
+
+// Logic: Self-Service check for Receipt
+$receipt_waiter = ($row["order_table"] == 'Self-Order') ? 'Self-Service' : $row["order_waiter"];
 
 $qr_data = "Order No: {$row['order_number']}\n"
          . "Table: {$row['order_table']}\n"
@@ -170,7 +178,10 @@ $qr_url = "https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=".urlen
     <div class="info">
         <div><span class="info-label">Order:</span> <span><?php echo $row["order_number"]; ?></span></div>
         <div><span class="info-label">Table:</span> <span><?php echo $row["order_table"]; ?></span></div>
-        <div><span class="info-label">Waiter:</span><span><?php echo $row["order_waiter"]; ?></span></div>
+        <div><span class="info-label">Waiter:</span><span><?php echo $receipt_waiter; ?></span></div>
+        <?php if($row['order_status'] == 'Completed'): ?>
+        <div><span class="info-label">Paid Via:</span><span><?php echo $row["payment_method"]; ?></span></div>
+        <?php endif; ?>
         <div><span class="info-label">Date:</span>  <span><?php echo $row["order_date"]; ?></span></div>
         <div><span class="info-label">Time:</span>  <span><?php echo $row["order_time"]; ?></span></div>
     </div>

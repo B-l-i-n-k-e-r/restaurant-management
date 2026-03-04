@@ -7,7 +7,7 @@ $object = new rms();
 if(isset($_POST["action"]))
 {
     /* =========================================================
-       FETCH ALL ORDERS (DATATABLE)
+        FETCH ALL ORDERS (DATATABLE)
     ========================================================= */
     if($_POST["action"] == 'fetch')
     {
@@ -53,29 +53,44 @@ if(isset($_POST["action"]))
             $sub_array[] = $row["order_number"];
             $sub_array[] = $row["order_date"];
             $sub_array[] = $row["order_time"];
-            $sub_array[] = $row["order_waiter"];
+            
+            // Logic: If table is Self-Order, show Self-Service as Waiter
+            if($row["order_table"] == 'Self-Order') {
+                $sub_array[] = '<span class="badge badge-info">Self-Service</span>';
+            } else {
+                $sub_array[] = $row["order_waiter"];
+            }
             
             if($object->is_master_user())
             {
                 $sub_array[] = '<small class="text-white-50">'.($row["order_cashier"] ? $row["order_cashier"] : "Not Settled").'</small>';
             }
 
-            // Status Styling
-            if($row["order_status"] == 'In Process')
+            if($row["order_status"] == 'Completed')
             {
-                $status = '<span class="badge badge-pending">In Process</span>';
+                $status = '<span class="badge badge-paid">Settled</span>';
             }
             else
             {
-                $status = '<span class="badge badge-paid">Completed</span>';
+                $status = '<span class="badge badge-pending">Pending</span>';
             }
             $sub_array[] = $status;
 
-            /* --- ACTION BUTTONS --- */
-            $action_btns = '<button type="button" class="btn btn-glass-info btn-circle btn-sm view_button" data-id="'.$row["order_id"].'"><i class="fas fa-eye"></i></button>&nbsp;';
+            /* --- ACTION BUTTON LOGIC --- */
             
-            $action_btns .= '<button type="button" class="btn btn-glass-info btn-circle btn-sm print_button" data-id="'.$row["order_id"].'"><i class="fas fa-print"></i></button>&nbsp;';
+            // VIEW BUTTON: Disable for Admin if status is NOT Completed
+            $view_attr = '';
+            $view_class = 'btn-glass-info';
+            
+            if($object->is_master_user() && $row["order_status"] != 'Completed') {
+                $view_attr = 'disabled style="opacity: 0.4; cursor: not-allowed;"';
+                $view_class = 'btn-secondary'; 
+            }
 
+            $action_btns = '<button type="button" class="btn '.$view_class.' btn-circle btn-sm view_button" data-id="'.$row["order_id"].'" '.$view_attr.'><i class="fas fa-eye"></i></button>&nbsp;';
+            $action_btns .= '<button type="button" class="btn btn-glass-info btn-circle btn-sm print_button" onclick="window.open(\'print.php?order_id='.$row["order_id"].'\', \'_blank\')"><i class="fas fa-print"></i></button>&nbsp;';
+
+            // DELETE BUTTON: Only for Cashiers
             if($object->is_cashier_user())
             {
                 $action_btns .= '<button type="button" class="btn btn-glass-danger btn-circle btn-sm delete_button" data-id="'.$row["order_id"].'"><i class="fas fa-trash"></i></button>';
@@ -95,16 +110,56 @@ if(isset($_POST["action"]))
     }
 
     /* =========================================================
-       FETCH SINGLE ORDER DETAILS
+        FETCH SINGLE ORDER DETAILS (MODAL)
     ========================================================= */
     if($_POST["action"] == 'fetch_single')
     {
         $order_id = $_POST['order_id'];
 
+        $object->query = "SELECT * FROM order_table WHERE order_id = '".$order_id."'";
+        $order_row = $object->get_result()[0];
+
         $object->query = "SELECT * FROM order_item_table WHERE order_id = '".$order_id."' ORDER BY order_item_id ASC";
         $result = $object->get_result();
 
-        $html = '
+        $db_payment_method = (!empty($order_row['payment_method'])) ? $order_row['payment_method'] : 'Cash';
+
+        $html = '<div class="row mb-4 align-items-end">';
+        
+        // Cashier sees controls for Pending; Everyone else (including Admin) gets read-only
+        if($object->is_cashier_user() && $order_row['order_status'] != 'Completed') {
+            $html .= '
+            <div class="col-md-6">
+                <label class="small text-white-50">Settlement Method</label>
+                <select name="payment_method" id="payment_method" class="form-control bg-dark text-white border-secondary">
+                    <option value="Cash" '.($db_payment_method == 'Cash' ? 'selected' : '').'>Cash</option>
+                    <option value="Card" '.($db_payment_method == 'Card' ? 'selected' : '').'>Credit/Debit Card</option>
+                    <option value="M-Pesa" '.($db_payment_method == 'M-Pesa' ? 'selected' : '').'>M-Pesa</option>
+                </select>
+                <input type="hidden" id="order_status_check" value="'.$order_row["order_status"].'">
+            </div>';
+        } else {
+            $html .= '
+            <div class="col-md-6">
+                <label class="small text-white-50">Settlement Method</label>
+                <div class="h5 text-info font-weight-bold">
+                    '.($order_row['order_status'] == 'Completed' ? 
+                        '<i class="fas fa-check-circle mr-2"></i>Paid via '.$db_payment_method : 
+                        '<i class="fas fa-user-shield mr-2"></i>Awaiting Cashier Settlement') . '
+                </div>
+                <input type="hidden" id="order_status_check" value="Completed"> 
+            </div>';
+        }
+
+        $html .= '
+            <div class="col-md-6 text-right">
+                <span class="text-white-50 small">Current Status:</span> 
+                <span class="ml-2 '.($order_row['order_status'] == 'Completed' ? 'text-success font-weight-bold' : 'text-warning').'">
+                    '.($order_row['order_status'] == 'Completed' ? 'SETTLED' : 'PENDING').'
+                </span>
+            </div>
+        </div>
+
         <div class="table-responsive">
         <table class="table table-borderless text-white">
             <thead style="background: rgba(255,255,255,0.02);">
@@ -136,12 +191,9 @@ if(isset($_POST["action"]))
         }
 
         $html .= '<tr><td colspan="5"><hr style="border-top: 1px solid rgba(255,255,255,0.1);"></td></tr>';
-        $html .= '<tr><td colspan="4" class="text-right text-white-50">Subtotal</td><td>'.number_format($gross_total, 2).'</td></tr>';
 
-        // Taxes
         $object->query = "SELECT * FROM tax_table WHERE tax_status = 'Enable' ORDER BY tax_id ASC";
         $tax_result = $object->get_result();
-
         $total_tax_amt = 0;
         foreach($tax_result as $tax)
         {
@@ -165,18 +217,22 @@ if(isset($_POST["action"]))
     }
 
     /* =========================================================
-       SETTLE ORDER (EDIT)
+        SETTLE ORDER (ACTION)
     ========================================================= */
     if($_POST["action"] == 'Edit')
     {
+        if(!$object->is_cashier_user()) {
+            echo "Unauthorized Access.";
+            exit;
+        }
+
         $order_id = $_POST["hidden_order_id"];
+        $payment_method = isset($_POST["payment_method"]) ? $_POST["payment_method"] : 'Cash';
         
-        // 1. Calculate Gross Total
         $object->query = "SELECT SUM(product_amount) as total FROM order_item_table WHERE order_id = '".$order_id."'";
         $res = $object->get_result();
         $gross = ($res[0]['total'] > 0) ? $res[0]['total'] : 0;
         
-        // 2. Calculate Taxes
         $object->query = "SELECT * FROM tax_table WHERE tax_status = 'Enable'";
         $taxes = $object->get_result();
         $tax_total = 0;
@@ -184,18 +240,18 @@ if(isset($_POST["action"]))
             $tax_total += ($gross * $t['tax_percentage'] / 100); 
         }
         
-        // 3. Calculate Net Total
         $net = $gross + $tax_total;
 
-        // 4. Update order
         $order_data = array(
-            ':order_date'         => date('Y-m-d'),
-            ':order_time'         => date('H:i:s'),
-            ':order_cashier'      => $object->Get_user_name($_SESSION['user_id']),
-            ':order_status'       => 'Completed',
-            ':order_gross_amount' => $gross,
-            ':order_tax_amount'   => $tax_total,
-            ':order_net_amount'   => $net
+            ':order_date'     => date('Y-m-d'),
+            ':order_time'     => date('H:i:s'),
+            ':order_cashier'  => $object->Get_user_name($_SESSION['user_id']),
+            ':order_status'   => 'Completed',
+            ':payment_method' => $payment_method,
+            ':gross'          => $gross,
+            ':tax'            => $tax_total,
+            ':net'            => $net,
+            ':order_id'       => $order_id
         );
 
         $object->query = "
@@ -204,23 +260,27 @@ if(isset($_POST["action"]))
                 order_time = :order_time, 
                 order_cashier = :order_cashier, 
                 order_status = :order_status,
-                order_gross_amount = :order_gross_amount,
-                order_tax_amount = :order_tax_amount,
-                order_net_amount = :order_net_amount
-            WHERE order_id = '".$order_id."'
+                payment_method = :payment_method,
+                order_gross_amount = :gross,
+                order_tax_amount = :tax,
+                order_net_amount = :net
+            WHERE order_id = :order_id
         ";
         
         $object->execute($order_data);
-        
-        // Always echo the ID so window.open doesn't get a blank URL
         echo $order_id;
     }
 
     /* =========================================================
-       REMOVE BILL
+        REMOVE BILL (ACTION)
     ========================================================= */
     if($_POST["action"] == 'remove_bill')
     {
+        if(!$object->is_cashier_user()) {
+            echo "Unauthorized Access.";
+            exit;
+        }
+
         $order_id = $_POST["order_id"];
         $object->query = "DELETE FROM order_table WHERE order_id = '".$order_id."'";
         $object->execute();

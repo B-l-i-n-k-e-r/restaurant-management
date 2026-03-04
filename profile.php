@@ -18,133 +18,170 @@ include('header.php');
 ?>
 
 <style>
+    :root {
+        --glass: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --neon-gold: #f39c12;
+        --neon-blue: #00d2ff;
+        --bg-deep: #050505;
+    }
+
+    body { background-color: var(--bg-deep); color: #e0e0e0; }
+
     /* Glassmorphism Card Styling */
     .glass-card {
-        background: rgba(255, 255, 255, 0.05) !important;
-        backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
-        border-radius: 15px;
-        color: white;
+        background: var(--glass) !important;
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 24px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
     }
 
     /* Form Input Styling */
     .form-control {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         color: white !important;
-        border-radius: 8px;
+        border-radius: 12px;
+        padding: 12px 15px;
+        transition: all 0.3s ease;
     }
     
     .form-control:focus {
-        background: rgba(255, 255, 255, 0.15) !important;
-        border-color: #17a2b8 !important;
-        box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+        background: rgba(255, 255, 255, 0.08) !important;
+        border-color: var(--neon-gold) !important;
+        box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
     }
 
     label {
         font-weight: 600;
-        color: rgba(255, 255, 255, 0.8);
-        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
         margin-bottom: 0.5rem;
     }
 
-    .img-thumbnail {
-        background-color: rgba(255, 255, 255, 0.1);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        border-radius: 10px;
+    .profile-avatar-container {
+        position: relative;
+        display: inline-block;
     }
 
-    /* Input Group / Show Password Styling */
+    .img-thumbnail {
+        background-color: var(--glass);
+        border: 2px solid var(--glass-border);
+        border-radius: 50% !important; /* Circular profile */
+        padding: 5px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .img-thumbnail:hover {
+        transform: scale(1.05);
+        border-color: var(--neon-gold);
+    }
+
+    /* Input Group Styling */
     .input-group-append .btn {
-        background: rgba(255, 255, 255, 0.1) !important;
-        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
         border-left: none !important;
-        color: #17a2b8 !important;
+        color: var(--neon-gold) !important;
+        border-radius: 0 12px 12px 0;
+    }
+
+    .btn-info {
+        background: var(--neon-gold);
+        border: none;
+        color: #000;
+        font-weight: 700;
+        border-radius: 12px;
         transition: 0.3s;
     }
 
-    .input-group-append .btn:hover {
-        background: rgba(255, 255, 255, 0.2) !important;
+    .btn-info:hover {
+        background: #e67e22;
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
     }
 
-    .input-group > .form-control:not(:last-child) {
-        border-top-right-radius: 0 !important;
-        border-bottom-right-radius: 0 !important;
-    }
-
-    input[type="file"] {
-        color: rgba(255, 255, 255, 0.7);
-        font-size: 0.9rem;
+    .parsley-errors-list {
+        color: #ff4757;
+        font-size: 0.8rem;
+        list-style: none;
+        padding-left: 0;
+        margin-top: 5px;
     }
 </style>
 
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-white">Profile Settings</h1>
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-10 col-lg-8 mx-auto">
+            <h1 class="h2 font-weight-bold mb-0">ACCOUNT <span style="color: var(--neon-gold);">PROFILE</span></h1>
+            <p class="text-muted">Manage your personal information and security settings.</p>
+        </div>
+    </div>
 
     <form method="post" id="profile_form" enctype="multipart/form-data">
         <div class="row">
             <div class="col-md-10 col-lg-8 mx-auto">
-                <span id="message"></span>
-                <div class="card glass-card shadow-lg mb-4">
-                    <div class="card-header py-3 bg-transparent border-bottom-0">
-                        <div class="row align-items-center">
-                            <div class="col">
-                                <h6 class="m-0 font-weight-bold text-info"><i class="fas fa-user-edit mr-2"></i>Edit Personal Details</h6>
-                            </div>
-                            <div class="col text-right">
-                                <input type="hidden" name="action" value="profile" />
-                                <button type="submit" name="edit_button" id="edit_button" class="btn btn-info px-4 shadow-sm">
-                                    <i class="fas fa-save mr-1"></i> Save Changes
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body px-4">
+                <div id="message"></div>
+                
+                <div class="card glass-card mb-4">
+                    <div class="card-body p-4 p-md-5">
                         <div class="row">
-                            <div class="col-md-4 text-center border-right border-secondary">
-                                <div id="uploaded_image" class="mb-3">
-                                    </div>
-                                <div class="form-group">
-                                    <label>Update Photo</label>
-                                    <input type="file" name="user_image" id="user_image" class="form-control-file d-none" />
-                                    <button type="button" class="btn btn-outline-light btn-sm btn-block" onclick="document.getElementById('user_image').click();">
-                                        <i class="fas fa-upload mr-1"></i> Choose File
+                            <div class="col-md-4 text-center mb-4 mb-md-0">
+                                <div class="profile-avatar-container mb-3">
+                                    <div id="uploaded_image"></div>
+                                </div>
+                                <div class="form-group mt-3">
+                                    <input type="file" name="user_image" id="user_image" class="d-none" accept="image/*" />
+                                    <button type="button" class="btn btn-outline-light btn-sm px-4 rounded-pill" onclick="document.getElementById('user_image').click();">
+                                        <i class="fas fa-camera mr-2"></i> CHANGE PHOTO
                                     </button>
-                                    <small class="text-muted d-block mt-2">Allowed: JPG, PNG</small>
+                                    <small class="text-muted d-block mt-2">JPG or PNG (Max 2MB)</small>
                                 </div>
                             </div>
 
                             <div class="col-md-8">
-                                <div class="form-group">
+                                <div class="form-group mb-4">
                                     <label>Full Name</label>
-                                    <input type="text" name="user_name" id="user_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-maxlength="175" data-parsley-trigger="keyup" />
+                                    <input type="text" name="user_name" id="user_name" class="form-control" required data-parsley-pattern="/^[a-zA-Z0-9 \s]+$/" data-parsley-trigger="keyup" />
                                 </div>
+
                                 <div class="row">
                                     <div class="col-md-6">
-                                        <div class="form-group">
+                                        <div class="form-group mb-4">
                                             <label>Contact Number</label>
-                                            <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" required data-parsley-maxlength="12" data-parsley-type="integer" data-parsley-trigger="keyup" />
+                                            <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" required data-parsley-type="integer" data-parsley-trigger="keyup" />
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="form-group">
+                                        <div class="form-group mb-4">
                                             <label>Email Address</label>
-                                            <input type="text" name="user_email" id="user_email" class="form-control" required data-parsley-maxlength="175" data-parsley-type="email" data-parsley-trigger="keyup" />
+                                            <input type="email" name="user_email" id="user_email" class="form-control" required data-parsley-trigger="keyup" />
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="form-group">
-                                    <label>Password</label>
+                                <div class="form-group mb-4">
+                                    <label>Account Password</label>
                                     <div class="input-group">
-                                        <input type="password" name="user_password" id="user_password" class="form-control" required data-parsley-maxlength="16" data-parsley-trigger="keyup" />
+                                        <input type="password" name="user_password" id="user_password" class="form-control" required data-parsley-minlength="6" data-parsley-trigger="keyup" />
                                         <div class="input-group-append">
-                                            <button class="btn btn-outline-info" type="button" id="toggle_password">
+                                            <button class="btn" type="button" id="toggle_password">
                                                 <i class="fas fa-eye" id="password_icon"></i>
                                             </button>
                                         </div>
                                     </div>
-                                    <small class="text-info">Keep it secure.</small>
+                                    <small class="text-muted">Password must be at least 6 characters.</small>
+                                </div>
+
+                                <div class="mt-5">
+                                    <input type="hidden" name="action" value="profile" />
+                                    <button type="submit" name="edit_button" id="edit_button" class="btn btn-info btn-block py-3">
+                                        <i class="fas fa-save mr-2"></i> UPDATE PROFILE
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -167,36 +204,30 @@ $(document).ready(function(){
         $('#user_email').val("<?php echo $row['user_email']; ?>");
         $('#user_password').val("<?php echo $row['user_password']; ?>");
         <?php if($row["user_profile"] != '') { ?>
-            $('#uploaded_image').html('<img src="<?php echo $row["user_profile"]; ?>" class="img-thumbnail shadow mb-2" style="width: 150px; height: 150px; object-fit: cover;" /><input type="hidden" name="hidden_user_profile" value="<?php echo $row["user_profile"]; ?>" />');
+            $('#uploaded_image').html('<img src="<?php echo $row["user_profile"]; ?>" class="img-thumbnail shadow" style="width: 140px; height: 140px;" /><input type="hidden" name="hidden_user_profile" value="<?php echo $row["user_profile"]; ?>" />');
         <?php } else { ?>
-            $('#uploaded_image').html('<img src="img/undraw_profile.svg" class="img-thumbnail shadow mb-2" width="150" />');
+            $('#uploaded_image').html('<img src="img/undraw_profile.svg" class="img-thumbnail shadow" width="140" height="140" />');
         <?php } ?>
     <?php } ?>
 
-    /* ================= TOGGLE PASSWORD LOGIC ================= */
+    /* ================= TOGGLE PASSWORD ================= */
     $('#toggle_password').click(function(){
-        var passwordField = $('#user_password');
-        var icon = $('#password_icon');
-        
-        if(passwordField.attr('type') === 'password') {
-            passwordField.attr('type', 'text');
-            icon.removeClass('fa-eye').addClass('fa-eye-slash');
-        } else {
-            passwordField.attr('type', 'password');
-            icon.removeClass('fa-eye-slash').addClass('fa-eye');
-        }
+        let passwordField = $('#user_password');
+        let icon = $('#password_icon');
+        let type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+        passwordField.attr('type', type);
+        icon.toggleClass('fa-eye fa-eye-slash');
     });
 
-    /* ================= IMAGE VALIDATION ================= */
-    $('#user_image').change(function(){
-        var extension = $('#user_image').val().split('.').pop().toLowerCase();
-        if(extension != '') {
-            if(jQuery.inArray(extension, ['png','jpg','jpeg']) == -1) {
-                alert("Invalid Image File. Please use JPG or PNG.");
-                $('#user_image').val('');
-                return false;
-            }
+    /* ================= PREVIEW IMAGE ================= */
+    $('#user_image').change(function(e){
+        let extension = $(this).val().split('.').pop().toLowerCase();
+        if(jQuery.inArray(extension, ['png','jpg','jpeg']) == -1) {
+            Swal.fire('Error', 'Invalid Image Format (Use JPG/PNG)', 'error');
+            $(this).val('');
+            return false;
         }
+        // Simple preview if desired, but AJAX update handles it on success below
     });
 
     /* ================= SUBMIT FORM ================= */
@@ -213,37 +244,33 @@ $(document).ready(function(){
                 contentType:false,
                 processData:false,
                 beforeSend:function() {
-                    $('#edit_button').attr('disabled', 'disabled');
-                    $('#edit_button').html('<i class="fas fa-spinner fa-spin"></i> Wait...');
+                    $('#edit_button').attr('disabled', 'disabled').html('<i class="fas fa-circle-notch fa-spin mr-2"></i> SAVING...');
                 },
                 success:function(data) {
-                    $('#edit_button').attr('disabled', false);
-                    $('#edit_button').html('<i class="fas fa-save"></i> Save Changes');
+                    $('#edit_button').attr('disabled', false).html('<i class="fas fa-save mr-2"></i> UPDATE PROFILE');
 
                     if(data.success != '') {
-                        // Update current page inputs
-                        $('#user_name').val(data.user_name);
-                        $('#user_contact_no').val(data.user_contact_no);
-                        $('#user_email').val(data.user_email);
-                        $('#user_password').val(data.user_password);
-                        
-                        // Sync with Header Profile (Immediate UI feedback)
-                        $('.text-white.small').text(data.user_name); // Updates Topbar Name
+                        // Sync with Header UI (Immediate feedback)
+                        $('.text-white.small').text($('#user_name').val()); 
                         
                         if(data.user_profile != '') {
                             $('#uploaded_image img').attr('src', data.user_profile);
-                            $('.img-profile').attr('src', data.user_profile); // Updates Topbar Image
+                            $('.img-profile').attr('src', data.user_profile); 
                             $('input[name="hidden_user_profile"]').val(data.user_profile);
                         }
-                            
-                        $('#message').html('<div class="alert alert-success">'+data.success+'</div>');
-                        setTimeout(function(){
-                            $('#message').html('');
-                        }, 5000);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Profile Updated',
+                            text: data.success,
+                            background: '#1a1a1a',
+                            color: '#fff',
+                            confirmButtonColor: '#f39c12'
+                        });
                     }
 
                     if(data.error != '') {
-                         $('#message').html('<div class="alert alert-danger">'+data.error+'</div>');
+                        $('#message').html('<div class="alert alert-danger">'+data.error+'</div>');
                     }
                 }
             })

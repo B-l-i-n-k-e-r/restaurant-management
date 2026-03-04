@@ -1,5 +1,5 @@
 <?php
-// rms.php - Centralized Restaurant Management Class
+// rms.php - Centralized Restaurant Management Class (Updated)
 
 class rms
 {
@@ -12,7 +12,6 @@ class rms
     function __construct()
     {
         try {
-            // Connect to your restaurant-management database
             $this->connect = new PDO("mysql:host=localhost;dbname=restaurant-management", "root", "");
             $this->connect->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         } catch (PDOException $e) {
@@ -23,7 +22,6 @@ class rms
             session_start();
         }
 
-        // Set system configurations
         date_default_timezone_set($this->Set_timezone());
         $this->cur = $this->Get_currency_symbol();
     }
@@ -55,13 +53,25 @@ class rms
     // --- AUTHENTICATION & SECURITY ---
     function is_login() { return isset($_SESSION['user_id']); }
     
-    function is_user() { return (isset($_SESSION['user_type']) && $_SESSION["user_type"] == 'User'); }
+    function is_user() { 
+        return (isset($_SESSION['user_type']) && strcasecmp($_SESSION["user_type"], 'User') == 0); 
+    }
     
-    function is_master_user() { return (isset($_SESSION['user_type']) && ($_SESSION["user_type"] == 'Master' || $_SESSION["user_type"] == 'Admin')); }
+    function is_master_user() { 
+        return (isset($_SESSION['user_type']) && (strcasecmp($_SESSION["user_type"], 'Master') == 0 || strcasecmp($_SESSION["user_type"], 'Admin') == 0)); 
+    }
     
-    function is_waiter_user() { return (isset($_SESSION['user_type']) && $_SESSION["user_type"] == 'Waiter'); }
+    function is_waiter_user() { 
+        return (isset($_SESSION['user_type']) && strcasecmp($_SESSION["user_type"], 'Waiter') == 0); 
+    }
     
-    function is_cashier_user() { return (isset($_SESSION['user_type']) && $_SESSION["user_type"] == 'Cashier'); }
+    function is_cashier_user() { 
+        return (isset($_SESSION['user_type']) && strcasecmp($_SESSION["user_type"], 'Cashier') == 0); 
+    }
+
+    function is_kitchen_user() {
+        return (isset($_SESSION['user_type']) && strcasecmp($_SESSION["user_type"], 'Kitchen') == 0);
+    }
 
     function Get_user_name($user_id)
     {
@@ -165,22 +175,6 @@ class rms
         return $this->cur . ' ' . number_format($res[0]['total'] ?? 0, 2);
     }
 
-    function Get_total_yesterday_sales()
-    {
-        $this->query = "SELECT SUM(order_net_amount) as total FROM order_table WHERE order_date = CURDATE() - INTERVAL 1 DAY AND order_status = 'Completed'";
-        $this->execute();
-        $res = $this->statement_result();
-        return $this->cur . ' ' . number_format($res[0]['total'] ?? 0, 2);
-    }
-
-    function Get_last_seven_day_total_sales()
-    {
-        $this->query = "SELECT SUM(order_net_amount) as total FROM order_table WHERE order_date >= CURDATE() - INTERVAL 7 DAY AND order_status = 'Completed'";
-        $this->execute();
-        $res = $this->statement_result();
-        return $this->cur . ' ' . number_format($res[0]['total'] ?? 0, 2);
-    }
-
     function Get_total_sales()
     {
         $this->query = "SELECT SUM(order_net_amount) as total FROM order_table WHERE order_status = 'Completed'";
@@ -201,35 +195,35 @@ class rms
         return $this->row_count();
     }
 
+    // --- KITCHEN SPECIFIC METHODS (FIXED) ---
+
+    // FIX: Include 'Preparing' so the kitchen knows how many active orders are in the room total
+    function Get_total_kitchen_queue() {
+        $this->query = "SELECT order_id FROM order_table WHERE order_status IN ('In Process', 'Preparing')";
+        $this->execute();
+        return $this->row_count();
+    }
+
+    // FIX: Ensure 'Ready' orders are counted properly for service
+    function Get_total_ready_orders() {
+        $this->query = "SELECT order_id FROM order_table WHERE order_status = 'Completed'";
+        $this->execute();
+        return $this->row_count();
+    }
+
+    function Get_waiter_name_by_order($order_id) {
+        $this->query = "
+            SELECT user_table.user_name 
+            FROM order_table 
+            INNER JOIN user_table ON user_table.user_id = order_table.order_waiter 
+            WHERE order_table.order_id = :order_id
+        ";
+        $this->execute(['order_id' => $order_id]);
+        $result = $this->statement_result();
+        return $result[0]['user_name'] ?? 'Unknown Waiter';
+    }
+
     // --- UTILITIES ---
-    function Currency_list()
-    {
-        $output = '<select name="restaurant_currency" id="restaurant_currency" class="form-control" required>';
-        $output .= '<option value="">Select Currency</option>';
-        foreach ($this->currency_array() as $row) {
-            $output .= '<option value="' . $row["code"] . '">' . $row["name"] . ' (' . $row["code"] . ')</option>';
-        }
-        $output .= '</select>';
-        return $output;
-    }
-
-    function Timezone_list()
-    {
-        $timezones = array(
-            'Africa/Nairobi' => '(GMT+03:00) Nairobi',
-            'Asia/Kolkata'   => '(GMT+05:30) India',
-            'US/Eastern'     => '(GMT-05:00) Eastern Time',
-            'Europe/London'  => '(GMT+00:00) London'
-        );
-        $output = '<select name="restaurant_timezone" id="restaurant_timezone" class="form-control" required>';
-        $output .= '<option value="">Select Timezone</option>';
-        foreach ($timezones as $key => $value) {
-            $output .= '<option value="' . $key . '">' . $value . '</option>';
-        }
-        $output .= '</select>';
-        return $output;
-    }
-
     function currency_array()
     {
         return array(
@@ -249,25 +243,40 @@ class rms
         return $result[0]['total'] ?? 0;
     }
 
-    function Get_user_pending_orders($user_id)
-    {
-        $this->query = "SELECT COUNT(*) as total FROM order_table WHERE order_waiter = :user_id AND order_status = 'In Process'";
-        $this->execute(['user_id' => $user_id]);
-        $result = $this->statement_result();
-        return $result[0]['total'] ?? 0;
-    }
-
-    // --- CART FUNCTIONALITY ---
     public function Get_cart_count() {
         if(isset($_SESSION["cart"])) {
             $count = 0;
             foreach($_SESSION["cart"] as $item) {
-                // Summing individual item quantities to get total items in cart
                 $count += $item['quantity'];
             }
             return $count;
         }
         return 0;
+    }
+
+    public function make_avatar($character)
+    {
+        if (!file_exists("img")) {
+            mkdir("img", 0777, true);
+        }
+
+        $path = "img/" . time() . ".png";
+        $image = imagecreate(200, 200);
+        $red = rand(0, 255);
+        $green = rand(0, 255);
+        $blue = rand(0, 255);
+
+        imagecolorallocate($image, $red, $green, $blue);
+        $textcolor = imagecolorallocate($image, 255, 255, 255);
+        imagestring($image, 5, 90, 90, $character, $textcolor);
+        imagepng($image, $path);
+        imagedestroy($image);
+        return $path;
+    }
+
+    public function get_datetime()
+    {
+        return date("Y-m-d H:i:s");
     }
 }
 ?>

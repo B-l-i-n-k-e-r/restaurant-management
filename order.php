@@ -1,4 +1,5 @@
 <?php
+// order.php
 include('rms.php');
 $object = new rms();
 
@@ -25,9 +26,10 @@ include('header.php');
     .order-row:hover { background: rgba(255,255,255,0.03); }
     .nav-pills .nav-link { color: #aaa; margin-right: 10px; border-radius: 10px; border: 1px solid transparent; }
     .nav-pills .nav-link.active { background: rgba(23, 162, 184, 0.2) !important; color: #17a2b8 !important; border: 1px solid var(--accent); }
-    .item-scroll { max-height: 400px; overflow-y: auto; }
+    
+    /* Constraint: Make columns fit content */
+    .fit-content { width: 1% !important; white-space: nowrap !important; }
 
-    /* History Table Adjustments */
     #history_table_wrapper .dataTables_length select, 
     #history_table_wrapper .dataTables_filter input {
         background: var(--glass); border: 1px solid var(--glass-border); color: white; border-radius: 5px;
@@ -35,29 +37,30 @@ include('header.php');
     .page-link { background: var(--glass) !important; border: 1px solid var(--glass-border) !important; color: #17a2b8 !important; }
 </style>
 
-<div class="container-fluid">
+<div class="container-fluid mt-3">
     <?php if($is_waiter) { ?>
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1 class="h3 font-weight-bold">Floor Plan</h1>
-            <a href="dashboard.php" class="btn btn-outline-light"><i class="fas fa-th mr-2"></i> Menu</a>
+            <a href="dashboard.php" class="btn btn-outline-light"><i class="fas fa-th mr-2"></i> Open Menu</a>
         </div>
 
         <?php if(isset($_GET['mode']) && $_GET['mode'] == 'select_table') { ?>
-        <div class="alert glass-card border-success mb-4">
-            <h5 class="text-success"><i class="fas fa-check-circle mr-2"></i> Assign Cart to Table</h5>
-            <p class="mb-0">Select an available table to complete the order.</p>
+        <div class="alert glass-card border-success mb-4 animate__animated animate__fadeIn">
+            <h5 class="text-success"><i class="fas fa-check-circle mr-2"></i> Assign Order to Table</h5>
+            <p class="mb-0 small opacity-75">Click on an available (green) table to finalize your current cart.</p>
         </div>
         <?php } ?>
 
         <div class="row">
-            <div class="col-lg-5 mb-4">
-                <div class="glass-card p-3" id="table_status_area"></div>
+            <div class="col-lg-6 mb-4">
+                <div class="glass-card p-3" id="table_status_area">
+                    </div>
             </div>
-            <div class="col-lg-7">
-                <div class="glass-card p-4" id="order_detail_panel">
+            <div class="col-lg-6">
+                <div class="glass-card p-4 sticky-top" style="top: 20px;" id="order_detail_panel">
                     <div class="text-center py-5 opacity-50">
-                        <i class="fas fa-utensils fa-3x mb-3"></i>
-                        <h4>Select a table to view details</h4>
+                        <i class="fas fa-utensils fa-3x mb-3 text-info"></i>
+                        <h4>Select a table to view active order</h4>
                     </div>
                 </div>
             </div>
@@ -67,18 +70,26 @@ include('header.php');
         <div class="d-flex justify-content-between align-items-center mb-4">
             <div>
                 <h1 class="h3 font-weight-bold mb-0">Order Oversight</h1>
-                <p class="text-white-50 small">Monitor and manage all restaurant transactions</p>
+                <p class="text-white-50 small">Manage active tables and view sales history</p>
             </div>
             <div class="text-right">
                 <button type="button" id="master_print_report" class="btn btn-warning shadow-sm">
-                    <i class="fas fa-file-invoice mr-2"></i>Print Sales Report
+                    <i class="fas fa-file-invoice mr-2"></i>Print Daily Report
                 </button>
             </div>
         </div>
 
         <ul class="nav nav-pills mb-4">
-            <li class="nav-item"><a class="nav-link active" data-toggle="pill" href="#pending"><i class="fas fa-clock mr-2"></i>Active Orders</a></li>
-            <li class="nav-item"><a class="nav-link" data-toggle="pill" href="#history"><i class="fas fa-history mr-2"></i>Order History</a></li>
+            <li class="nav-item">
+                <a class="nav-link active" data-toggle="pill" href="#pending">
+                    <i class="fas fa-clock mr-2"></i>Active Tables
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" data-toggle="pill" href="#history">
+                    <i class="fas fa-history mr-2"></i>Sales History
+                </a>
+            </li>
         </ul>
 
         <div class="row">
@@ -88,9 +99,16 @@ include('header.php');
                         <div class="glass-card overflow-hidden">
                             <table class="table table-borderless text-white mb-0">
                                 <thead class="small text-white-50 text-uppercase" style="background: rgba(255,255,255,0.02);">
-                                    <tr><th class="pl-4">Order #</th><th>Table</th><th>Waiter</th><th>Total</th><th class="text-right pr-4">Action</th></tr>
+                                    <tr>
+                                        <th class="pl-4 fit-content">Order #</th>
+                                        <th class="fit-content">Table</th>
+                                        <th>Waiter</th>
+                                        <th class="fit-content">Total</th>
+                                        <th class="text-right pr-4 fit-content">Action</th>
+                                    </tr>
                                 </thead>
-                                <tbody id="admin_pending_list"></tbody>
+                                <tbody id="admin_pending_list">
+                                    </tbody>
                             </table>
                         </div>
                     </div>
@@ -101,12 +119,12 @@ include('header.php');
                                 <table class="table table-hover text-white w-100" id="history_table">
                                     <thead>
                                         <tr class="text-white-50 small">
-                                            <th>Order #</th>
-                                            <th>Date</th>
-                                            <th>Table</th>
+                                            <th class="fit-content">Order #</th>
+                                            <th class="fit-content">Date</th>
+                                            <th class="fit-content text-center">Table</th>
                                             <th>Cashier</th>
-                                            <th>Net Total</th>
-                                            <th class="text-right">Action</th>
+                                            <th class="fit-content">Net Total</th>
+                                            <th class="text-right pr-4 fit-content">Action</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -120,7 +138,7 @@ include('header.php');
                 <div class="glass-card p-4 sticky-top" style="top: 20px;" id="admin_detail_preview">
                     <div class="text-center py-5 opacity-50">
                         <i class="fas fa-search fa-3x mb-3 text-info"></i>
-                        <h5>Select an order to preview details</h5>
+                        <h5>Click an order row to preview</h5>
                     </div>
                 </div>
             </div>
@@ -135,6 +153,7 @@ $(document).ready(function(){
     const isWaiter = <?php echo $is_waiter ? 'true' : 'false'; ?>;
     const selectMode = <?php echo (isset($_GET['mode']) && $_GET['mode'] == 'select_table') ? 'true' : 'false'; ?>;
 
+    // Load detailed preview for a specific order
     function load_preview(order_id, target_selector) {
         $.ajax({
             url: "order_action.php",
@@ -143,7 +162,13 @@ $(document).ready(function(){
             success: function(data){ 
                 $(target_selector).html(data);
                 if(isWaiter) {
-                    $('.settle_order_btn').html('<i class="fas fa-times-circle mr-2"></i> Cancel Order').removeClass('btn-success').addClass('btn-danger');
+                    // Rebind settle button as a Cancel button for Waiters
+                    $('.settle_order_btn')
+                        .html('<i class="fas fa-times-circle mr-2"></i> Cancel Order')
+                        .removeClass('btn-success')
+                        .addClass('btn-danger')
+                        .attr('id', 'btn_cancel_order')
+                        .attr('data-id', order_id);
                 } else {
                     $('.settle_order_btn').remove(); 
                 }
@@ -151,11 +176,54 @@ $(document).ready(function(){
         });
     }
 
+    // Handle Order Cancellation (Waiter only)
+    $(document).on('click', '#btn_cancel_order', function(){
+        let order_id = $(this).data('id');
+        
+        Swal.fire({
+            title: 'Cancel this Order?',
+            text: "This will permanently remove the order and clear the table.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, cancel it!',
+            background: '#1a1a1a',
+            color: '#fff'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "order_action.php",
+                    method: "POST",
+                    data: {action: 'cancel_order', order_id: order_id},
+                    success: function(data){
+                        if(data.trim() == 'success') {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Cancelled!',
+                                text: 'Order has been removed.',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                background: '#1a1a1a',
+                                color: '#fff'
+                            }).then(() => {
+                                load_tables();
+                                $('#order_detail_panel').html('<div class="text-center py-5 opacity-50"><i class="fas fa-utensils fa-3x mb-3 text-info"></i><h4>Select a table to view active order</h4></div>');
+                            });
+                        }
+                    }
+                });
+            }
+        });
+    });
+
+    // Master/Admin Report Printing
     $('#master_print_report').click(function(){
         window.open("print.php?action=print_all", "_blank");
     });
 
     if(isWaiter) {
+        // --- WAITER LOGIC ---
         function load_tables() {
             $.ajax({
                 url: "order_action.php",
@@ -173,14 +241,15 @@ $(document).ready(function(){
             
             if(selectMode) {
                 if(order_id != 0) {
-                    Swal.fire('Table Occupied', 'Please select an available table.', 'error');
+                    Swal.fire({ icon: 'error', title: 'Table Occupied', background: '#222', color: '#fff' });
                     return;
                 }
                 Swal.fire({
                     title: 'Confirm Table',
-                    text: "Assign current order to " + table + "?",
+                    text: "Place current order for " + table + "?",
                     icon: 'question',
                     showCancelButton: true,
+                    confirmButtonColor: '#1cc88a',
                     confirmButtonText: 'Yes, Place Order'
                 }).then((result) => {
                     if (result.isConfirmed) {
@@ -190,7 +259,7 @@ $(document).ready(function(){
                             data: {action: 'submit_cart_to_table', table_name: table},
                             success: function(res){ 
                                 if(res.trim() == 'success') {
-                                    Swal.fire({ icon: 'success', title: 'Success!', timer: 1500, showConfirmButton: false }).then(() => {
+                                    Swal.fire({ icon: 'success', title: 'Order Placed!', timer: 1500, showConfirmButton: false }).then(() => {
                                         window.location.href = "dashboard.php";
                                     });
                                 } 
@@ -204,6 +273,7 @@ $(document).ready(function(){
         });
 
     } else {
+        // --- ADMIN LOGIC ---
         function load_admin_pending() {
             $.ajax({
                 url: "order_action.php",
@@ -220,6 +290,7 @@ $(document).ready(function(){
             load_preview($(this).data('id'), '#admin_detail_preview');
         });
 
+        // Initialize DataTable with content-fitting classes
         $('#history_table').DataTable({
             "processing": true,
             "serverSide": true,
@@ -229,17 +300,17 @@ $(document).ready(function(){
                 "data": { "action": "fetch_history" } 
             },
             "columns": [
-                { "data": "order_number" },
-                { "data": "order_date" },
-                { "data": "order_table" },
+                { "data": "order_number", "className": "fit-content font-weight-bold" },
+                { "data": "order_date", "className": "fit-content" },
+                { "data": "order_table", "className": "fit-content text-center" },
                 { "data": "order_cashier" },
-                { "data": "order_total" },
-                { "data": "action" }
+                { "data": "order_total", "className": "fit-content text-success font-weight-bold" },
+                { "data": "action", "className": "fit-content text-right" }
             ],
             "order": [[ 0, "desc" ]],
             "language": {
                 "search": "_INPUT_",
-                "searchPlaceholder": "Search history..."
+                "searchPlaceholder": "Search receipts..."
             }
         });
     }

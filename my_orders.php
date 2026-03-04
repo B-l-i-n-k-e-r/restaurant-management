@@ -6,6 +6,7 @@ include('header.php');
 ?>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
 
 <style>
     :root { 
@@ -44,21 +45,7 @@ include('header.php');
         box-shadow: 0 0 20px rgba(243, 156, 18, 0.15);
     }
 
-    /* Active Order Cards (From Action 11) */
-    .order-card { 
-        background: rgba(255,255,255,0.02);
-        border: 1px solid var(--glass-border);
-        border-radius: 20px;
-        padding: 20px;
-        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    }
-    .order-card:hover { 
-        transform: translateY(-8px);
-        border-color: var(--neon-blue);
-        box-shadow: 0 15px 40px rgba(0, 210, 255, 0.1);
-    }
-
-    /* THE COOL DIGITAL RECEIPT */
+    /* THE COOL DIGITAL PREVIEW (Screen Only) */
     .digital-receipt-wrapper {
         background: #0f0f0f;
         color: #fff;
@@ -69,36 +56,71 @@ include('header.php');
         box-shadow: 0 25px 50px rgba(0,0,0,0.9);
         overflow: hidden;
     }
-    /* Glowing Accent line */
     .digital-receipt-wrapper::before {
         content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
         background: linear-gradient(90deg, transparent, var(--neon-gold), transparent);
     }
-    /* Scan-line effect */
-    .digital-receipt-wrapper::after {
-        content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
-        z-index: 10; background-size: 100% 2px, 3px 100%; pointer-events: none;
+
+    /* AUTHENTIC THERMAL PRINT ENGINE */
+    @media print {
+        @page { 
+            margin: 0; 
+            size: 80mm auto; 
+        }
+        
+        body * { visibility: hidden; background: white !important; }
+        
+        #receipt_content, #receipt_content * { visibility: visible; }
+        
+        #receipt_content {
+            position: absolute;
+            left: 50% !important;
+            top: 0;
+            transform: translateX(-50%);
+            width: 80mm; 
+            padding: 4mm;
+            color: #000 !important;
+            background: #fff !important;
+            font-family: 'Courier Prime', monospace !important;
+            font-size: 11px;
+            line-height: 1.2;
+        }
+
+        .btn, .badge, .btn-link, .border-top, .no-print, 
+        .digital-receipt-wrapper::before, .digital-receipt-wrapper::after { 
+            display: none !important; 
+        }
+
+        .digital-receipt-wrapper {
+            border: none !important;
+            box-shadow: none !important;
+            background: white !important;
+            padding: 0 !important;
+        }
+
+        .receipt-inner-html { width: 100%; }
+        .receipt-inner-html table { width: 100%; border-collapse: collapse; }
+        .receipt-inner-html td, .receipt-inner-html th { 
+            color: #000 !important; 
+            border-bottom: 1px dashed #ccc; 
+            padding: 2px 0;
+        }
+        .dashed-line { 
+            border-top: 1px dashed #000 !important; 
+            margin: 8px 0; 
+            width: 100%;
+            height: 1px;
+        }
+        .show-print-only { display: block !important; }
     }
 
-    /* Table Design for Archive */
-    .table { border-collapse: separate; border-spacing: 0 10px; }
+    /* Requirement: Fit columns to content */
+    .fit-content { width: 1% !important; white-space: nowrap !important; }
+    
     .table tbody tr { background: rgba(255,255,255,0.02); transition: 0.3s; }
-    .table tbody tr:hover { background: rgba(255,255,255,0.06); transform: scale(1.01); }
     .table td { border: none !important; vertical-align: middle; padding: 15px !important; }
-    .table thead th { border: none; text-transform: uppercase; font-size: 0.7rem; color: #444; letter-spacing: 2px; }
-
-    /* Status Pulse for Active Orders */
-    .status-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; color: var(--neon-gold); }
-    .pulse-dot {
-        width: 8px; height: 8px; background: var(--neon-gold); border-radius: 50%;
-        animation: pulse-ring 1.5s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
-    }
-
-    @keyframes pulse-ring {
-        0% { transform: scale(.33); }
-        80%, 100% { opacity: 0; }
-    }
+    
+    .show-print-only { display: none; }
 </style>
 
 <div class="container py-5">
@@ -140,11 +162,11 @@ include('header.php');
                     <table class="table text-white w-100" id="customer_history_table">
                         <thead>
                             <tr>
-                                <th>Order ID</th>
+                                <th class="fit-content">Order ID</th>
                                 <th>Timestamp</th>
-                                <th>Table No.</th>
-                                <th>Total Bill</th>
-                                <th class="text-right">Action</th>
+                                <th class="fit-content">Table No.</th>
+                                <th class="fit-content">Total Bill</th>
+                                <th class="text-right fit-content">Action</th>
                             </tr>
                         </thead>
                     </table>
@@ -168,7 +190,6 @@ include('header.php');
 <script>
 $(document).ready(function(){
 
-    // 1. Fetch Live Orders (Action 11)
     function load_active_orders() {
         $.ajax({
             url: "order_action.php",
@@ -182,7 +203,6 @@ $(document).ready(function(){
     load_active_orders();
     setInterval(load_active_orders, 15000); 
 
-    // 2. Archive Table (Action 12)
     $('#customer_history_table').DataTable({
         "processing": true,
         "serverSide": true,
@@ -192,11 +212,11 @@ $(document).ready(function(){
             "data": { "action": "fetch_customer_history" } 
         },
         "columns": [
-            { "data": "order_number" },
+            { "data": "order_number", "className": "fit-content font-weight-bold" },
             { "data": "order_date" },
-            { "data": "order_table" },
-            { "data": "order_total" },
-            { "data": "action" }
+            { "data": "order_table", "className": "fit-content text-center" },
+            { "data": "order_total", "className": "fit-content text-warning" },
+            { "data": "action", "className": "text-right fit-content" }
         ],
         "order": [[ 0, "desc" ]],
         "language": { 
@@ -206,11 +226,9 @@ $(document).ready(function(){
         }
     });
 
-    // 3. Receipt Preview (Action 13)
     $(document).on('click', '.view_receipt', function(){
         let order_id = $(this).data('id');
         
-        // Modal Loading State
         $('#receipt_content').html('<div class="digital-receipt-wrapper text-center"><div class="spinner-grow text-warning"></div></div>');
         $('#detailModal').modal('show');
 
@@ -219,27 +237,42 @@ $(document).ready(function(){
             method: "POST",
             data: { action: 'get_receipt_html', order_id: order_id },
             success: function(data){ 
-                // Wrap Action 13 HTML into our "Cool" digital frame
+                // Regex to swap Waitstaff name for "Self-Service" to match Self-Order intent
+                let updatedData = data.replace(/(Waitstaff:)\s*[^<]*/gi, '$1 Self-Service');
+
                 let modern_frame = `
                     <div class="digital-receipt-wrapper">
-                        <div class="d-flex justify-content-between mb-4">
-                            <span class="badge badge-warning px-3 py-2">OFFICIAL RECEIPT</span>
-                            <span class="text-white-50 small">#ID-${order_id}</span>
+                        <div class="text-center mb-1">
+                            <h5 class="mb-0 font-weight-bold">WAKANESA RESTAURANT</h5>
+                            <p class="small mb-0">City Square 00200, Nairobi Kenya</p>
+                            <p class="small">Tel: +254 797 369 845</p>
+                            <div class="dashed-line"></div>
                         </div>
+
                         <div class="receipt-inner-html">
-                            ${data}
+                            ${updatedData}
                         </div>
-                        <div class="mt-4 pt-4 border-top border-secondary">
-                            <button class="btn btn-warning btn-block py-3 font-weight-bold rounded-lg" onclick="window.print()">
-                                <i class="fas fa-print mr-2"></i> PRINT PHYSICAL COPY
+
+                        <div class="dashed-line"></div>
+                        <div class="text-center mt-2 no-print">
+                            <button class="btn btn-warning btn-block py-3 font-weight-bold rounded-lg print-trigger">
+                                <i class="fas fa-print mr-2"></i> PRINT OFFICIAL RECEIPT
                             </button>
-                            <button class="btn btn-link btn-block text-muted btn-sm mt-2" data-dismiss="modal">Close Window</button>
+                            <button class="btn btn-link btn-block text-muted btn-sm mt-2" data-dismiss="modal">Close</button>
+                        </div>
+                        <div class="text-center mt-2 small show-print-only">
+                            *** THANK YOU - COME AGAIN ***<br>
+                            Resto-Modern Self-Order System
                         </div>
                     </div>
                 `;
                 $('#receipt_content').html(modern_frame);
             }
         });
+    });
+
+    $(document).on('click', '.print-trigger', function(){
+        window.print();
     });
 });
 </script>

@@ -147,7 +147,7 @@ include('header.php');
         <form method="post" id="user_form" enctype="multipart/form-data">
             <div class="modal-content shadow-2xl">
                 <div class="modal-header border-0 px-4 pt-4">
-                    <h5 class="modal-title font-weight-bold" id="modal_title text-info">Add Staff Member</h5>
+                    <h5 class="modal-title font-weight-bold text-info" id="modal_title">Add Staff Member</h5>
                     <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
                 </div>
                 <div class="modal-body px-4">
@@ -179,6 +179,8 @@ include('header.php');
                                 <option value="Master">Master (Admin)</option>
                                 <option value="Waiter">Waiter</option>
                                 <option value="Cashier">Cashier</option>
+                                <option value="Kitchen">Kitchen Staff</option>
+                                <option value="User">Regular User</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -220,13 +222,25 @@ $(document).ready(function(){
             "searchPlaceholder": "Search staff..."
         },
         "createdRow": function(row, data, dataIndex) {
-            if (data[7].indexOf('Requested') > -1) {
+            if (data[1].indexOf('Requested') > -1) {
                 $(row).addClass('row-request-active');
             }
         }
     });
 
     $('#user_form').parsley();
+
+    // Image Preview logic
+    $('#user_image').change(function(){
+        const file = this.files[0];
+        if (file){
+            let reader = new FileReader();
+            reader.onload = function(event){
+                $('#user_uploaded_image').html('<img src="'+event.target.result+'" class="rounded-circle img-thumbnail" width="100" style="height:100px; object-fit:cover;"/>');
+            }
+            reader.readAsDataURL(file);
+        }
+    });
 
     // Toggle Password in Modal
     $('#toggleModalPassword').on('click', function() {

@@ -81,6 +81,7 @@ if($object->is_login()) {
         .login-logo { width: 80px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 5px 15px var(--sky-glow)); }
         h1 { font-family: 'Playfair Display', serif; color: var(--sky-blue) !important; text-shadow: 0 0 10px var(--sky-glow); }
         label { color: #e2e8f0 !important; font-size: 0.85rem; margin-left: 5px; }
+        
         .form-control {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -88,11 +89,33 @@ if($object->is_login()) {
             color: #fff !important;
             height: 50px;
         }
+        
         .form-control:focus {
             background: rgba(255, 255, 255, 0.1) !important;
             border-color: var(--sky-blue) !important;
             box-shadow: 0 0 15px var(--sky-glow);
         }
+
+        /* Show Password Toggle Styling */
+        .input-group-append .btn {
+            background: rgba(255, 255, 255, 0.05) !important;
+            border: 1px solid rgba(255, 255, 255, 0.2) !important;
+            border-left: none !important;
+            color: var(--sky-blue) !important;
+            border-top-right-radius: 12px;
+            border-bottom-right-radius: 12px;
+            transition: 0.3s;
+        }
+
+        .input-group-append .btn:hover {
+            background: rgba(14, 165, 233, 0.1) !important;
+        }
+
+        #user_password {
+            border-top-right-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+
         .btn-login {
             background: var(--sky-blue);
             color: #fff;
@@ -103,7 +126,15 @@ if($object->is_login()) {
             text-transform: uppercase;
             letter-spacing: 1.5px;
             box-shadow: 0 4px 15px var(--sky-glow);
+            transition: 0.3s;
         }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px var(--sky-glow);
+            filter: brightness(1.1);
+        }
+
         .footer-links a { color: #94a3b8; transition: 0.3s; }
         .footer-links a:hover { color: var(--sky-blue); text-decoration: none; }
     </style>
@@ -117,7 +148,7 @@ if($object->is_login()) {
             <img src="img/logo.png" alt="Logo" class="login-logo">
             <h1 class="h2 font-weight-bold">Wakanesa</h1>
             <p class="text-white-50 small">Sign in to your account</p>
-            <span id="error"></span>
+            <div id="error"></div>
         </div>
 
         <form method="post" id="login_form">
@@ -129,6 +160,11 @@ if($object->is_login()) {
                 <label>Password</label>
                 <div class="input-group">
                     <input type="password" name="user_password" id="user_password" class="form-control" required placeholder="••••••••">
+                    <div class="input-group-append">
+                        <button class="btn btn-outline-secondary" type="button" id="toggle_password">
+                            <i class="fas fa-eye" id="password_icon"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
             <div class="text-right mb-4">
@@ -137,7 +173,7 @@ if($object->is_login()) {
             <button type="submit" id="login_button" class="btn btn-login btn-block">Secure Login</button>
             <hr class="my-4" style="border-top: 1px solid rgba(255,255,255,0.1);">
             <div class="text-center footer-links">
-                <a href="register.php">Not a member? <strong class="text-white">Join Now</strong></a>
+                <a href="register.php">Not a member? <strong class="text-white">Register</strong></a>
             </div>
         </form>
     </div>
@@ -146,8 +182,20 @@ if($object->is_login()) {
 <script src="vendor/jquery/jquery.min.js"></script>
 <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="vendor/parsley/dist/parsley.min.js"></script>
+
 <script>
 $(document).ready(function(){
+    /* ================= TOGGLE PASSWORD LOGIC ================= */
+    $('#toggle_password').on('click', function() {
+        const passwordField = $('#user_password');
+        const icon = $('#password_icon');
+        const type = passwordField.attr('type') === 'password' ? 'text' : 'password';
+        
+        passwordField.attr('type', type);
+        icon.toggleClass('fa-eye fa-eye-slash');
+    });
+
+    /* ================= SUBMIT FORM ================= */
     $('#login_form').on('submit', function(e){
         e.preventDefault();
         if($(this).parsley().isValid()){
@@ -157,12 +205,12 @@ $(document).ready(function(){
                 data: $(this).serialize(),
                 dataType: "json",
                 beforeSend: function(){
-                    $('#login_button').prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i>');
+                    $('#login_button').prop('disabled', true).html('<i class="fas fa-circle-notch fa-spin"></i> Checking...');
                 },
                 success: function(data){
-                    $('#login_button').prop('disabled', false).html('Secure Login');
+                    $('#login_button').prop('disabled', false).html('Login');
                     if(data.error != ''){
-                        $('#error').html(data.error);
+                        $('#error').html('<div class="alert alert-danger py-2" style="font-size:0.8rem; border-radius:10px; background:rgba(220,53,69,0.2); border:1px solid #dc3545; color:#fff;">'+data.error+'</div>');
                     } else {
                         window.location.href = data.url;
                     }
