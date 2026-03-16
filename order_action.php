@@ -40,7 +40,7 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 2. GET CURRENT CART COUNT (Total units)
+    // 2. GET CURRENT CART COUNT
     if($_POST["action"] == 'get_cart_count') {
         $count = 0;
         if(isset($_SESSION["cart"])) {
@@ -213,7 +213,7 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 8. SUBMIT CART TO TABLE (Waiter / Admin)
+    // 8. SUBMIT CART TO TABLE
     if($_POST["action"] == 'submit_cart_to_table') {
         if(empty($_SESSION['cart'])) { echo 'empty'; exit; }
         
@@ -256,7 +256,7 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 9. SETTLE ORDER (Finalizing Payment)
+    // 9. SETTLE ORDER
     if($_POST["action"] == 'settle_order') {
         $order_id = $_POST["order_id"];
         $cashier = $_SESSION['user_name'] ?? 'Admin';
@@ -283,9 +283,9 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 11. FETCH CUSTOMER ACTIVE ORDERS
+    // 11. FETCH CUSTOMER ACTIVE ORDERS (Updated with Pay Button)
     if($_POST["action"] == 'fetch_customer_active_orders') {
-        $user_name = $_SESSION['user_name'];
+        $user_name = $_SESSION['user_name'] ?? 'Staff';
         $object->query = "SELECT * FROM order_table WHERE order_waiter = :user AND order_status NOT IN ('Completed') ORDER BY order_id DESC";
         $object->execute([':user' => $user_name]);
         $result = $object->statement_result();
@@ -294,12 +294,25 @@ if(isset($_POST["action"])) {
         if(!empty($result)) {
             foreach($result as $row) {
                 $status_class = ($row['order_status'] == 'Ready') ? 'badge-success' : 'badge-warning';
+                
+                // Determine if we show the Pay Button
+                $pay_button = '';
+                if($row['order_status'] == 'Ready') {
+                    $pay_button = '
+                    <button class="btn btn-sm pay_now_btn ml-2" 
+                            data-id="'.$row["order_id"].'" 
+                            data-bill="'.$object->cur.' '.number_format($row["order_net_amount"], 2).'"
+                            style="background: #22c55e; color: white; border-radius: 8px; font-weight: bold; border: none; padding: 5px 12px;">
+                        <i class="fas fa-money-bill-wave mr-1"></i> PAY NOW
+                    </button>';
+                }
+
                 $output .= '
                 <div class="col-md-4 mb-4">
-                    <div class="order-card text-white p-3" style="background: rgba(255,255,255,0.05); border-radius:15px;">
+                    <div class="order-card text-white p-3 shadow-sm" style="background: rgba(255,255,255,0.05); border-radius:20px; border: 1px solid rgba(255,255,255,0.1);">
                         <div class="d-flex justify-content-between align-items-start mb-3">
                             <div>
-                                <span class="badge '.$status_class.' mb-2">'.$row['order_status'].'</span>
+                                <span class="badge '.$status_class.' mb-2 px-3 py-1">'.strtoupper($row['order_status']).'</span>
                                 <h5 class="mb-0 font-weight-bold">#'.$row["order_number"].'</h5>
                             </div>
                             <div class="text-right">
@@ -307,66 +320,75 @@ if(isset($_POST["action"])) {
                             </div>
                         </div>
                         <div class="small text-white-50 mb-3 border-bottom border-secondary pb-2">
-                             Table Location: '.$row["order_table"].'
+                             Table: <span class="text-white">'.$row["order_table"].'</span>
                         </div>
                         <div class="d-flex justify-content-between align-items-center">
-                            <span class="h5 mb-0 text-success" style="white-space: nowrap;">'.$object->cur.' '.number_format($row["order_net_amount"], 2).'</span>
-                            <button class="btn btn-sm btn-outline-info view_receipt" data-id="'.$row["order_id"].'"><i class="fas fa-eye"></i> Details</button>
+                            <span class="h5 mb-0 text-success font-weight-bold" style="white-space: nowrap;">'.$object->cur.' '.number_format($row["order_net_amount"], 2).'</span>
+                            <div class="d-flex">
+                                <button class="btn btn-sm btn-outline-info view_receipt" data-id="'.$row["order_id"].'"><i class="fas fa-eye"></i></button>
+                                '.$pay_button.'
+                            </div>
                         </div>
                     </div>
                 </div>';
             }
         } else {
-            $output = '<div class="col-12 text-center py-5 text-white-50"><i class="fas fa-utensils fa-3x mb-3"></i><p>No active orders in the kitchen.</p></div>';
+            $output = '<div class="col-12 text-center py-5 text-white-50"><i class="fas fa-utensils fa-3x mb-3"></i><p>No active orders found.</p></div>';
         }
         echo $output;
         exit;
     }
 
     // 12. FETCH CUSTOMER HISTORY
-    if($_POST["action"] == 'fetch_customer_history') {
-        $user_name = $_SESSION['user_name'];
-        $order_column = array('order_number', 'order_date', 'order_table', 'order_net_amount');
-        
-        $main_query = "SELECT * FROM order_table WHERE order_waiter = :user AND order_status = 'Completed' ";
-        
-        $params = [':user' => $user_name];
-        $search_query = "";
-        if(!empty($_POST["search"]["value"])) {
-            $search_query = "AND (order_number LIKE :search OR order_table LIKE :search) ";
-            $params[':search'] = '%' . $_POST["search"]["value"] . '%';
-        }
-
-        $order_query = "ORDER BY " . $order_column[$_POST['order']['0']['column']] . " " . $_POST['order']['0']['dir'] . " ";
-        $limit_query = ($_POST["length"] != -1) ? 'LIMIT ' . (int)$_POST['start'] . ', ' . (int)$_POST['length'] : "";
-
-        $object->query = $main_query . $search_query;
-        $object->execute($params);
-        $total_rows = $object->row_count();
-
-        $object->query = $main_query . $search_query . $order_query . $limit_query;
-        $object->execute($params);
-        $result = $object->statement_result();
-        
-        $data = array();
-        foreach($result as $row) {
-            $data[] = array(
-                "order_number" => '<strong>'.$row["order_number"].'</strong>',
-                "order_date"   => date('M d, Y', strtotime($row["order_date"])),
-                "order_table"  => '<span class="badge badge-secondary">'.$row["order_table"].'</span>',
-                "order_total"  => '<span class="text-success font-weight-bold">'.$object->cur . ' ' . number_format($row["order_net_amount"], 2).'</span>',
-                "action"       => '<button class="btn btn-sm btn-info view_receipt" data-id="'.$row["order_id"].'"><i class="fas fa-file-invoice"></i> Receipt</button>'
-            );
-        }
-
-        echo json_encode([
-            "draw" => intval($_POST["draw"]),
-            "recordsTotal" => $total_rows,
-            "recordsFiltered" => $total_rows,
-            "data" => $data
-        ]);
-        exit;
+if($_POST["action"] == 'fetch_customer_history') {
+    $user_name = $_SESSION['user_name'] ?? '';
+    $user_id = $_SESSION['user_id'] ?? 0;
+    
+    $order_column = array('order_number', 'order_date', 'order_table', 'order_net_amount');
+    
+    // Simplified query to ensure it works
+    $main_query = "SELECT * FROM order_table WHERE order_status = 'Completed' ";
+    
+    $params = [];
+    $search_query = "";
+    if(!empty($_POST["search"]["value"])) {
+        $search_query = " AND (order_number LIKE :search OR order_table LIKE :search) ";
+        $params[':search'] = '%' . $_POST["search"]["value"] . '%';
     }
+
+    $order_query = " ORDER BY " . $order_column[$_POST['order']['0']['column']] . " " . $_POST['order']['0']['dir'] . " ";
+    $limit_query = ($_POST["length"] != -1) ? ' LIMIT ' . (int)$_POST['start'] . ', ' . (int)$_POST['length'] : "";
+
+    $object->query = $main_query . $search_query . $order_query . $limit_query;
+    $object->execute($params);
+    $result = $object->statement_result();
+    
+    $object->query = $main_query . $search_query;
+    $object->execute($params);
+    $total_rows = $object->row_count();
+
+    $data = array();
+    foreach($result as $row) {
+        $data[] = array(
+            "order_number"   => '<strong class="text-sky-blue">'.$row["order_number"].'</strong>',
+            "order_date"     => date('M d, Y', strtotime($row["order_date"])),
+            "order_table"    => '<span class="badge border border-secondary text-white">'.$row["order_table"].'</span>',
+            "order_total"    => '<span class="text-success font-weight-bold">'.$object->cur . ' ' . number_format($row["order_net_amount"], 2).'</span>',
+            "payment_method" => '<span class="text-white-50">'.($row["payment_method"] ?? 'N/A').'</span>',
+            "action"         => '<button class="btn btn-sm btn-info view_receipt" data-id="'.$row["order_id"].'" style="border-radius:12px;"><i class="fas fa-file-invoice"></i> Receipt</button>'
+        );
+    }
+
+    $output = array(
+        "draw"            => intval($_POST["draw"]),
+        "recordsTotal"    => $total_rows,
+        "recordsFiltered" => $total_rows,
+        "data"            => $data
+    );
+
+    echo json_encode($output);
+    exit; // Ensure no other output follows
+}
 
     // 13. GET RECEIPT HTML
     if($_POST["action"] == 'get_receipt_html') {
@@ -584,7 +606,7 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 17. UPDATE STATUS (General)
+    // 17. UPDATE STATUS
     if($_POST['action'] == 'update_order_status') {
         $order_id = $_POST['order_id'];
         $status = $_POST['status']; 
@@ -637,10 +659,10 @@ if(isset($_POST["action"])) {
 
             if($status == 'In Process') {
                 $status_html = '<span class="status-waiting">WAITING</span>';
-                $management_html = '<button class="btn btn-info btn-sm update_status" data-id="'.$row["order_id"].'" data-status="Preparing">START</button>';
+                $management_html = '<button class="btn btn-info btn-sm change_status" data-id="'.$row["order_id"].'" data-next="Preparing">START</button>';
             } else if($status == 'Preparing') {
                 $status_html = '<span class="status-preparing">COOKING</span>';
-                $management_html = '<button class="btn btn-warning btn-sm update_status" data-id="'.$row["order_id"].'" data-status="Ready">READY</button>';
+                $management_html = '<button class="btn btn-warning btn-sm change_status" data-id="'.$row["order_id"].'" data-next="Ready">READY</button>';
             } else if($status == 'Ready') {
                 $status_html = '<span class="badge badge-success py-2">READY</span>';
                 $management_html = '<button class="btn btn-dark btn-sm" disabled>WAITING CASHIER</button>';
@@ -664,100 +686,104 @@ if(isset($_POST["action"])) {
         ]);
         exit;
     }
-  // 19. FETCH CASHIER BILLING QUEUE (Orders marked 'Ready' by kitchen)
 
+    // 19. FETCH CASHIER BILLING QUEUE
     if($_POST["action"] == 'fetch_cashier_queue') {
-
         $object->query = "SELECT * FROM order_table WHERE order_status = 'Ready' ORDER BY order_id DESC";
+        $result = $object->get_result();
+        $output = '';
 
-        $object->execute();
-
-        $result = $object->statement_result();
-
-        
-
-        // Use row_count() method instead of the undefined $total_rows property
-
-        $count = $object->row_count(); 
-
-        
-
-        $html = '';
-
-
-
-        if($count > 0) {
-
+        if($object->row_count() > 0) {
             foreach($result as $row) {
-
-                $html .= '
-
-                <tr class="text-white">
-
-                    <td class="pl-4" style="width: 1%; white-space: nowrap;"><strong>#'.$row["order_number"].'</strong></td>
-
-                    <td class="text-center" style="width: 1%; white-space: nowrap;">
-
-                        <span class="badge badge-pill badge-light px-3">'.$row["order_table"].'</span>
-
+                $output .= '
+                <tr>
+                    <td style="width: fit-content; white-space: nowrap;">
+                        <div class="font-weight-bold text-white">#'.$row["order_number"].'</div>
                     </td>
-
-                    <td>
-
-                        <div class="d-flex align-items-center">
-
-                            <div class="avatar-sm mr-2 bg-info rounded-circle d-flex align-items-center justify-content-center" style="min-width:30px; height:30px; font-size:11px; color: white;">
-
-                                '.strtoupper(substr($row["order_waiter"], 0, 1)).'
-
-                            </div>
-
-                            '.$row["order_waiter"].'
-
-                        </div>
-
+                    <td style="width: fit-content; white-space: nowrap;">
+                        <span class="text-white">'.$row["order_table"].'</span>
                     </td>
-
-                    <td class="text-right pr-4" style="width: 1%; white-space: nowrap;">
-
-                        <span class="text-success font-weight-bold mr-3">'.$object->cur . ' ' . number_format($row["order_net_amount"], 2).'</span>
-
-                        <button class="btn btn-sm btn-success settle_order_btn" data-id="'.$row["order_id"].'">
-
-                            <i class="fas fa-cash-register"></i> Settle
-
+                    <td style="width: fit-content; white-space: nowrap;">
+                        <div class="text-white-50">'.($row["order_cashier"] ?: 'Self-Order').'</div>
+                    </td>
+                    <td style="width: fit-content; white-space: nowrap;" class="text-right">
+                        <span class="font-weight-bold text-success">
+                            '.$object->cur.' '.number_format($row["order_net_amount"], 2).'
+                        </span>
+                    </td>
+                    <td style="width: fit-content; white-space: nowrap;" class="text-center">
+                        <button class="btn btn-sm settle_order_btn" 
+                                data-id="'.$row["order_id"].'" 
+                                style="background: #22c55e; color: white; border-radius: 6px; font-weight: 600; padding: 4px 12px; border: none;">
+                            Collect Pay
                         </button>
-
                     </td>
-
                 </tr>';
-
             }
-
         } else {
-
-            $html = '<tr><td colspan="4" class="text-center py-5 text-white-50">No orders awaiting settlement</td></tr>';
-
+            $output = '<tr><td colspan="5" class="text-center py-5 text-white-50">No orders ready for billing</td></tr>';
         }
-
-        echo $html;
-
+        echo $output;
         exit;
-
     }
 
-    // Add this to order_action.php
-if($_POST["action"] == 'cancel_order') {
+    // 20. PROCESS CUSTOMER PAYMENT
+if($_POST["action"] == 'process_customer_payment') {
     $order_id = $_POST["order_id"];
-    // Delete items first to maintain integrity
-    $object->query = "DELETE FROM order_item_table WHERE order_id = '".$order_id."'";
-    $object->execute();
-    // Delete the order itself
-    $object->query = "DELETE FROM order_table WHERE order_id = '".$order_id."'";
-    $object->execute();
-    echo 'success';
-}
+    $amount_paid = (float)$_POST["amount_paid"];
+    $payment_method = $_POST["payment_method"];
+    $cashier = $_SESSION['user_name'] ?? 'Admin';
 
-}
+    // Fetch order details to verify total
+    $object->query = "SELECT order_net_amount FROM order_table WHERE order_id = :id";
+    $object->execute([':id' => $order_id]);
+    $order = $object->statement_result();
 
+    if(!empty($order)) {
+        $net_amount = (float)$order[0]['order_net_amount'];
+
+        // If Payment is Card/M-Pesa, we treat amount_paid as net_amount automatically
+        if($payment_method !== 'Cash') {
+            $amount_paid = $net_amount;
+        }
+
+        if($amount_paid >= $net_amount) {
+            $change = $amount_paid - $net_amount;
+
+            $object->query = "
+                UPDATE order_table 
+                SET order_status = 'Completed', 
+                    order_cashier = :cashier,
+                    payment_method = :method,
+                    amount_paid = :paid,
+                    balance_given = :change
+                WHERE order_id = :id
+            ";
+
+            $data = [
+                ':cashier' => $cashier,
+                ':method'  => $payment_method,
+                ':paid'    => $amount_paid,
+                ':change'  => $change,
+                ':id'      => $order_id
+            ];
+
+            if($object->execute($data)) {
+                echo json_encode([
+                    'status' => 'success',
+                    'change' => number_format($change, 2)
+                ]);
+            }
+        } else {
+            echo json_encode([
+                'status' => 'error',
+                'message' => 'Insufficient amount. Required: ' . number_format($net_amount, 2)
+            ]);
+        }
+    } else {
+        echo json_encode(['status' => 'error', 'message' => 'Order not found.']);
+    }
+    exit;
+}
+}
 ?>

@@ -16,223 +16,206 @@ if($_SESSION['user_type'] != 'Kitchen' && $_SESSION['user_type'] != 'Master') {
 include('header.php');
 ?>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <style>
     :root {
-        --neon-blue: #00d2ff;
-        --neon-purple: #9d50bb;
-        --cyber-black: #050608;
-        --glass-bg: rgba(255, 255, 255, 0.02);
-        --neon-gradient: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
+        --sky-blue: #0ea5e9;
+        --sky-glow: rgba(14, 165, 233, 0.4);
+        --deep-navy: #0f172a;
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --accent-green: #22c55e;
+        --accent-yellow: #f59e0b;
     }
 
     body {
-        background: radial-gradient(circle at top right, #0d1117, var(--cyber-black));
+        background-color: var(--deep-navy);
         color: #fff;
-        font-family: 'Inter', -apple-system, sans-serif;
-        overflow-x: hidden;
+        font-family: 'Poppins', sans-serif;
     }
 
-    #content-wrapper { background: transparent; }
-
-    /* HUD Title Section */
+    /* KDS Header Styling */
     .kds-header-border {
-        border-left: 5px solid;
-        border-image: linear-gradient(to bottom, var(--neon-blue), var(--neon-purple)) 1;
+        border-left: 4px solid var(--sky-blue);
         padding-left: 20px;
     }
 
-    .display-5 {
-        background: var(--neon-gradient);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 900 !important;
-        letter-spacing: -1px;
+    .display-title {
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: #fff;
     }
 
-    /* Filter Pills - Glowing Style */
+    /* Filter UI */
     .filter-pills-container {
         display: flex;
-        gap: 12px;
-        margin-bottom: 30px;
+        gap: 10px;
+        margin-bottom: 25px;
+        overflow-x: auto;
+        padding-bottom: 5px;
     }
 
     .btn-filter {
-        border-radius: 50px;
-        padding: 10px 22px;
-        font-weight: 700;
-        text-transform: uppercase;
-        font-size: 0.7rem;
+        border-radius: 12px;
+        padding: 8px 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
         letter-spacing: 1px;
-        border: 1px solid rgba(0, 210, 255, 0.2);
-        background: rgba(0, 210, 255, 0.05);
-        color: var(--neon-blue);
-        transition: 0.3s all ease;
+        border: 1px solid var(--glass-border);
+        background: rgba(255, 255, 255, 0.03);
+        color: #94a3b8;
+        transition: 0.3s all;
+        white-space: nowrap;
     }
 
     .btn-filter.active {
-        background: var(--neon-gradient);
-        border-color: transparent;
+        background: var(--sky-blue);
+        border-color: var(--sky-blue);
         color: #fff;
-        box-shadow: 0 0 20px rgba(157, 80, 187, 0.4);
+        box-shadow: 0 0 15px var(--sky-glow);
     }
 
-    /* Grid Layout: Masonry content-fit */
+    /* Kitchen Grid & Tickets */
     .kitchen-container {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
         grid-auto-rows: min-content;
-        gap: 25px;
-        align-items: start;
+        gap: 20px;
     }
 
-    /* Ticket Card - Cyber Glass */
     .ticket-card {
-        background: rgba(13, 14, 18, 0.9);
-        backdrop-filter: blur(10px);
+        background: rgba(15, 23, 42, 0.7);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
         border-radius: 20px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        border: 1px solid var(--glass-border);
         overflow: hidden;
-        display: flex;
-        flex-direction: column;
-        height: fit-content; 
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        transition: transform 0.3s ease;
         position: relative;
     }
 
-    .ticket-card::before {
-        content: "";
-        position: absolute;
-        top: 0; left: 0; width: 100%; height: 3px;
-        background: var(--neon-gradient);
+    .ticket-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--sky-blue);
     }
 
     .ticket-header {
-        padding: 20px;
+        padding: 15px 20px;
         background: rgba(255, 255, 255, 0.02);
         display: flex;
         justify-content: space-between;
         align-items: center;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid var(--glass-border);
     }
 
-    .order-id { color: var(--neon-blue); font-weight: 800; font-family: monospace; font-size: 1.2rem; }
-    .table-label { font-weight: 800; color: #fff; text-shadow: 0 0 10px rgba(255,255,255,0.2); }
+    .order-id { color: var(--sky-blue); font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+    .table-label { font-weight: 800; color: #fff; font-size: 1.1rem; }
 
-    .ticket-info {
-        padding: 10px 20px;
-        background: rgba(0, 0, 0, 0.3);
-        display: flex;
-        justify-content: space-between;
-        font-size: 0.8rem;
-        color: #888;
+    .ticket-body { 
+        padding: 20px; 
+        min-height: 100px;
     }
 
-    .time-badge { color: var(--neon-purple); font-weight: 800; }
-
-    .ticket-body {
-        padding: 20px;
-    }
-
-    .order-item {
-        font-size: 1.15rem;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: flex-start;
-        padding-bottom: 10px;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.03);
-    }
-
-    .item-qty { 
-        background: rgba(157, 80, 187, 0.2); 
-        color: var(--neon-purple); 
-        min-width: 30px; 
-        height: 30px; 
-        display: flex; 
-        align-items: center; 
-        justify-content: center; 
-        border-radius: 8px; 
-        font-weight: 900; 
-        margin-right: 15px;
-    }
-
-    /* HUD Counter Circle */
-    .queue-box {
-        text-align: right;
-        border-right: 4px solid var(--neon-purple);
-        padding-right: 20px;
-    }
-
-    /* Buttons */
+    /* Action Buttons */
     .btn-status {
         width: 100%;
-        padding: 18px;
+        padding: 15px;
         border: none;
-        font-weight: 900;
+        font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 2px;
         transition: 0.3s;
         cursor: pointer;
-        background: rgba(255,255,255,0.03);
-        color: #fff;
+        background: rgba(255, 255, 255, 0.02);
     }
 
-    .btn-start { border-top: 1px solid var(--neon-blue); color: var(--neon-blue); }
-    .btn-start:hover { background: var(--neon-blue); color: #000; box-shadow: 0 0 20px rgba(0, 210, 255, 0.4); }
+    .btn-start { border-top: 1px solid var(--sky-blue); color: var(--sky-blue); }
+    .btn-start:hover { background: var(--sky-blue); color: #fff; }
     
-    .btn-ready { border-top: 1px solid var(--neon-purple); color: var(--neon-purple); }
-    .btn-ready:hover { background: var(--neon-purple); color: #fff; box-shadow: 0 0 20px rgba(157, 80, 187, 0.4); }
+    .btn-ready { border-top: 1px solid var(--accent-green); color: var(--accent-green); }
+    .btn-ready:hover { background: var(--accent-green); color: #fff; }
 
-    /* Search */
-    .search-input {
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(0, 210, 255, 0.2);
+    /* Search Control */
+    .search-container input {
+        background: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid var(--glass-border) !important;
         border-radius: 15px;
-        padding: 16px 20px 16px 50px;
-        color: #fff;
+        padding: 12px 20px 12px 45px;
+        color: #fff !important;
         width: 100%;
         transition: 0.3s;
     }
-
-    .search-input:focus {
-        border-color: var(--neon-purple);
-        background: rgba(255, 255, 255, 0.06);
+    
+    .search-container input:focus {
+        border-color: var(--sky-blue) !important;
+        box-shadow: 0 0 10px var(--sky-glow);
         outline: none;
-        box-shadow: 0 0 15px rgba(157, 80, 187, 0.2);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 18px;
+        top: 15px;
+        color: var(--sky-blue);
+        z-index: 10;
+    }
+
+    /* SweetAlert Override */
+    .swal2-popup.cyber-popup {
+        background: #0f172a !important;
+        border: 1px solid var(--sky-blue) !important;
+        border-radius: 24px !important;
+        color: #fff !important;
+    }
+    .swal2-confirm.cyber-confirm {
+        background: var(--sky-blue) !important;
+        border-radius: 12px !important;
+        padding: 10px 25px !important;
+    }
+    .swal2-cancel.cyber-cancel {
+        background: rgba(255,255,255,0.1) !important;
+        border-radius: 12px !important;
     }
 </style>
 
-<div class="container-fluid py-5 px-md-5">
+<div class="container-fluid py-4 px-md-5">
     <div class="row align-items-center mb-5">
         <div class="col-md-8">
             <div class="kds-header-border">
-                <h1 class="display-5 mb-0">KITCHEN DISPLAY</h1>
-                <p class="text-white-50 mb-0">
-                    <span id="sync_status" style="color: var(--neon-blue); font-weight: bold;">LIVE UPDATES</span> 
+                <h1 class="display-title h2 mb-0">Kitchen Terminal</h1>
+                <p class="text-white-50 mb-0 small">
+                    <span id="sync_status" style="color: var(--sky-blue);"><i class="fas fa-circle-notch fa-spin mr-1"></i> LIVE TELEMETRY</span> 
                     • <?php echo date('l, d M'); ?>
                 </p>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4 text-md-right mt-3 mt-md-0">
             <div class="queue-box">
-                <div class="small font-weight-bold text-muted text-uppercase">Active Orders</div>
-                <div id="active_count_text" style="font-size: 3.5rem; font-weight: 900; color: #fff; line-height: 1;">0</div>
+                <div class="small font-weight-bold text-muted text-uppercase" style="letter-spacing: 1px;">Queue Depth</div>
+                <div id="active_count_text" style="font-size: 3rem; font-weight: 900; color: #fff; line-height: 1;">0</div>
             </div>
         </div>
     </div>
 
-    <div class="filter-pills-container">
-        <button class="btn-filter active" data-filter="All">All ACTIVE</button>
-        <button class="btn-filter" data-filter="In Process">NEW ORDERS</button>
-        <button class="btn-filter" data-filter="Preparing">PREPARING</button>
-        <button class="btn-filter" data-filter="Ready">READY</button>
+    <div class="row mb-4">
+        <div class="col-lg-6">
+            <div class="filter-pills-container">
+                <button class="btn-filter active" data-filter="All">ALL TICKETS</button>
+                <button class="btn-filter" data-filter="In Process">NEW</button>
+                <button class="btn-filter" data-filter="Preparing">PREPARING</button>
+                <button class="btn-filter" data-filter="Ready">READY</button>
+            </div>
+        </div>
+        <div class="col-lg-6">
+            <div class="search-container position-relative">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search_orders" placeholder="Search Table, Order ID or Item...">
+            </div>
+        </div>
     </div>
 
-    <div class="search-container">
-        <i class="fas fa-search search-icon" style="position: absolute; left: 20px; top: 20px; color: var(--neon-blue);"></i>
-        <input type="text" id="search_orders" class="search-input" placeholder="Filter by Table or Order ID...">
-    </div>
-
-    <div class="kitchen-container mt-4" id="kitchen_load">
+    <div class="kitchen-container" id="kitchen_load">
         </div>
 </div>
 
@@ -268,6 +251,46 @@ $(document).ready(function(){
             }
         });
     }
+
+    // Handle Status Updates with Cyber-Glass SweetAlert
+    $(document).on('click', '.btn-start, .btn-ready', function(){
+        let order_id = $(this).data('id');
+        let next_status = $(this).hasClass('btn-start') ? 'Preparing' : 'Ready';
+        let btn = $(this);
+
+        Swal.fire({
+            title: 'Transition Order?',
+            text: "Move to " + next_status + " state?",
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'PROCEED',
+            cancelButtonText: 'ABORT',
+            customClass: {
+                popup: 'cyber-popup',
+                confirmButton: 'cyber-confirm',
+                cancelButton: 'cyber-cancel'
+            },
+            buttonsStyling: false
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: "order_action.php",
+                    method: "POST",
+                    data: {
+                        action: 'update_order_status',
+                        order_id: order_id,
+                        status: next_status
+                    },
+                    beforeSend: function() {
+                        btn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i>');
+                    },
+                    success: function(data) {
+                        fetch_kitchen_orders();
+                    }
+                });
+            }
+        });
+    });
 
     $('.btn-filter').click(function(){
         $('.btn-filter').removeClass('active');

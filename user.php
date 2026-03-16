@@ -24,7 +24,7 @@ include('header.php');
         --neon-green: #10b981;
         --neon-yellow: #f59e0b;
         --neon-red: #ef4444;
-        --dropdown-bg: #111827; /* Deep midnight for select options */
+        --dropdown-bg: #111827; 
     }
     
     body { background-color: #0c0f17; color: #e2e8f0; }
@@ -39,7 +39,7 @@ include('header.php');
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
     }
 
-    /* 2. TABLE STYLING - FIT CONTENT CONSTRAINT */
+    /* 2. TABLE STYLING - FIT CONTENT */
     .table { color: #cbd5e1 !important; margin-bottom: 0 !important; border-collapse: separate !important; border-spacing: 0; }
     .fit-content { width: 1% !important; white-space: nowrap !important; }
 
@@ -83,7 +83,7 @@ include('header.php');
     .page-link { background: var(--glass-bg) !important; border: 1px solid var(--glass-border) !important; color: #94a3b8 !important; border-radius: 8px !important; margin: 0 3px; }
     .page-item.active .page-link { background: var(--accent-cyan) !important; color: #000 !important; border-color: var(--accent-cyan) !important; font-weight: bold; }
 
-    /* 4. MODAL & COMBOBOX STYLING */
+    /* 4. MODAL & FORM STYLING */
     .modal-content {
         background: rgba(15, 23, 42, 0.95) !important;
         backdrop-filter: blur(25px);
@@ -92,9 +92,7 @@ include('header.php');
         box-shadow: 0 0 50px rgba(14, 165, 233, 0.2);
         color: #fff;
     }
-    .modal-header { border-bottom: 1px solid rgba(255, 255, 255, 0.05); }
-    .modal-footer { border-top: 1px solid rgba(255, 255, 255, 0.05); }
-
+    
     .form-control {
         background: rgba(0, 0, 0, 0.3) !important;
         border: 1px solid var(--glass-border) !important;
@@ -104,8 +102,8 @@ include('header.php');
         padding: 10px 15px;
     }
     .form-control:focus { border-color: var(--accent-cyan) !important; box-shadow: 0 0 10px rgba(14, 165, 233, 0.2); }
+    .form-control:disabled, .form-control[readonly] { background: rgba(255, 255, 255, 0.02) !important; color: var(--accent-cyan) !important; opacity: 0.8; }
 
-    /* Friendly Combobox Overrides */
     select.form-control {
         cursor: pointer;
         appearance: none;
@@ -113,16 +111,9 @@ include('header.php');
         background-repeat: no-repeat;
         background-position: right 15px center;
     }
-    select.form-control option {
-        background-color: var(--dropdown-bg);
-        color: #fff;
-    }
+    select.form-control option { background-color: var(--dropdown-bg); color: #fff; }
 
-    /* 5. STATUS BADGES */
-    .badge-active { background: rgba(16, 185, 129, 0.1); color: var(--neon-green); border: 1px solid var(--neon-green); padding: 6px 12px; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 0.65rem; }
-    .badge-inactive { background: rgba(239, 68, 68, 0.1); color: var(--neon-red); border: 1px solid var(--neon-red); padding: 6px 12px; border-radius: 8px; font-weight: 800; text-transform: uppercase; font-size: 0.65rem; }
-
-    /* 6. SWEETALERT2 OVERRIDES */
+    /* 5. SWEETALERT2 OVERRIDES */
     .swal2-popup.cyber-popup {
         background: rgba(15, 23, 42, 0.95) !important;
         backdrop-filter: blur(20px) !important;
@@ -131,7 +122,6 @@ include('header.php');
         color: #fff !important;
     }
     .swal2-confirm.cyber-confirm { background: transparent !important; border: 1px solid var(--neon-green) !important; color: var(--neon-green) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: 800; text-transform: uppercase; margin: 5px; }
-    .swal2-confirm.cyber-confirm:hover { background: var(--neon-green) !important; color: #000 !important; box-shadow: 0 0 20px var(--neon-green) !important; }
     .swal2-cancel.cyber-cancel { background: transparent !important; border: 1px solid var(--neon-red) !important; color: var(--neon-red) !important; border-radius: 12px !important; padding: 10px 25px !important; font-weight: 800; text-transform: uppercase; margin: 5px; }
 </style>
 
@@ -144,6 +134,25 @@ include('header.php');
         <button type="button" id="add_user" class="btn btn-info shadow-sm" style="border-radius: 12px; font-weight: bold; background: var(--accent-cyan); border: none;">
             <i class="fas fa-user-shield mr-2"></i>ADD NEW USER
         </button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="glass-card p-3 d-flex align-items-center justify-content-start flex-wrap" style="gap: 15px;">
+                <span class="small text-uppercase font-weight-bold" style="letter-spacing: 1px; color: var(--accent-cyan);">
+                    <i class="fas fa-filter mr-2"></i>Filter View:
+                </span>
+                
+                <select id="role_filter" class="form-control" style="width: 220px; background: rgba(255,255,255,0.05) !important;">
+                    <option value="">All Identities</option>
+                    <option value="Master">Admins</option>
+                    <option value="Waiter">Waiters</option>
+                    <option value="Cashier">Cashiers</option>
+                    <option value="Kitchen">Kitchen Staff</option>
+                    <option value="User">Customers</option>
+                </select>
+            </div>
+        </div>
     </div>
 
     <div id="message"></div>
@@ -201,7 +210,7 @@ include('header.php');
                             <input type="text" name="user_contact_no" id="user_contact_no" class="form-control" required />
                         </div>
                         <div class="col-md-12 mb-3">
-                            <label class="small text-white-50">Email Address</label>
+                            <label class="small text-white-50">Email Address <span class="text-info small">(Role-Locked)</span></label>
                             <input type="email" name="user_email" id="user_email" class="form-control" required />
                         </div>
                         <div class="col-md-6 mb-3">
@@ -211,8 +220,8 @@ include('header.php');
                                 <option value="Master">Admin</option>
                                 <option value="Waiter">Waiter</option>
                                 <option value="Cashier">Cashier</option>
-                                <option value="User">User</option>
                                 <option value="Kitchen">Kitchen Staff</option>
+                                <option value="User">Customer</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -247,16 +256,39 @@ $(document).ready(function(){
         "processing": true,
         "serverSide": true,
         "order": [],
-        "ajax": { url:"user_action.php", type:"POST", data:{action:'fetch'} },
+        "ajax": { 
+            url:"user_action.php", 
+            type:"POST", 
+            data: function(d) {
+                d.action = 'fetch';
+                d.filter_role = $('#role_filter').val(); // Send filter to backend
+            }
+        },
         "columnDefs":[
             { "targets":[0, 1, 2, 4, 5, 6, 7], "className": "fit-content" },
             { "targets":[8], "orderable":false, "className": "text-right pr-4 fit-content" }
         ],
         "language": {
             "search": "",
-            "searchPlaceholder": "Search Identities...",
+            "searchPlaceholder": "Search logs...",
             "paginate": { "previous": "<", "next": ">" }
         }
+    });
+
+    // Refresh table on filter change
+    $('#role_filter').on('change', function(){
+        dataTable.ajax.reload();
+    });
+
+    // Auto-assign default emails based on role selection
+    $('#user_type').on('change', function(){
+        var role = $(this).val();
+        var email = $('#user_email');
+        if(role == 'Master') email.val('admin@wakanesa.com').attr('readonly', true);
+        else if(role == 'Waiter') email.val('waiter@wakanesa.com').attr('readonly', true);
+        else if(role == 'Cashier') email.val('cashier@wakanesa.com').attr('readonly', true);
+        else if(role == 'Kitchen') email.val('kitchen@wakanesa.com').attr('readonly', true);
+        else { email.val('').attr('readonly', false); }
     });
 
     $('#user_form').parsley();
@@ -285,6 +317,7 @@ $(document).ready(function(){
     $('#add_user').click(function(){
         $('#user_form')[0].reset();
         $('#user_form').parsley().reset();
+        $('#user_email').attr('readonly', false);
         $('#modal_title').html('<i class="fas fa-user-plus mr-2"></i>Register User');
         $('#action').val('Add');
         $('#submit_button').html('SAVE USER');
@@ -303,7 +336,7 @@ $(document).ready(function(){
             dataType:'JSON',
             success:function(data){
                 $('#user_name').val(data.user_name);
-                $('#user_email').val(data.user_email);
+                $('#user_email').val(data.user_email).attr('readonly', true);
                 $('#user_contact_no').val(data.user_contact_no);
                 $('#user_type').val(data.user_type);
                 $('#user_uploaded_image').html('<img src="'+data.user_profile+'" class="rounded user-profile-img" width="80" style="height:80px;"/>');
@@ -330,7 +363,7 @@ $(document).ready(function(){
                 contentType:false,
                 processData:false,
                 beforeSend:function(){
-                    $('#submit_button').attr('disabled', 'disabled').html('<i class="fas fa-spinner fa-spin"></i> ENCRYPTING...');
+                    $('#submit_button').attr('disabled', 'disabled').html('<i class="fas fa-spinner fa-spin"></i> PROCESSING...');
                 },
                 success:function(data){
                     $('#submit_button').attr('disabled', false).html('SAVE USER');

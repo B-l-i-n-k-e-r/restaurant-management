@@ -18,102 +18,109 @@ include('header.php');
 
 <style>
     :root {
-        --neon-blue: #00d2ff;
-        --neon-purple: #9d50bb;
-        --cyber-black: #050608;
+        --sky-blue: #0ea5e9;
+        --sky-glow: rgba(14, 165, 233, 0.3);
+        --deep-navy: #0f172a;
+        --glass-border: rgba(255, 255, 255, 0.08);
+        --accent-green: #22c55e;
     }
 
     body { 
-        background: radial-gradient(circle at top right, #0d1117, var(--cyber-black)); 
+        background-color: var(--deep-navy);
         color: #fff; 
-        font-family: 'Inter', sans-serif;
+        font-family: 'Poppins', sans-serif;
     }
 
-    /* Constraint: Force columns to fit content tightly */
+    /* Force columns to fit content tightly */
     .fit-content { 
         width: 1% !important; 
         white-space: nowrap !important; 
     }
 
-    /* Glassmorphism Card */
     .card-cyber {
-        background: rgba(13, 14, 18, 0.8) !important;
+        background: rgba(15, 23, 42, 0.7) !important;
         backdrop-filter: blur(15px);
-        border: 1px solid rgba(255, 255, 255, 0.08) !important;
-        border-radius: 15px !important;
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid var(--glass-border) !important;
+        border-radius: 20px !important;
         overflow: hidden;
     }
 
     .card-header-cyber {
-        background: rgba(0, 210, 255, 0.03) !important;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+        background: rgba(255, 255, 255, 0.02) !important;
+        border-bottom: 1px solid var(--glass-border) !important;
         padding: 20px !important;
     }
 
     /* Table Styling */
-    .table { color: #e0e0e0 !important; margin-bottom: 0 !important; }
+    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; }
     .table thead th { 
-        background: rgba(0, 0, 0, 0.2);
-        color: var(--neon-blue);
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--sky-blue);
         border: none !important;
         text-transform: uppercase;
-        font-size: 0.75rem;
+        font-size: 0.7rem;
         letter-spacing: 1.5px;
         padding: 15px !important;
     }
     .table td { 
         border-color: rgba(255, 255, 255, 0.03) !important; 
-        vertical-align: top !important; /* Changed to top for better list alignment */
+        vertical-align: middle !important;
         padding: 15px !important;
     }
 
-    /* List Item Styling */
-    .item-list-container {
-        line-height: 1.6;
-        display: block;
+    .item-row {
+        font-size: 0.9rem;
+        margin-bottom: 2px;
     }
 
-    .status-ready { color: var(--neon-blue); font-weight: 800; text-shadow: 0 0 10px rgba(0, 210, 255, 0.3); }
-    .status-completed { color: #00ff9d; font-weight: 800; text-shadow: 0 0 10px rgba(0, 255, 157, 0.3); }
+    .status-ready { color: var(--sky-blue); font-weight: 700; }
+    .status-completed { color: var(--accent-green); font-weight: 700; }
 
-    .ticket-gradient {
-        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple));
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        font-weight: 900;
-        font-family: 'Monaco', monospace;
+    .ticket-id {
+        color: var(--sky-blue);
+        font-weight: 800;
+        font-family: 'JetBrains Mono', monospace;
     }
 
     /* DataTable Customization */
     .dataTables_wrapper .dataTables_length select,
     .dataTables_wrapper .dataTables_filter input {
         background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid rgba(0, 210, 255, 0.2) !important;
+        border: 1px solid var(--glass-border) !important;
         color: #fff !important;
-        border-radius: 8px;
-        padding: 8px 15px;
+        border-radius: 10px;
+        padding: 6px 12px;
+    }
+    
+    .dataTables_filter input:focus {
+        border-color: var(--sky-blue) !important;
+        outline: none;
     }
 
     .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--neon-blue), var(--neon-purple)) !important;
+        background: var(--sky-blue) !important;
         border: none;
+        box-shadow: 0 0 10px var(--sky-glow);
     }
     
     .page-link {
-        background: rgba(255, 255, 255, 0.05) !important;
-        color: var(--neon-blue) !important;
-        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        background: rgba(255, 255, 255, 0.03) !important;
+        color: var(--sky-blue) !important;
+        border: 1px solid var(--glass-border) !important;
+        margin: 0 2px;
+        border-radius: 8px !important;
     }
 </style>
 
 <div class="container-fluid py-4 px-md-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <div style="border-left: 4px solid var(--neon-purple); padding-left: 20px;">
-            <h1 class="h2 text-white font-weight-bold mb-0">SERVICE <span style="color: var(--neon-blue);">RECORDS</span></h1>
-            <p class="text-muted small text-uppercase mb-0" style="letter-spacing: 2px;">Daily Archive Stream</p>
+        <div style="border-left: 4px solid var(--sky-blue); padding-left: 20px;">
+            <h1 class="h3 text-white font-weight-bold mb-0">SERVICE <span style="color: var(--sky-blue);">ARCHIVE</span></h1>
+            <p class="text-muted small text-uppercase mb-0" style="letter-spacing: 2px;">Daily Telemetry Stream</p>
         </div>
         <div class="text-right">
-            <span class="badge px-4 py-2" style="background: rgba(157, 80, 187, 0.1); color: var(--neon-purple); border: 1px solid var(--neon-purple);">
+            <span class="badge px-3 py-2" style="background: rgba(14, 165, 233, 0.1); color: var(--sky-blue); border: 1px solid var(--sky-blue); border-radius: 10px;">
                 <i class="fas fa-history mr-2"></i> <?php echo date('d M Y'); ?>
             </span>
         </div>
@@ -121,7 +128,7 @@ include('header.php');
 
     <div class="card card-cyber shadow">
         <div class="card-header card-header-cyber">
-            <h6 class="m-0 font-weight-bold" style="color: var(--neon-blue);"><i class="fas fa-list-ul mr-2"></i>COMPLETED TASKS</h6>
+            <h6 class="m-0 font-weight-bold text-white"><i class="fas fa-stream mr-2 text-sky-blue"></i>COMPLETED SESSIONS</h6>
         </div>
         <div class="card-body p-0">
             <div class="table-responsive p-3">
@@ -137,12 +144,13 @@ include('header.php');
                     </thead>
                     <tbody>
                         <?php
+                        // Increase limit for GROUP_CONCAT to prevent item cutoff
                         $object->query = "SET SESSION group_concat_max_len = 10000";
                         $object->execute();
 
                         $object->query = "
                             SELECT o.order_number, o.order_table, o.order_time, o.order_status,
-                                   GROUP_CONCAT(CONCAT('<div class=\"item-row\"><span style=\"color:var(--neon-purple); font-weight:bold;\">', oi.product_quantity, 'x</span> ', oi.product_name, '</div>') SEPARATOR '') as item_details
+                                   GROUP_CONCAT(CONCAT('<div class=\"item-row\"><span class=\"text-white-50\">', oi.product_quantity, 'x</span> ', oi.product_name, '</div>') SEPARATOR '') as item_details
                             FROM order_table o
                             INNER JOIN order_item_table oi ON oi.order_id = o.order_id 
                             WHERE (o.order_status = 'Ready' OR o.order_status = 'Completed')
@@ -159,12 +167,16 @@ include('header.php');
                                 
                                 echo '
                                 <tr>
-                                    <td class="fit-content"><span class="ticket-gradient">#'.$row["order_number"].'</span></td>
-                                    <td class="fit-content"><span class="badge" style="background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);">'.$row["order_table"].'</span></td>
-                                    <td><div class="item-list-container">'.$row["item_details"].'</div></td>
-                                    <td class="fit-content text-muted">'.date('H:i', strtotime($row["order_time"])).'</td>
+                                    <td class="fit-content"><span class="ticket-id">#'.$row["order_number"].'</span></td>
                                     <td class="fit-content">
-                                        <span class="'.$status_class.'">
+                                        <div class="px-2 py-1 rounded text-center" style="background:rgba(255,255,255,0.05); border:1px solid var(--glass-border); font-size: 0.85rem;">
+                                            '.$row["order_table"].'
+                                        </div>
+                                    </td>
+                                    <td>'.$row["item_details"].'</td>
+                                    <td class="fit-content text-white-50" style="font-size: 0.85rem;">'.date('H:i', strtotime($row["order_time"])).'</td>
+                                    <td class="fit-content">
+                                        <span class="'.$status_class.' small text-uppercase">
                                             <i class="fas '.$status_icon.' mr-1"></i> '.$row["order_status"].'
                                         </span>
                                     </td>
@@ -189,8 +201,12 @@ $(document).ready(function(){
         "autoWidth": false,
         "language": {
             "search": "",
-            "searchPlaceholder": "Search History...",
-            "lengthMenu": "_MENU_ ENTRIES"
+            "searchPlaceholder": "Filter records...",
+            "lengthMenu": "_MENU_",
+            "paginate": {
+                "previous": "<i class='fas fa-chevron-left'></i>",
+                "next": "<i class='fas fa-chevron-right'></i>"
+            }
         },
         "columnDefs": [
             { "targets": [0, 1, 3, 4], "className": "fit-content" }

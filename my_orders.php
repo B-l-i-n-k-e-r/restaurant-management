@@ -10,88 +10,83 @@ include('header.php');
 
 <style>
     :root { 
+        --sky-blue: #0ea5e9; 
+        --sky-glow: rgba(14, 165, 233, 0.4);
+        --deep-navy: #0f172a;
         --glass-bg: rgba(255, 255, 255, 0.03); 
         --glass-border: rgba(255, 255, 255, 0.1); 
-        --accent-cyan: #0ea5e9; 
-        --neon-green: #10b981;
-        --neon-yellow: #f59e0b;
-        --neon-red: #ef4444;
+        --accent-green: #22c55e;
+        --accent-red: #ef4444;
     }
     
-    body { background-color: #0c0f17; color: #e2e8f0; font-family: 'Inter', sans-serif; }
+    body { background-color: var(--deep-navy); color: #e2e8f0; font-family: 'Poppins', sans-serif; }
 
-    /* 1. GLASS CARD STYLING */
+    /* CONSTRAINT: Fit content for table columns */
+    .table td, .table th { 
+        white-space: nowrap !important; 
+        width: 1% !important; 
+        vertical-align: middle;
+        padding: 1.2rem 1rem !important;
+        border-top: 1px solid var(--glass-border) !important;
+    }
+    .table td.expand, .table th.expand { width: auto !important; white-space: normal !important; }
+
     .glass-card { 
-        background: var(--glass-bg) !important; 
+        background: rgba(15, 23, 42, 0.7) !important; 
         backdrop-filter: blur(20px); 
         -webkit-backdrop-filter: blur(20px);
         border: 1px solid var(--glass-border) !important; 
-        border-radius: 20px; 
+        border-radius: 24px; 
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        overflow: hidden;
     }
 
-    /* 2. TABLE STYLING - FIT CONTENT CONSTRAINT */
-    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; border-collapse: separate !important; border-spacing: 0; }
+    .glass-card-modal { 
+        background: #0f172a !important; 
+        border: 1px solid var(--sky-blue) !important; 
+        border-radius: 24px !important; 
+        box-shadow: 0 0 30px var(--sky-glow) !important;
+    }
+
+    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; }
     
-    .fit-content { width: 1% !important; white-space: nowrap !important; }
-
     .table thead th {
-        background: transparent !important;
-        color: var(--accent-cyan) !important;
+        background: rgba(14, 165, 233, 0.05) !important;
+        color: var(--sky-blue) !important;
         text-transform: uppercase;
-        font-size: 0.7rem;
+        font-size: 0.75rem;
         letter-spacing: 2px;
-        border-bottom: 2px solid rgba(14, 165, 233, 0.2) !important;
-        padding: 1.2rem 1rem !important;
-    }
-
-    .table td {
-        vertical-align: middle !important;
-        padding: 1rem !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-        background: transparent !important;
+        border-bottom: 2px solid var(--sky-blue) !important;
     }
 
     tr:hover td { background: rgba(14, 165, 233, 0.05) !important; }
 
-    /* 3. DATATABLE OVERRIDES */
-    .dataTables_wrapper .dataTables_filter input {
-        background: rgba(255, 255, 255, 0.05) !important;
-        border: 1px solid var(--glass-border) !important;
-        color: white !important;
-        border-radius: 10px;
-        padding: 8px 15px;
-    }
-
-    .page-link { background: var(--glass-bg) !important; border: 1px solid var(--glass-border) !important; color: #94a3b8 !important; border-radius: 8px !important; margin: 0 3px; }
-    .page-item.active .page-link { background: var(--accent-cyan) !important; color: #000 !important; border-color: var(--accent-cyan) !important; font-weight: bold; }
-
-    /* 4. MODAL GLASS UPGRADE */
-    .modal-content {
-        background: rgba(15, 23, 42, 0.95) !important;
-        backdrop-filter: blur(25px);
-        border: 1px solid var(--accent-cyan) !important;
-        border-radius: 24px !important;
-        box-shadow: 0 0 50px rgba(14, 165, 233, 0.2);
-    }
-
-    /* 5. TABS STYLING */
+    /* Tab Styling */
     .nav-pills .nav-link { 
         color: #94a3b8; 
         border-radius: 12px; 
-        padding: 10px 20px; 
-        font-weight: bold; 
+        padding: 12px 25px; 
+        font-weight: 600; 
         text-transform: uppercase; 
         font-size: 0.8rem;
         letter-spacing: 1px;
+        transition: 0.3s;
     }
     .nav-pills .nav-link.active { 
-        background: rgba(14, 165, 233, 0.1) !important; 
-        color: var(--accent-cyan) !important; 
-        border: 1px solid var(--accent-cyan);
+        background: var(--sky-blue) !important; 
+        color: white !important; 
+        box-shadow: 0 0 20px var(--sky-glow);
     }
 
-    /* DIGITAL RECEIPT PREVIEW (Modal) */
+    /* Modal Styling */
+    .modal-content {
+        background: #0f172a !important;
+        border: 1px solid var(--sky-blue) !important;
+        border-radius: 28px !important;
+        box-shadow: 0 0 50px var(--sky-glow);
+    }
+
+    /* Digital Receipt Print Styling */
     .digital-receipt-wrapper {
         background: #000;
         color: #fff;
@@ -99,27 +94,32 @@ include('header.php');
         border-radius: 15px;
         border: 1px dashed var(--glass-border);
     }
+
+    @media print {
+        body * { visibility: hidden !important; }
+        #receipt_content, #receipt_content * { visibility: visible !important; }
+        #receipt_content { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
+        .digital-receipt-wrapper { background: white !important; color: black !important; border: 1px solid #000 !important; }
+    }
 </style>
 
 <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-5">
         <div>
-            <h1 class="h3 font-weight-bold text-white mb-0">My Orders</h1>
-            <p class="text-white-50 small text-uppercase letter-spacing-1">Live tracking and order history</p>
+            <h1 class="h2 font-weight-bold text-white mb-1">Order Tracking</h1>
+            <p class="text-white-50 small text-uppercase" style="letter-spacing: 2px;">Real-time Status • <?php echo date('Y'); ?></p>
         </div>
-        <div>
-            <a href="user_dashboard.php" class="btn btn-outline-info px-4 py-2" style="border-radius: 12px; font-weight: bold;">
-                <i class="fas fa-plus mr-2"></i>NEW ORDER
-            </a>
-        </div>
+        <a href="user_dashboard.php" class="btn btn-primary px-4 shadow-lg" style="background: var(--sky-blue); border: none; border-radius: 15px; font-weight: bold;">
+            <i class="fas fa-plus mr-2"></i>ADD ITEMS
+        </a>
     </div>
 
-    <ul class="nav nav-pills mb-4">
+    <ul class="nav nav-pills mb-4 glass-card p-2 d-inline-flex" style="background: rgba(255,255,255,0.02) !important;">
         <li class="nav-item">
-            <a class="nav-link active" data-toggle="pill" href="#active"><i class="fas fa-satellite-dish mr-2"></i> LIVE TRACKING</a>
+            <a class="nav-link active" data-toggle="pill" href="#active"><i class="fas fa-radar mr-2"></i>LIVE STATUS</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" data-toggle="pill" href="#history"><i class="fas fa-history mr-2"></i> ARCHIVE</a>
+            <a class="nav-link" data-toggle="pill" href="#history"><i class="fas fa-archive mr-2"></i>HISTORY</a>
         </li>
     </ul>
 
@@ -127,48 +127,68 @@ include('header.php');
         <div class="tab-pane fade show active" id="active">
             <div id="customer_active_area" class="row">
                 <div class="col-12 text-center py-5">
-                    <div class="spinner-border text-info" role="status"></div>
+                    <div class="spinner-grow text-sky-blue" role="status"></div>
                 </div>
             </div>
         </div>
         
         <div class="tab-pane fade" id="history">
             <div class="card glass-card">
-                <div class="card-body p-0">
-                    <div class="table-responsive">
-                        <table class="table w-100" id="customer_history_table">
-                            <thead>
-                                <tr>
-                                    <th class="pl-4 fit-content">ORDER ID</th>
-                                    <th>TIMESTAMP</th>
-                                    <th class="fit-content">TABLE</th>
-                                    <th class="fit-content">TOTAL BILL</th>
-                                    <th class="text-right pr-4 fit-content">PROTOCOL</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                    </div>
+                <div class="table-responsive">
+                    <table class="table w-100" id="customer_history_table">
+                        <thead>
+                            <tr>
+                                <th class="pl-4">ORDER ID</th>
+                                <th>DATE/TIME</th>
+                                <th>TABLE</th>
+                                <th>BILL AMOUNT</th>
+                                <th>METHOD</th>
+                                <th class="text-right pr-4">ACTION</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<div class="modal fade" id="detailModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title font-weight-bold text-uppercase" style="color: var(--accent-cyan);">
-                    <i class="fas fa-receipt mr-2"></i>Digital Receipt
-                </h5>
-                <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+<div class="modal fade" id="settleModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content glass-card-modal text-white">
+            <div class="modal-header border-0 p-4 pb-0">
+                <h5 class="modal-title font-weight-bold text-success">Finalize Settlement</h5>
+                <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
             </div>
-            <div class="modal-body" id="receipt_content"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link text-white-50 mr-auto" data-dismiss="modal">CLOSE</button>
-                <button type="button" class="btn btn-warning px-4 print-trigger" style="border-radius: 12px; font-weight: bold;">
-                    <i class="fas fa-print mr-2"></i>PRINT
+            <div class="modal-body p-5 text-center">
+                <p class="text-white-50 small text-uppercase mb-1 font-weight-bold">Amount Outstanding</p>
+                <h1 class="display-3 font-weight-bold text-white mb-5" id="display_total" style="text-shadow: 0 0 20px rgba(255,255,255,0.2);">0.00</h1>
+
+                <div class="form-group text-left mb-4">
+                    <label class="small text-white-50 ml-1">Payment Method</label>
+                    <select id="payment_method" class="form-control glass-card border-secondary text-white" style="height: 55px; background: rgba(0,0,0,0.3) !important;">
+                        <option value="Cash">💵 Cash Payment</option>
+                        <option value="Card">💳 Credit / Debit Card</option>
+                        <option value="M-Pesa">📱 Mobile Money (M-Pesa)</option>
+                    </select>
+                </div>
+
+                <div id="cash_only_section" class="text-left">
+                    <div class="form-group">
+                        <label class="small text-white-50 ml-1">Cash Received</label>
+                        <input type="number" id="amount_received" class="form-control form-control-lg glass-card text-white border-secondary" placeholder="0.00" style="height: 60px; font-size: 1.5rem; background: rgba(255,255,255,0.05) !important;">
+                    </div>
+                    <div class="p-3 rounded-xl d-flex justify-content-between align-items-center" style="background: rgba(0,0,0,0.2); border-radius: 15px;">
+                        <span class="text-white-50">Change Due:</span>
+                        <h3 class="mb-0 text-warning font-weight-bold" id="display_change">0.00</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 p-4">
+                <input type="hidden" id="settle_order_id">
+                <button type="button" id="confirm_settlement_btn" class="btn btn-block py-3 font-weight-bold" style="background: var(--accent-green); color: white; border-radius: 15px; box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);">
+                    COMPLETE & FINALIZE
                 </button>
             </div>
         </div>
@@ -179,6 +199,7 @@ include('header.php');
 
 <script>
 $(document).ready(function(){
+    let currentTotal = 0;
 
     function load_active_orders() {
         $.ajax({
@@ -189,7 +210,7 @@ $(document).ready(function(){
         });
     }
     load_active_orders();
-    setInterval(load_active_orders, 15000); 
+    setInterval(load_active_orders, 10000); 
 
     var dataTable = $('#customer_history_table').DataTable({
         "processing": true,
@@ -200,38 +221,102 @@ $(document).ready(function(){
             "data": { "action": "fetch_customer_history" } 
         },
         "columns": [
-            { "data": "order_number", "className": "pl-4 fit-content font-weight-bold" },
+            { "data": "order_number", "className": "pl-4 font-weight-bold text-sky-blue" },
             { "data": "order_date" },
-            { "data": "order_table", "className": "fit-content text-center" },
-            { "data": "order_total", "className": "fit-content font-weight-bold text-info" },
-            { "data": "action", "className": "text-right pr-4 fit-content" }
+            { "data": "order_table", "className": "text-center" },
+            { "data": "order_total", "className": "font-weight-bold" },
+            { "data": "payment_method", "className": "text-white-50" },
+            { "data": "action", "className": "text-right pr-4" }
         ],
         "order": [[ 0, "desc" ]],
         "language": { 
             "search": "", 
-            "searchPlaceholder": "Filter archive...",
-            "paginate": { "previous": "<", "next": ">" }
+            "searchPlaceholder": "Search History...",
+            "paginate": { "previous": "«", "next": "»" }
         }
     });
 
+    // UPDATED: Direct redirect to print.php instead of showing modal
     $(document).on('click', '.view_receipt', function(){
         let order_id = $(this).data('id');
-        $('#receipt_content').html('<div class="text-center py-5"><div class="spinner-border text-info"></div></div>');
-        $('#detailModal').modal('show');
+        window.location.href = 'print.php?action=print_receipt&order_id=' + order_id;
+    });
+
+    $(document).on('click', '.pay_now_btn', function(){
+        let id = $(this).data('id');
+        let amountText = $(this).data('bill'); 
+        let amountNumeric = amountText.replace(/[^0-9.]/g, ''); 
+        
+        currentTotal = parseFloat(amountNumeric);
+        $('#settle_order_id').val(id);
+        $('#display_total').text(amountText);
+        $('#amount_received').val('');
+        $('#display_change').text('0.00');
+        $('#payment_method').val('Cash');
+        $('#cash_only_section').show();
+        $('#settleModal').modal('show');
+    });
+
+    $('#amount_received').on('input', function(){
+        let received = parseFloat($(this).val()) || 0;
+        let change = received - currentTotal;
+        $('#display_change').text(change >= 0 ? change.toFixed(2) : '0.00');
+    });
+
+    $('#payment_method').change(function(){
+        if($(this).val() !== 'Cash') {
+            $('#cash_only_section').fadeOut(200);
+        } else {
+            $('#cash_only_section').fadeIn(200);
+        }
+    });
+
+    $('#confirm_settlement_btn').on('click', function(){
+        let id = $('#settle_order_id').val();
+        let method = $('#payment_method').val();
+        let received = $('#amount_received').val();
+
+        if(method === 'Cash' && (parseFloat(received) < currentTotal)) {
+            Swal.fire({ icon: 'warning', title: 'Insufficient Cash', text: 'Amount received must cover the bill.', background: '#0f172a', color: '#fff'});
+            return;
+        }
 
         $.ajax({
             url: "order_action.php",
             method: "POST",
-            data: { action: 'get_receipt_html', order_id: order_id },
-            success: function(data){ 
-                let updatedData = data.replace(/(Waitstaff:)\s*[^<]*/gi, '$1 Self-Service');
-                $('#receipt_content').html('<div class="digital-receipt-wrapper">' + updatedData + '</div>');
+            data: {
+                action: 'process_customer_payment',
+                order_id: id,
+                amount_paid: received,
+                payment_method: method
+            },
+            success: function(data){
+                try {
+                    let response = JSON.parse(data);
+                    if(response.status === 'success') {
+                        $('#settleModal').modal('hide');
+                        Swal.fire({ 
+                            icon: 'success', 
+                            title: 'Payment Confirmed', 
+                            text: 'Order Finalized Successfully', 
+                            background: '#0f172a', 
+                            color: '#fff'
+                        }).then(() => {
+                            // Automatically open print page after payment if desired
+                            window.location.href = 'print.php?action=print_receipt&order_id=' + id;
+                        });
+                        load_active_orders();
+                        if ($.fn.DataTable.isDataTable('#customer_history_table')) {
+                            dataTable.ajax.reload();
+                        }
+                    } else {
+                        Swal.fire({ icon: 'error', title: 'Payment Failed', text: response.message, background: '#0f172a', color: '#fff'});
+                    }
+                } catch(e) {
+                    location.reload();
+                }
             }
         });
-    });
-
-    $(document).on('click', '.print-trigger', function(){
-        window.print();
     });
 });
 </script>

@@ -13,177 +13,146 @@ include('header.php');
 
 <style>
     :root { 
-        --glass-bg: rgba(255, 255, 255, 0.03); 
+        --sky-blue: #0ea5e9; 
+        --sky-glow: rgba(14, 165, 233, 0.4);
+        --deep-navy: #0f172a;
+        --glass: rgba(255, 255, 255, 0.03); 
         --glass-border: rgba(255, 255, 255, 0.1); 
-        --accent-cyan: #0ea5e9; 
-        --neon-green: #10b981;
-        --neon-yellow: #f59e0b;
-        --neon-red: #ef4444;
+        --accent-green: #22c55e;
+        --accent-red: #ef4444;
+        --accent-yellow: #f59e0b;
     }
 
-    body { background-color: #0c0f17; color: #e2e8f0; }
+    body { background-color: var(--deep-navy); color: white; font-family: 'Poppins', sans-serif; }
 
-    /* 1. GLASS CONTAINER STYLING */
+    /* Global Glass Cards */
     .glass-card { 
-        background: var(--glass-bg) !important; 
-        backdrop-filter: blur(20px); 
-        -webkit-backdrop-filter: blur(20px);
+        background: rgba(15, 23, 42, 0.7) !important; 
+        backdrop-filter: blur(15px); 
+        -webkit-backdrop-filter: blur(15px);
         border: 1px solid var(--glass-border) !important; 
         border-radius: 20px; 
-        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
     }
 
-    /* 2. FLOOR PLAN GRID */
+    /* Table Column Fit Content Constraint */
+    .table td, .table th { 
+        white-space: nowrap !important; 
+        width: 1% !important; 
+        vertical-align: middle;
+        border-top: 1px solid var(--glass-border) !important;
+    }
+    .table td.expand, .table th.expand { width: auto !important; white-space: normal !important; }
+
+    .table thead th {
+        border: none !important;
+        font-size: 0.75rem;
+        color: #64748b;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        padding: 18px 15px !important;
+    }
+
+    /* Floor Plan Grid */
     .table-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 15px; }
     
     .table-item { 
-        background: rgba(255, 255, 255, 0.02); 
+        background: rgba(255, 255, 255, 0.03); 
         border: 1px solid var(--glass-border); 
         border-radius: 18px; 
         padding: 24px; 
         text-align: center; 
         cursor: pointer; 
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
     }
     
-    .table-item:hover { transform: translateY(-5px); border-color: var(--accent-cyan); background: rgba(14, 165, 233, 0.05); }
+    .table-item:hover { 
+        transform: translateY(-8px); 
+        border-color: var(--sky-blue); 
+        box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px var(--sky-glow); 
+    }
     
-    .table-item.occupied { border-left: 5px solid var(--neon-yellow); background: rgba(245, 158, 11, 0.05); }
-    .table-item.available { border-left: 5px solid var(--neon-green); }
+    .table-item.occupied { border-left: 5px solid var(--accent-yellow) !important; }
+    .table-item.available { border-left: 5px solid var(--accent-green) !important; }
 
-    /* 3. TABLE STYLING - FIT CONTENT */
-    .table { color: #cbd5e1 !important; margin-bottom: 0 !important; }
-    .fit-content { width: 1% !important; white-space: nowrap !important; }
-
-    .table thead th {
-        background: transparent !important;
-        color: var(--accent-cyan) !important;
-        text-transform: uppercase;
-        font-size: 0.7rem;
-        letter-spacing: 2px;
-        border-bottom: 2px solid rgba(14, 165, 233, 0.2) !important;
-        padding: 1.2rem 1rem !important;
-    }
-
-    .table td {
-        vertical-align: middle !important;
-        padding: 1rem !important;
-        border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
-    }
-
-    .order-row { cursor: pointer; transition: 0.2s; }
-    .order-row:hover { background: rgba(14, 165, 233, 0.08) !important; }
-
-    /* 4. NAVIGATION PILLS */
+    /* Navigation Pills */
     .nav-pills .nav-link { 
         color: #94a3b8; 
         border-radius: 12px; 
-        border: 1px solid transparent; 
+        border: 1px solid var(--glass-border); 
         transition: 0.3s;
         font-weight: 600;
-        padding: 10px 20px;
+        padding: 10px 22px;
+        margin-right: 10px;
+        background: rgba(255,255,255,0.05);
     }
     .nav-pills .nav-link.active { 
-        background: rgba(14, 165, 233, 0.1) !important; 
-        color: var(--accent-cyan) !important; 
-        border: 1px solid var(--accent-cyan); 
+        background: var(--sky-blue) !important; 
+        color: white !important; 
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 20px var(--sky-glow);
     }
 
-    /* 5. DATATABLE CUSTOMS */
-    .dataTables_wrapper .dataTables_filter input {
+    /* DataTable Filter styling */
+    .dataTables_filter input {
         background: rgba(255, 255, 255, 0.05) !important;
         border: 1px solid var(--glass-border) !important;
         color: white !important;
         border-radius: 10px;
-        padding: 5px 15px;
+        padding: 8px 15px;
+        outline: none;
     }
 
-    /* 6. CYBER-GLASS SWEETALERT2 OVERRIDES */
+    /* Cyber-Glass SweetAlert2 Overrides */
     .swal2-popup.cyber-popup {
-        background: rgba(15, 23, 42, 0.95) !important;
-        backdrop-filter: blur(20px) !important;
-        border: 1px solid var(--accent-cyan) !important;
+        background: #0f172a !important;
+        border: 1px solid var(--sky-blue) !important;
         border-radius: 24px !important;
         color: #fff !important;
-        box-shadow: 0 0 40px rgba(14, 165, 233, 0.15) !important;
-        padding: 2rem !important;
+        box-shadow: 0 0 30px var(--sky-glow) !important;
     }
 
-    .swal2-title {
-        color: var(--accent-cyan) !important;
-        text-transform: uppercase !important;
-        letter-spacing: 3px !important;
-        font-weight: 900 !important;
-        font-size: 1.5rem !important;
-        margin-bottom: 1rem !important;
-    }
-
-    .swal2-html-container {
-        color: rgba(255, 255, 255, 0.7) !important;
-        font-size: 1rem !important;
-    }
+    .swal2-title { color: var(--sky-blue) !important; text-transform: uppercase !important; letter-spacing: 2px !important; }
 
     .swal2-confirm.cyber-confirm {
-        background: transparent !important;
-        border: 1px solid var(--neon-green) !important;
-        color: var(--neon-green) !important;
-        box-shadow: inset 0 0 10px rgba(16, 185, 129, 0.1) !important;
-        text-transform: uppercase !important;
-        font-weight: 800 !important;
-        letter-spacing: 1px;
+        background: var(--accent-green) !important;
+        color: white !important;
         border-radius: 12px !important;
         padding: 12px 30px !important;
-        margin: 10px !important;
-        transition: 0.3s !important;
-    }
-
-    .swal2-confirm.cyber-confirm:hover {
-        background: var(--neon-green) !important;
-        color: #000 !important;
-        box-shadow: 0 0 25px var(--neon-green) !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 15px rgba(34, 197, 94, 0.4) !important;
     }
 
     .swal2-cancel.cyber-cancel {
-        background: transparent !important;
-        border: 1px solid var(--neon-red) !important;
-        color: var(--neon-red) !important;
-        text-transform: uppercase !important;
-        font-weight: 800 !important;
-        letter-spacing: 1px;
+        background: var(--accent-red) !important;
+        color: white !important;
         border-radius: 12px !important;
         padding: 12px 30px !important;
-        margin: 10px !important;
-        transition: 0.3s !important;
+        font-weight: 800 !important;
+        box-shadow: 0 0 15px rgba(239, 68, 68, 0.4) !important;
     }
-
-    .swal2-cancel.cyber-cancel:hover {
-        background: var(--neon-red) !important;
-        color: #fff !important;
-        box-shadow: 0 0 25px var(--neon-red) !important;
-    }
-
-    /* Custom Icon Color override */
-    .swal2-icon.swal2-question { border-color: var(--accent-cyan) !important; color: var(--accent-cyan) !important; }
-    .swal2-icon.swal2-warning { border-color: var(--neon-yellow) !important; color: var(--neon-yellow) !important; }
-
 </style>
 
 <div class="container-fluid py-4">
     <?php if($is_waiter) { ?>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="d-flex justify-content-between align-items-end mb-5">
             <div>
-                <h1 class="h3 font-weight-bold text-white mb-0">Table Management</h1>
-                <p class="text-white-50 small text-uppercase letter-spacing-1">Real-time table status & management</p>
+                <h6 class="text-sky-blue font-weight-bold mb-1" style="color: var(--sky-blue); letter-spacing: 2px; text-transform: uppercase;">
+                    Floor Management
+                </h6>
+                <h1 class="h2 mb-0 font-weight-bold text-white">
+                    <i class="fas fa-th mr-2"></i>Table Selection
+                </h1>
             </div>
-            <a href="dashboard.php" class="btn btn-info shadow-sm px-4" style="border-radius: 12px; font-weight: bold;">
-                <i class="fas fa-plus-circle mr-2"></i> NEW ORDER
+            <a href="dashboard.php" class="btn glass-card px-4 py-3 text-white" style="border-color: var(--sky-blue) !important;">
+                <i class="fas fa-plus-circle mr-2 text-sky-blue"></i>NEW ORDER
             </a>
         </div>
 
         <?php if(isset($_GET['mode']) && $_GET['mode'] == 'select_table') { ?>
-        <div class="alert glass-card border-success mb-4 animate__animated animate__pulse animate__infinite">
-            <h6 class="text-success font-weight-bold mb-1"><i class="fas fa-crosshairs mr-2"></i> TABLE SELECTION REQUIRED</h6>
-            <p class="mb-0 small opacity-75">Tap an available green table to deploy the current cart items.</p>
+        <div class="glass-card mb-4 border-0 p-3" style="border-left: 5px solid var(--accent-green) !important; background: rgba(34, 197, 94, 0.1) !important;">
+            <h6 class="text-white font-weight-bold mb-1"><i class="fas fa-crosshairs mr-2 text-success"></i> DEPLOYMENT MODE ACTIVE</h6>
+            <p class="mb-0 small text-white-50">Please select an available (green) table to assign the current order.</p>
         </div>
         <?php } ?>
 
@@ -192,35 +161,40 @@ include('header.php');
                 <div class="glass-card p-4" id="table_status_area"></div>
             </div>
             <div class="col-lg-5">
-                <div class="glass-card p-4 sticky-top" style="top: 100px; min-height: 300px;" id="order_detail_panel">
+                <div class="glass-card p-4 sticky-top" style="top: 20px; min-height: 300px;" id="order_detail_panel">
                     <div class="text-center py-5 opacity-25">
-                        <i class="fas fa-microchip fa-4x mb-4 text-info"></i>
-                        <h5>SELECT TABLE TO VIEW ORDERS </h5>
+                        <i class="fas fa-terminal fa-4x mb-4 text-sky-blue"></i>
+                        <h5>AWAITING TELEMETRY</h5>
+                        <p class="small">Select a table to inspect active orders</p>
                     </div>
                 </div>
             </div>
         </div>
 
     <?php } else { ?>
-        <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="mb-5 d-flex justify-content-between align-items-end">
             <div>
-                <h1 class="h3 font-weight-bold text-white mb-0">Order Oversight</h1>
-                <p class="text-white-50 small text-uppercase">View Orders & Sales History</p>
+                <h6 class="text-sky-blue font-weight-bold mb-1" style="color: var(--sky-blue); letter-spacing: 2px; text-transform: uppercase;">
+                    Archive & Intelligence
+                </h6>
+                <h1 class="h2 mb-0 font-weight-bold text-white">
+                    <i class="fas fa-database mr-2"></i>Order Oversight
+                </h1>
             </div>
-            <button type="button" id="master_print_report" class="btn btn-outline-info shadow-sm px-4" style="border-radius: 12px;">
-                <i class="fas fa-file-invoice mr-2"></i>DAILY REPORT
+            <button type="button" id="master_print_report" class="btn glass-card px-4 py-3 text-white" style="border-color: var(--accent-green) !important;">
+                <i class="fas fa-file-invoice mr-2 text-success"></i>DAILY REPORT
             </button>
         </div>
 
         <ul class="nav nav-pills mb-4">
             <li class="nav-item">
                 <a class="nav-link active" data-toggle="pill" href="#pending">
-                    <i class="fas fa-satellite-dish mr-2"></i>ACTIVE ORDERS
+                    <i class="fas fa-bolt mr-2"></i>ACTIVE ORDERS
                 </a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" data-toggle="pill" href="#history">
-                    <i class="fas fa-archive mr-2"></i>SALES HISTORY
+                    <i class="fas fa-history mr-2"></i>SALES HISTORY
                 </a>
             </li>
         </ul>
@@ -230,14 +204,14 @@ include('header.php');
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="pending">
                         <div class="glass-card overflow-hidden">
-                            <table class="table table-borderless">
+                            <table class="table mb-0">
                                 <thead>
                                     <tr>
-                                        <th class="pl-4 fit-content">ID #</th>
-                                        <th class="fit-content">UNIT</th>
-                                        <th>OPERATOR</th>
-                                        <th class="fit-content">REVENUE</th>
-                                        <th class="text-right pr-4 fit-content">PROTOCOL</th>
+                                        <th class="pl-4">ID #</th>
+                                        <th>UNIT</th>
+                                        <th class="expand">OPERATOR</th>
+                                        <th>REVENUE</th>
+                                        <th class="text-right pr-4">PROTOCOL</th>
                                     </tr>
                                 </thead>
                                 <tbody id="admin_pending_list"></tbody>
@@ -248,15 +222,15 @@ include('header.php');
                     <div class="tab-pane fade" id="history">
                         <div class="glass-card p-4">
                             <div class="table-responsive">
-                                <table class="table table-hover w-100" id="history_table">
+                                <table class="table w-100" id="history_table">
                                     <thead>
                                         <tr>
-                                            <th class="fit-content">ID #</th>
-                                            <th class="fit-content">TIMESTAMP</th>
-                                            <th class="fit-content text-center">UNIT</th>
-                                            <th>CLEARANCE</th>
-                                            <th class="fit-content">TOTAL</th>
-                                            <th class="text-right pr-4 fit-content">PROTOCOL</th>
+                                            <th>ID #</th>
+                                            <th>TIMESTAMP</th>
+                                            <th class="text-center">UNIT</th>
+                                            <th class="expand">CLEARANCE</th>
+                                            <th>TOTAL</th>
+                                            <th class="text-right pr-4">PROTOCOL</th>
                                         </tr>
                                     </thead>
                                 </table>
@@ -267,10 +241,11 @@ include('header.php');
             </div>
 
             <div class="col-lg-4">
-                <div class="glass-card p-4 sticky-top" style="top: 100px; min-height: 400px;" id="admin_detail_preview">
+                <div class="glass-card p-4 sticky-top" style="top: 20px; min-height: 400px;" id="admin_detail_preview">
                     <div class="text-center py-5 opacity-25">
-                        <i class="fas fa-fingerprint fa-4x mb-4 text-info"></i>
-                        <h5>SELECT LOG FOR INSPECTION</h5>
+                        <i class="fas fa-fingerprint fa-4x mb-4 text-sky-blue"></i>
+                        <h5>INSPECTION READY</h5>
+                        <p class="small">Select a log entry to view full details</p>
                     </div>
                 </div>
             </div>
@@ -310,16 +285,16 @@ $(document).ready(function(){
     $(document).on('click', '#btn_cancel_order', function(){
         let order_id = $(this).data('id');
         Swal.fire({
-            title: 'Cancel Mission?',
-            text: "Order data will be purged and table cleared.",
+            title: 'Purge Order?',
+            text: "This action will clear the table telemetry.",
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonText: 'PURGE ORDER',
-            cancelButtonText: 'CANCEL',
+            confirmButtonText: 'PURGE',
+            cancelButtonText: 'ABORT',
             customClass: {
                 popup: 'cyber-popup',
-                confirmButton: 'cyber-cancel', // Using red for delete
-                cancelButton: 'cyber-confirm'  // Using green for cancel/stay
+                confirmButton: 'cyber-cancel',
+                cancelButton: 'cyber-confirm'
             },
             buttonsStyling: false
         }).then((result) => {
@@ -330,16 +305,8 @@ $(document).ready(function(){
                     data: {action: 'cancel_order', order_id: order_id},
                     success: function(data){
                         if(data.trim() == 'success') {
-                            Swal.fire({ 
-                                icon: 'success', 
-                                title: 'Purged', 
-                                customClass: { popup: 'cyber-popup' },
-                                buttonsStyling: false,
-                                confirmButtonClass: 'cyber-confirm'
-                            }).then(() => {
-                                load_tables();
-                                $('#order_detail_panel').html('<div class="text-center py-5 opacity-25"><i class="fas fa-microchip fa-4x mb-4 text-info"></i><h5>SELECT TABLE FOR TELEMETRY</h5></div>');
-                            });
+                            load_tables();
+                            $('#order_detail_panel').html('<div class="text-center py-5 opacity-25"><i class="fas fa-terminal fa-4x mb-4 text-sky-blue"></i><h5>AWAITING TELEMETRY</h5></div>');
                         }
                     }
                 });
@@ -377,8 +344,7 @@ $(document).ready(function(){
                 }
                 
                 Swal.fire({
-                    title: 'Confirm Deployment',
-                    text: "Assign items to " + table + "?",
+                    title: 'Deploy to ' + table + '?',
                     icon: 'question',
                     showCancelButton: true,
                     confirmButtonText: 'DEPLOY',
@@ -397,15 +363,7 @@ $(document).ready(function(){
                             data: {action: 'submit_cart_to_table', table_name: table},
                             success: function(res){ 
                                 if(res.trim() == 'success') {
-                                    Swal.fire({ 
-                                        icon: 'success', 
-                                        title: 'Deployed!', 
-                                        customClass: { popup: 'cyber-popup' },
-                                        buttonsStyling: false,
-                                        confirmButtonClass: 'cyber-confirm'
-                                    }).then(() => {
-                                        window.location.href = "dashboard.php";
-                                    });
+                                    window.location.href = "dashboard.php";
                                 } 
                             }
                         });
@@ -437,15 +395,15 @@ $(document).ready(function(){
             "serverSide": true,
             "ajax": { "url": "order_action.php", "type": "POST", "data": { "action": "fetch_history" } },
             "columns": [
-                { "data": "order_number", "className": "fit-content font-weight-bold" },
-                { "data": "order_date", "className": "fit-content" },
-                { "data": "order_table", "className": "fit-content text-center" },
-                { "data": "order_cashier" },
-                { "data": "order_total", "className": "fit-content text-info font-weight-bold" },
-                { "data": "action", "className": "fit-content text-right" }
+                { "data": "order_number", "className": "font-weight-bold" },
+                { "data": "order_date" },
+                { "data": "order_table", "className": "text-center" },
+                { "data": "order_cashier", "className": "expand" },
+                { "data": "order_total", "className": "text-sky-blue font-weight-bold" },
+                { "data": "action", "className": "text-right" }
             ],
             "order": [[ 0, "desc" ]],
-            "language": { "search": "", "searchPlaceholder": "Filter logs..." }
+            "language": { "search": "", "searchPlaceholder": "Search Archives..." }
         });
     }
 

@@ -12,14 +12,16 @@ if(isset($_POST["action"]))
     {
         $error = ''; $success = ''; $user_profile = $_POST["hidden_user_profile"];
 
-        $object->query = "SELECT * FROM user_table WHERE user_email = :user_email AND user_id != :user_id";
+        // Allow shared emails by checking Name + Email + ID
+        $object->query = "SELECT * FROM user_table WHERE user_email = :user_email AND user_name = :user_name AND user_id != :user_id";
         $object->execute([
             ':user_email' => $_POST["user_email"],
+            ':user_name'  => $_POST["user_name"],
             ':user_id'    => $_SESSION["user_id"]
         ]);
 
         if($object->row_count() > 0) {
-            $error = 'Email already exists';
+            $error = 'This identity already exists.';
         } else {
             if($_FILES["user_image"]["name"] != '') {
                 if(file_exists($user_profile) && strpos($user_profile, 'undraw') === false) {
@@ -28,24 +30,33 @@ if(isset($_POST["action"]))
                 $user_profile = upload_image();
             }
 
+            // --- PASSWORD LOGIC ---
+            $password_query = "";
+            $params = [
+                ':user_name'        => $_POST["user_name"],
+                ':user_contact_no'  => $_POST["user_contact_no"],
+                ':user_email'       => $_POST["user_email"],
+                ':user_profile'     => $user_profile,
+                ':user_id'          => $_SESSION["user_id"]
+            ];
+
+            // Only update password if not empty
+            if(!empty($_POST["user_password"])) {
+                $password_query = ", user_password = :user_password";
+                $params[':user_password'] = $_POST["user_password"];
+            }
+
             $object->query = "
             UPDATE user_table 
             SET user_name = :user_name, 
             user_contact_no = :user_contact_no, 
             user_email = :user_email, 
-            user_password = :user_password, 
             user_profile = :user_profile 
+            $password_query
             WHERE user_id = :user_id
             ";
 
-            $object->execute([
-                ':user_name'       => $_POST["user_name"],
-                ':user_contact_no' => $_POST["user_contact_no"],
-                ':user_email'      => $_POST["user_email"],
-                ':user_password'   => $_POST["user_password"],
-                ':user_profile'    => $user_profile,
-                ':user_id'         => $_SESSION["user_id"]
-            ]);
+            $object->execute($params);
 
             $success = 'Profile Synchronized Successfully';
         }
@@ -59,16 +70,20 @@ if(isset($_POST["action"]))
     }
 
     // ==========================================
-    // FETCH USERS (Matches user.php columns)
+    // FETCH USERS (With Active Filter Logic)
     // ==========================================
     if($_POST["action"] == 'fetch')
     {
-        // Sort mapping for DataTables
         $order_column = array(null, 'user_name', 'user_contact_no', 'user_email', null, 'user_type', 'user_created_on', 'user_status', null);
         
         $main_query = "SELECT * FROM user_table WHERE 1=1 "; 
         $search_query = '';
         $params = [];
+
+        if(isset($_POST["filter_role"]) && $_POST["filter_role"] != '') {
+            $search_query .= " AND user_type = :filter_role";
+            $params['filter_role'] = $_POST["filter_role"];
+        }
 
         if(isset($_POST["search"]["value"]) && $_POST["search"]["value"] != '') {
             $search_val = $_POST["search"]["value"];
@@ -99,19 +114,11 @@ if(isset($_POST["action"]))
         foreach($result as $row) {
             $sub_array = [];
             
-            // 1. STAFF (Image)
             $sub_array[] = '<img src="'.$row["user_profile"].'" class="user-profile-img" />';
-            
-            // 2. USERNAME (REMOVED RESET REQ BADGE)
             $sub_array[] = '<span class="text-white font-weight-bold">' . htmlspecialchars($row["user_name"]) . '</span>';
-
-            // 3. CONTACT
             $sub_array[] = '<span class="text-white-50 small">'.htmlspecialchars($row["user_contact_no"]).'</span>';
-
-            // 4. EMAIL
             $sub_array[] = '<span class="text-info small">'.htmlspecialchars($row["user_email"]).'</span>';
 
-            // 5. CREDENTIALS
             $sub_array[] = '
                 <div class="d-flex align-items-center justify-content-between bg-dark-50 p-1 px-2 rounded" style="min-width:110px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.05);">
                     <span id="pass_'.$row["user_id"].'" class="text-monospace small" style="letter-spacing:2px;">********</span>
@@ -120,27 +127,23 @@ if(isset($_POST["action"]))
                     </button>
                 </div>';
             
-            // 6. ROLE
             $role = $row["user_type"];
             $badge_class = 'badge-secondary';
             $icon = 'fa-user';
+            $display_name = $role;
             
-            if($role == 'Master') { $badge_class = 'badge-info'; $icon = 'fa-user-shield'; }
-            elseif($role == 'Kitchen') { $badge_class = 'badge-warning text-dark'; $icon = 'fa-fire'; }
+            if($role == 'Master') { $badge_class = 'badge-info'; $icon = 'fa-user-shield'; $display_name = 'Admin'; }
+            elseif($role == 'Kitchen') { $badge_class = 'badge-warning text-dark'; $icon = 'fa-fire'; $display_name = 'Kitchen Staff'; }
             elseif($role == 'Waiter') { $badge_class = 'badge-primary'; $icon = 'fa-concierge-bell'; }
             elseif($role == 'Cashier') { $badge_class = 'badge-success'; $icon = 'fa-cash-register'; }
 
-            $sub_array[] = '<span class="badge '.$badge_class.'"><i class="fas '.$icon.' mr-1"></i>'.$role.'</span>';
-            
-            // 7. JOINED
+            $sub_array[] = '<span class="badge '.$badge_class.'"><i class="fas '.$icon.' mr-1"></i>'.$display_name.'</span>';
             $sub_array[] = '<span class="text-white-50 small">'.date('M d, Y', strtotime($row["user_created_on"])).'</span>';
 
-            // 8. STATUS
             $btn_class = ($row["user_status"] == 'Enable') ? 'btn-success' : 'btn-danger';
             $next_status = ($row["user_status"] == 'Enable') ? 'Disable' : 'Enable';
             $sub_array[] = '<button type="button" class="btn btn-sm '.$btn_class.' status_button py-0 px-2" style="font-size:10px; border-radius:4px;" data-id="'.$row["user_id"].'" data-status="'.$next_status.'">'.strtoupper($row["user_status"]).'</button>';
             
-            // 9. ACTION
             $sub_array[] = '
                 <div class="btn-group">
                     <button type="button" class="btn btn-outline-warning btn-sm edit_button" data-id="'.$row["user_id"].'"><i class="fas fa-edit"></i></button>
@@ -159,16 +162,25 @@ if(isset($_POST["action"]))
     }
 
     // ==========================================
-    // ADD USER
+    // ADD USER (Assigning Role-Based Emails)
     // ==========================================
     if($_POST["action"] == 'Add')
     {
         $error = ''; $success = '';
-        $object->query = "SELECT user_id FROM user_table WHERE user_email = :user_email";
-        $object->execute(['user_email' => $_POST["user_email"]]);
+        $role = $_POST["user_type"];
+        $assigned_email = '';
+
+        if($role == 'Master') { $assigned_email = 'admin@gmail.com'; }
+        elseif($role == 'Waiter') { $assigned_email = 'waiter@gmail.com'; }
+        elseif($role == 'Cashier') { $assigned_email = 'cashier@gmail.com'; }
+        elseif($role == 'Kitchen') { $assigned_email = 'kitchen@gmail.com'; }
+        else { $assigned_email = $_POST["user_email"]; }
+
+        $object->query = "SELECT user_id FROM user_table WHERE user_email = :user_email AND user_name = :user_name";
+        $object->execute(['user_email' => $assigned_email, 'user_name' => $_POST["user_name"]]);
 
         if($object->row_count() > 0) {
-            $error = 'Email already registered.';
+            $error = 'This name is already registered for this role.';
         } else {
             if(!empty($_FILES["user_image"]["name"])) {
                 $user_image = upload_image();
@@ -182,30 +194,37 @@ if(isset($_POST["action"]))
             $object->execute([
                 'user_name' => $_POST["user_name"], 
                 'user_contact_no' => $_POST["user_contact_no"],
-                'user_email' => $_POST["user_email"], 
+                'user_email' => $assigned_email, 
                 'user_password' => $_POST["user_password"],
                 'user_profile' => $user_image, 
-                'user_type' => $_POST["user_type"], 
+                'user_type' => $role, 
                 'user_created_on' => $object->get_datetime()
             ]);
-            $success = 'Staff identity created.';
+            $success = 'Staff identity created for ' . $role;
         }
         echo json_encode(['error'=>$error, 'success'=>$success]);
     }
 
     // ==========================================
-    // EDIT USER
+    // EDIT USER (Maintains Role-Based Emails & Password Safety)
     // ==========================================
     if($_POST["action"] == 'Edit')
     {
         $error = ''; $success = '';
         $user_id = $_POST['hidden_id'];
+        $role = $_POST["user_type"];
         
-        $object->query = "SELECT user_id FROM user_table WHERE user_email = :user_email AND user_id != :user_id";
-        $object->execute(['user_email' => $_POST["user_email"], 'user_id' => $user_id]);
+        if($role == 'Master') { $assigned_email = 'admin@gmail.com'; }
+        elseif($role == 'Waiter') { $assigned_email = 'waiter@gmail.com'; }
+        elseif($role == 'Cashier') { $assigned_email = 'cashier@gmail.com'; }
+        elseif($role == 'Kitchen') { $assigned_email = 'kitchen@gmail.com'; }
+        else { $assigned_email = $_POST["user_email"]; }
+
+        $object->query = "SELECT user_id FROM user_table WHERE user_email = :user_email AND user_name = :user_name AND user_id != :user_id";
+        $object->execute(['user_email' => $assigned_email, 'user_name' => $_POST["user_name"], 'user_id' => $user_id]);
 
         if($object->row_count() > 0) {
-            $error = 'Email conflict detected.';
+            $error = 'Identity conflict detected.';
         } else {
             $user_image = $_POST["hidden_user_image"];
             if(!empty($_FILES["user_image"]["name"])) {
@@ -213,31 +232,38 @@ if(isset($_POST["action"]))
                 $user_image = upload_image();
             }
 
+            // --- PASSWORD LOGIC ---
+            $password_query = "";
+            $params = [
+                ':user_name'        => $_POST["user_name"], 
+                ':user_contact_no'  => $_POST["user_contact_no"],
+                ':user_email'       => $assigned_email, 
+                ':user_profile'     => $user_image,
+                ':user_type'        => $role, 
+                ':user_id'          => $user_id
+            ];
+
+            // Only update password if not empty
+            if(!empty($_POST["user_password"])) {
+                $password_query = ", user_password = :user_password";
+                $params[':user_password'] = $_POST["user_password"];
+            }
+
             $object->query = "UPDATE user_table SET 
                                 user_name = :user_name, 
                                 user_contact_no = :user_contact_no, 
                                 user_email = :user_email, 
-                                user_password = :user_password,
                                 user_profile = :user_profile, 
                                 user_type = :user_type 
+                                $password_query
                               WHERE user_id = :user_id";
-            $object->execute([
-                'user_name' => $_POST["user_name"], 
-                'user_contact_no' => $_POST["user_contact_no"],
-                'user_email' => $_POST["user_email"], 
-                'user_password' => $_POST["user_password"],
-                'user_profile' => $user_image,
-                'user_type' => $_POST["user_type"], 
-                'user_id' => $user_id
-            ]);
+            
+            $object->execute($params);
             $success = 'Staff profile updated.';
         }
         echo json_encode(['error'=>$error, 'success'=>$success]);
     }
 
-    // ==========================================
-    // CHANGE STATUS & DELETE
-    // ==========================================
     if($_POST["action"] == 'change_status')
     {
         $object->query = "UPDATE user_table SET user_status = :user_status WHERE user_id = :user_id";
@@ -250,7 +276,7 @@ if(isset($_POST["action"]))
         $object->query = "SELECT user_profile FROM user_table WHERE user_id = :id";
         $object->execute(['id' => $_POST["id"]]);
         $row = $object->statement_result();
-        if(isset($row[0]) && file_exists($row[0]['user_profile']) && strpos($row[0]['user_profile'], 'undraw') === false) { @unlink($row[0]['user_profile']); }
+        if(isset($row[0]) && file_exists($row[0]['user_profile']) && strpos($row[0]['user_profile'], 'default') === false) { @unlink($row[0]['user_profile']); }
 
         $object->query = "DELETE FROM user_table WHERE user_id = :id";
         $object->execute(['id' => $_POST["id"]]);
@@ -266,7 +292,6 @@ if(isset($_POST["action"]))
     }
 }
 
-// Helper Functions
 function upload_image() {
     $extension = pathinfo($_FILES['user_image']['name'], PATHINFO_EXTENSION);
     $new_name = rand() . '.' . $extension;

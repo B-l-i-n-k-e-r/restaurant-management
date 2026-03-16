@@ -1,10 +1,12 @@
 <?php
-// forgot_password_action.php
-
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
 
-require 'vendor/autoload.php';
+// Manually point to the files if autoload.php keeps crashing
+require 'vendor/phpmailer/phpmailer/src/Exception.php';
+require 'vendor/phpmailer/phpmailer/src/PHPMailer.php';
+require 'vendor/phpmailer/phpmailer/src/SMTP.php';
+
 include('rms.php');
 
 $object = new rms();
@@ -31,26 +33,38 @@ if(isset($_POST["user_email"])) {
         WHERE user_email = '".$email."'
         ";
         $object->execute();
-
-        $mail = new PHPMailer(true);
+        
+$mail = new PHPMailer(true);
 
         try {
+            // Enable this ONLY for troubleshooting; it will show in your JQuery response
+            // $mail->SMTPDebug = 2; 
+
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com'; 
             $mail->SMTPAuth   = true;
-            $mail->Username   = 'vinniemariba2004@gmail.com'; // Your Gmail
-            $mail->Password   = 'hrhr wfzi vzrm cddl'; // Your App Password
+            $mail->Username   = 'vinniemariba2004@gmail.com'; 
+            $mail->Password   = 'hrhr wfzi vzrm cddl'; 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            $mail->setFrom('vinniemariba2004@gmail.com', 'Wakanesa Restaurant');
+            // ADD THIS BLOCK FOR INFINITYFREE
+            $mail->SMTPOptions = array(
+                'ssl' => array(
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                    'allow_self_signed' => true
+                )
+            );
+
+            $mail->setFrom('vinniemariba2004@gmail.com', 'Wakanesa Restaurant'); // Use your Gmail here too
             $mail->addAddress($email);
 
             $mail->isHTML(true);
             $mail->Subject = 'Password Reset Request - Wakanesa Restaurant';
             
             // Adjust the URL to your exact folder name if it's different
-            $reset_link = "http://localhost:8000/reset_password.php?token=" . $token;
+            $reset_link = "https://wakanesa.infinityfreeapp.com/reset_password.php?token=" . $token;
             
             $mail->Body = "
                 <div style='font-family: Arial, sans-serif; padding: 20px;'>

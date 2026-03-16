@@ -62,7 +62,6 @@ if($object->is_login()) {
 
         @keyframes slowPan { from { transform: scale(1); } to { transform: scale(1.1); } }
 
-        /* INTENSE BORDER GLOW & CONTENT-FIT */
         .login-card {
             background: var(--glass-bg);
             backdrop-filter: blur(25px);
@@ -113,6 +112,14 @@ if($object->is_login()) {
             transform: translateY(-1px);
         }
 
+        /* Styling for readonly fields */
+        .form-control[readonly] {
+            background: rgba(14, 165, 233, 0.1) !important;
+            border-color: var(--sky-blue) !important;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
         .input-group-append .btn {
             background: rgba(255, 255, 255, 0.05) !important;
             border: 1px solid rgba(255, 255, 255, 0.2) !important;
@@ -122,7 +129,6 @@ if($object->is_login()) {
             border-bottom-right-radius: 12px;
         }
 
-        /* INTENSE BUTTON GLOW */
         .btn-login {
             background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
             color: #fff;
@@ -162,10 +168,16 @@ if($object->is_login()) {
         </div>
 
         <form method="post" id="login_form">
+            <div class="form-group mb-3">
+                <label>User Name</label>
+                <input type="text" name="user_name" id="user_name" class="form-control" required placeholder="Enter your full name">
+            </div>
+
             <div class="form-group mb-4">
                 <label>Email Address</label>
                 <input type="email" name="user_email" id="user_email" class="form-control" required data-parsley-type="email" placeholder="your@email.com">
             </div>
+
             <div class="form-group mb-2">
                 <label>Password</label>
                 <div class="input-group">
@@ -196,6 +208,33 @@ if($object->is_login()) {
 
 <script>
 $(document).ready(function(){
+
+    // AUTO-FILL & LOCK EMAIL LOGIC
+    $('#user_name').on('blur', function(){
+        var user_name = $(this).val();
+        var emailField = $('#user_email');
+
+        if(user_name != '') {
+            $.ajax({
+                url: "login_action.php",
+                method: "POST",
+                data: {action: 'check_role_email', user_name: user_name},
+                dataType: "json",
+                success: function(data) {
+                    if(data.email != '') {
+                        emailField.val(data.email);
+                        emailField.prop('readonly', true);
+                    } else {
+                        // Reset if not a staff role
+                        emailField.prop('readonly', false);
+                    }
+                }
+            });
+        } else {
+            emailField.prop('readonly', false).val('');
+        }
+    });
+
     $('#toggle_password').on('click', function() {
         const passwordField = $('#user_password');
         const icon = $('#password_icon');

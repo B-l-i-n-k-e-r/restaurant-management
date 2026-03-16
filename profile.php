@@ -15,6 +15,9 @@ $object->execute(['user_id' => $_SESSION["user_id"]]);
 $result = $object->statement_result();
 
 include('header.php');
+
+// Identify if the user is a staff member
+$is_staff = ($_SESSION['user_type'] !== 'User');
 ?>
 
 <style>
@@ -92,6 +95,14 @@ include('header.php');
         transform: translateX(5px);
     }
 
+    /* Styling for locked staff email */
+    .cool-input[readonly] {
+        cursor: not-allowed;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.05) !important;
+        color: rgba(255, 255, 255, 0.5) !important;
+        opacity: 0.6;
+    }
+
     .field-label {
         font-size: 0.7rem;
         letter-spacing: 2.5px;
@@ -123,7 +134,6 @@ include('header.php');
         box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
     }
 
-    /* THE HUD TEXT DECORATION */
     .data-deco {
         font-family: 'Courier New', monospace;
         font-size: 10px;
@@ -178,8 +188,11 @@ include('header.php');
                                     <input type="text" name="user_name" id="user_name" class="form-control cool-input" required />
                                 </div>
                                 <div class="col-md-6 mb-4">
-                                    <p class="field-label">Email Address</p>
-                                    <input type="email" name="user_email" id="user_email" class="form-control cool-input" required />
+                                    <p class="field-label">Email Address <?php if($is_staff) echo '<i class="fas fa-lock ml-2" style="font-size:10px; opacity:0.5;"></i>'; ?></p>
+                                    <input type="email" name="user_email" id="user_email" class="form-control cool-input" required <?php if($is_staff) echo 'readonly'; ?> />
+                                    <?php if($is_staff): ?>
+                                        <small class="text-white-50" style="font-size: 10px;">Staff emails are system-managed.</small>
+                                    <?php endif; ?>
                                 </div>
                                 <div class="col-md-6 mb-4">
                                     <p class="field-label">Contact</p>
@@ -188,7 +201,7 @@ include('header.php');
                                 <div class="col-12 mb-5">
                                     <p class="field-label">Password</p>
                                     <div class="input-group">
-                                        <input type="password" name="user_password" id="user_password" class="form-control cool-input" required />
+                                        <input type="password" name="user_password" id="user_password" class="form-control cool-input" placeholder="Leave blank to keep current" />
                                         <div class="input-group-append">
                                             <button class="btn text-info" type="button" id="toggle_password">
                                                 <i class="fas fa-eye" id="password_icon"></i>
@@ -224,7 +237,8 @@ $(document).ready(function(){
         $('#user_name').val("<?php echo $row['user_name']; ?>");
         $('#user_contact_no').val("<?php echo $row['user_contact_no']; ?>");
         $('#user_email').val("<?php echo $row['user_email']; ?>");
-        $('#user_password').val("<?php echo $row['user_password']; ?>");
+        // Clear password field by default for security/logic
+        $('#user_password').val(""); 
         <?php if($row["user_profile"] != '') { ?>
             $('#uploaded_image').html('<img src="<?php echo $row["user_profile"]; ?>" /> <input type="hidden" name="hidden_user_profile" value="<?php echo $row["user_profile"]; ?>" />');
         <?php } else { ?>
@@ -256,14 +270,15 @@ $(document).ready(function(){
             success:function(data) {
                 $('#edit_button').attr('disabled', false).text('Update Changes');
                 if(data.success != '') {
-                    // MESSAGE CHANGE HERE
-                    let customSuccessMsg = "UPDATED SUCCESSFULLY";
-                    
-                    $('#message').html('<div class="alert alert-info border-0 bg-info text-white" style="border-radius:15px; background: rgba(0,210,255,0.2) !important;">'+customSuccessMsg+'</div>');
+                    $('#message').html('<div class="alert alert-info border-0 text-white" style="border-radius:15px; background: rgba(0,210,255,0.2) !important;">'+data.success+'</div>');
+                    $('#user_password').val(""); // Reset password field after update
                     
                     if(data.user_profile != '') {
                         $('#uploaded_image img').attr('src', data.user_profile);
                     }
+                }
+                if(data.error != '') {
+                    $('#message').html('<div class="alert alert-danger border-0 text-white" style="border-radius:15px; background: rgba(220,53,69,0.2) !important;">'+data.error+'</div>');
                 }
             }
         });

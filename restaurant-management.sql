@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 26, 2026 at 02:46 AM
+-- Generation Time: Mar 04, 2026 at 05:40 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -47,7 +47,46 @@ INSERT INTO `order_item_table` (`order_item_id`, `order_id`, `product_name`, `pr
 (21, 44, 'Wine', 1, 3334.08, 3334.08),
 (22, 45, 'Beef Stirfry', 1, 350.11, 350.11),
 (23, 45, 'Bread rolls', 1, 43.87, 43.87),
-(24, 45, 'Bruschetta', 1, 117.00, 117.00);
+(24, 45, 'Bruschetta', 1, 117.00, 117.00),
+(25, 46, 'Chocolate Cake', 1, 765.08, 765.08),
+(26, 46, 'Chicken wings', 1, 143.03, 143.03),
+(27, 47, 'Beef Stirfry', 1, 350.11, 350.11),
+(28, 48, 'Wine', 1, 3334.08, 3334.08),
+(29, 49, 'Bruschetta', 1, 117.00, 117.00),
+(30, 49, 'Mozzarella sticks', 1, 115.00, 115.00),
+(31, 50, 'Fruit tart', 5, 87.90, 439.50),
+(32, 50, 'Chocolate Cake', 1, 765.08, 765.08),
+(33, 50, 'Cheesecake', 1, 142.45, 142.45),
+(34, 50, 'Tiramisu', 7, 346.80, 2427.60),
+(35, 51, 'Bruschetta', 1, 117.00, 117.00),
+(36, 52, 'Bruschetta', 1, 117.00, 117.00),
+(37, 52, 'Caprese salad', 1, 99.67, 99.67),
+(38, 53, 'Chocolate Cake', 1, 765.08, 765.08),
+(39, 53, 'Chicken wings', 1, 143.03, 143.03),
+(40, 54, 'Smoothies', 5, 65.01, 325.05),
+(41, 55, 'Spring rolls', 1, 100.01, 100.01),
+(42, 56, 'Bread rolls', 1, 43.87, 43.87),
+(43, 57, 'Bruschetta', 1, 117.00, 117.00),
+(44, 58, 'Bread rolls', 1, 43.87, 43.87),
+(45, 59, 'Bread rolls', 1, 43.87, 43.87),
+(46, 60, 'Bread rolls', 1, 43.87, 43.87),
+(47, 61, 'Spring rolls', 4, 100.01, 400.04),
+(48, 62, 'Lemonade', 1, 134.33, 134.33),
+(49, 63, 'Spaghetti Bolognese', 1, 320.02, 320.02),
+(50, 64, 'Bruschetta', 1, 117.00, 117.00),
+(53, 66, 'Cheesecake', 1, 142.45, 142.45),
+(54, 66, 'Mozzarella sticks', 1, 115.00, 115.00),
+(55, 66, 'Coffee', 1, 129.56, 129.56),
+(56, 67, 'Clam chowder', 1, 131.76, 131.76),
+(57, 67, 'Fettuccine Alfredo', 1, 106.08, 106.08),
+(58, 68, 'Ice cream sundae', 1, 59.01, 59.01),
+(59, 68, 'Mozzarella sticks', 1, 115.00, 115.00),
+(60, 69, 'Garlic bread', 1, 111.00, 111.00),
+(61, 70, 'Spring rolls', 1, 100.01, 100.01),
+(62, 70, 'Garlic bread', 1, 111.00, 111.00),
+(63, 71, 'Bread rolls', 1, 43.87, 43.87),
+(64, 71, 'Beef Stirfry', 1, 350.11, 350.11),
+(65, 72, 'Crab cakes', 1, 221.32, 221.32);
 
 -- --------------------------------------------------------
 
@@ -66,7 +105,7 @@ CREATE TABLE `order_table` (
   `order_time` time NOT NULL,
   `order_waiter` varchar(250) NOT NULL,
   `order_cashier` varchar(250) NOT NULL,
-  `order_status` enum('In Process','Completed') NOT NULL,
+  `order_status` enum('In Process','Preparing','Ready','Completed','Cancelled') NOT NULL DEFAULT 'In Process',
   `payment_method` varchar(50) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
@@ -75,13 +114,35 @@ CREATE TABLE `order_table` (
 --
 
 INSERT INTO `order_table` (`order_id`, `order_number`, `order_table`, `order_gross_amount`, `order_tax_amount`, `order_net_amount`, `order_date`, `order_time`, `order_waiter`, `order_cashier`, `order_status`, `payment_method`) VALUES
-(39, 'ORD-20260217172127-977', 'Banquet', 0.00, 0.00, 0.00, '2026-02-17', '17:21:27', 'Vince', 'Kate', 'Completed', NULL),
-(40, 'ORD-20260225222016-169', 'Walk-in', 0.00, 0.00, 0.00, '2026-02-26', '02:23:43', 'Vince', 'Kate', 'Completed', NULL),
-(41, 'ORD-20260225222017-307', 'Walk-in', 0.00, 0.00, 0.00, '2026-02-26', '02:23:32', 'Vince', 'Kate', 'Completed', NULL),
-(42, 'ORD-20260225222017-101', 'Walk-in', 0.00, 0.00, 0.00, '2026-02-26', '02:23:23', 'Vince', 'Kate', 'Completed', NULL),
-(43, 'ORD-20260226000726-250', 'Hightop', 129.56, 10.36, 139.92, '2026-02-26', '00:07:26', 'Nancy', '', '', NULL),
+(43, 'ORD-20260226000726-250', 'Hightop', 129.56, 10.36, 139.92, '2026-02-26', '00:07:26', 'Nancy', 'Vince', 'Completed', NULL),
 (44, 'ORD-20260226003423-835', 'Bistro table', 3508.95, 280.72, 3789.67, '2026-02-26', '02:22:12', 'Nancy', 'Kate', 'Completed', NULL),
-(45, 'ORD-6C834', 'Self-Order', 510.98, 0.00, 510.98, '2026-02-26', '04:29:03', 'Vince', '', 'In Process', NULL);
+(45, 'ORD-6C834', 'Self-Order', 510.98, 0.00, 510.98, '2026-02-26', '04:29:03', 'Vince', 'Vince', 'Completed', NULL),
+(46, 'ORD-D9D4F', 'Round dining table', 908.11, 0.00, 908.11, '2026-03-03', '19:44:19', 'Nancy', 'Vince', 'Completed', NULL),
+(47, 'ORD-67C6A', 'Self-Order', 350.11, 0.00, 350.11, '2026-03-03', '21:50:49', 'Nancy', 'Vince', 'Completed', NULL),
+(48, 'ORD-642E9', 'Bistro table', 3334.08, 0.00, 3334.08, '2026-03-03', '21:56:07', 'Nancy', '', 'Completed', NULL),
+(49, 'ORD-F457C', 'Round dining table', 232.00, 0.00, 232.00, '2026-03-03', '21:56:49', 'Nancy', '', 'Completed', NULL),
+(50, 'ORD-C0C7C', 'Self-Order', 3774.63, 0.00, 3774.63, '2026-03-03', '22:20:47', 'Mariba', '', 'Completed', NULL),
+(51, 'ORD-28380', 'Self-Order', 117.00, 0.00, 117.00, '2026-03-03', '23:25:18', 'Mariba', '', 'Completed', NULL),
+(52, 'ORD-9A115', 'Self-Order', 216.67, 0.00, 216.67, '2026-03-03', '23:28:36', 'Mariba', '', 'Completed', NULL),
+(53, 'ORD-D82C8', 'Self-Order', 908.11, 0.00, 908.11, '2026-03-03', '23:34:31', 'Mariba', '', 'Completed', NULL),
+(54, 'ORD-A684E', 'Self-Order', 325.05, 0.00, 325.05, '2026-03-03', '23:38:52', 'Mariba', '', 'Completed', NULL),
+(55, 'ORD-B53B3', 'Self-Order', 100.01, 0.00, 100.01, '2026-03-03', '23:40:23', 'Mariba', '', 'Completed', NULL),
+(56, 'ORD-9F614', 'Self-Order', 43.87, 0.00, 43.87, '2026-03-03', '23:47:54', 'Mariba', '', 'Completed', NULL),
+(57, 'ORD-72B32', 'Self-Order', 117.00, 0.00, 117.00, '2026-03-03', '23:50:40', 'Mariba', '', 'Completed', NULL),
+(58, 'ORD-66F04', 'Self-Order', 43.87, 0.00, 43.87, '2026-03-04', '00:02:52', 'Mariba', '', 'Completed', NULL),
+(59, 'ORD-093F6', 'Self-Order', 43.87, 0.00, 43.87, '2026-03-04', '00:05:49', 'Mariba', 'Vince', 'Completed', NULL),
+(60, 'ORD-072B0', 'Self-Order', 43.87, 3.51, 47.38, '2026-03-04', '02:09:18', 'Mariba', 'Kate', 'Completed', 'M-Pesa'),
+(61, 'ORD-7F39F', 'Self-Order', 400.04, 0.00, 400.04, '2026-03-04', '00:20:08', 'Mariba', 'Vince', 'Completed', NULL),
+(62, 'ORD-44F68', 'Self-Order', 134.33, 10.75, 145.08, '2026-03-04', '01:46:00', 'Mariba', 'Kate', 'Completed', 'Cash'),
+(63, 'ORD-03AFD', 'Self-Order', 320.02, 0.00, 320.02, '2026-03-04', '00:36:19', 'Mariba', 'Kate', 'Completed', NULL),
+(64, 'ORD-EA5D2', 'Self-Order', 117.00, 0.00, 117.00, '2026-03-04', '01:03:15', 'Mariba', 'Kate', 'Completed', NULL),
+(66, 'ORD-FC490', 'Booth table', 387.01, 30.96, 417.97, '2026-03-04', '16:06:00', 'Nancy', 'Kate', 'Completed', 'Card'),
+(67, 'ORD-735B9', 'Self-Order', 237.84, 0.00, 237.84, '2026-03-04', '02:25:49', 'Mariba', '', 'Ready', NULL),
+(68, 'ORD-A3F39', 'Bistro table', 174.01, 0.00, 174.01, '2026-03-04', '15:39:57', 'Nancy', '', 'Ready', NULL),
+(69, 'ORD-14BFA', 'Banquet table', 111.00, 0.00, 111.00, '2026-03-04', '15:52:17', 'Nancy', '', 'Ready', NULL),
+(70, 'ORD-7CBBC', 'Booth table', 211.01, 0.00, 211.01, '2026-03-04', '18:29:28', 'Nancy', '', 'In Process', NULL),
+(71, 'ORD-E2C42', 'Self-Order', 393.98, 0.00, 393.98, '2026-03-04', '18:30:20', 'Mariba', '', 'Preparing', NULL),
+(72, 'ORD-32BB9', 'Self-Order', 221.32, 0.00, 221.32, '2026-03-04', '19:05:32', 'Mariba', '', 'In Process', NULL);
 
 -- --------------------------------------------------------
 
@@ -234,7 +295,7 @@ CREATE TABLE `restaurant_table` (
 --
 
 INSERT INTO `restaurant_table` (`restaurant_id`, `restaurant_name`, `restaurant_tag_line`, `restaurant_address`, `restaurant_contact_no`, `restaurant_email`, `restaurant_currency`, `restaurant_timezone`, `restaurant_logo`) VALUES
-(1, 'Wakanesa Restaurant', '#wakanesa', 'City Square 00200, Nairobi Kenya', '0797369845', 'wakanesarestaurant@admin.com', 'KSH', 'Africa/Nairobi', 'images/60986845.jpg');
+(1, 'Wakanesa Restaurant', '#Taste it slow. Enjoy every bite', 'City Square 00200, Nairobi Kenya', '0797369845', 'wakanesarestaurant@admin.com', 'KSH', 'Africa/Nairobi', 'images/224755566.png');
 
 -- --------------------------------------------------------
 
@@ -298,21 +359,23 @@ CREATE TABLE `user_table` (
   `user_email` varchar(30) NOT NULL,
   `user_password` varchar(250) NOT NULL,
   `user_profile` varchar(250) NOT NULL,
-  `user_type` enum('Master','Waiter','Cashier','User') NOT NULL,
+  `user_type` enum('Master','Waiter','Cashier','Kitchen','User') NOT NULL,
   `user_status` enum('Enable','Disable') NOT NULL,
   `user_created_on` datetime NOT NULL,
-  `reset_request` int(1) DEFAULT 0
+  `reset_request` int(1) DEFAULT 0,
+  `user_password_reset_code` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 
 --
 -- Dumping data for table `user_table`
 --
 
-INSERT INTO `user_table` (`user_id`, `user_name`, `user_contact_no`, `user_email`, `user_password`, `user_profile`, `user_type`, `user_status`, `user_created_on`, `reset_request`) VALUES
-(1, 'Admin', '0123456789', 'admin@admin.com', '123456', 'images/1404676967.png', 'Master', 'Enable', '2023-12-12 00:46:38', 0),
-(3, 'Kate', '0234156789', 'kathrynmwamburi@gmail.com', '$2y$10$JpzpRoi/ugMxQ/X/LDgsUOXa7kjZ9q.jplSdqUGuWrPUllyjLpMWq', 'images/1770407092_698644b4628e1.jpg', 'Cashier', 'Enable', '2026-02-07 03:44:52', 0),
-(4, 'Nancy', '0705681215', 'nancy@gmail.com', '$2y$10$LbqhlaR189FxPxj2ALQlPuC.xY2rRp9YuPwbxq2QlBoue4eR8P30.', 'img/2071241283.jpg', 'Waiter', 'Enable', '2026-02-07 06:07:34', 0),
-(8, 'Vince', '12345678', 'vinniemariba2004@gmail.com', '$2y$10$SWeQWA.7Rj.m4LZU1pYeSuAaK3bcjMPQHqoGF5BmqAcrNjb.I8laq', 'img/1772041050.png', 'User', 'Enable', '2026-02-25 20:37:30', 0);
+INSERT INTO `user_table` (`user_id`, `user_name`, `user_contact_no`, `user_email`, `user_password`, `user_profile`, `user_type`, `user_status`, `user_created_on`, `reset_request`, `user_password_reset_code`) VALUES
+(1, 'Admin', '0123456789', 'admin@admin.com', '123456', 'images/1404676967.png', 'Master', 'Enable', '2023-12-12 00:46:38', 0, NULL),
+(3, 'Kate', '234156789', 'kathrynmwamburi@gmail.com', '123456', 'img/1413932346.jpg', 'Cashier', 'Enable', '2026-02-07 03:44:52', 0, NULL),
+(4, 'Nancy', '0705681215', 'nancy@gmail.com', '123456', 'img/2071241283.jpg', 'Waiter', 'Enable', '2026-02-07 06:07:34', 0, NULL),
+(8, 'Vince', '12345678', 'vinniemariba2004@gmail.com', '123456', 'img/785385293.jpg', 'Kitchen', 'Enable', '2026-02-25 20:37:30', 0, NULL),
+(10, 'Mariba', '33333333', 'mariba@gmail.com', '123456', 'img/1274017994.jpg', 'User', 'Enable', '2026-03-04 02:59:44', 1, NULL);
 
 --
 -- Indexes for dumped tables
@@ -380,13 +443,13 @@ ALTER TABLE `user_table`
 -- AUTO_INCREMENT for table `order_item_table`
 --
 ALTER TABLE `order_item_table`
-  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `order_item_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=66;
 
 --
 -- AUTO_INCREMENT for table `order_table`
 --
 ALTER TABLE `order_table`
-  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=46;
+  MODIFY `order_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=73;
 
 --
 -- AUTO_INCREMENT for table `order_tax_table`
@@ -428,7 +491,7 @@ ALTER TABLE `tax_table`
 -- AUTO_INCREMENT for table `user_table`
 --
 ALTER TABLE `user_table`
-  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `user_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -18,21 +18,20 @@ include('header.php');
 
 <style>
     :root {
+        --sky-blue: #0ea5e9;
+        --sky-glow: rgba(14, 165, 233, 0.3);
+        --deep-navy: #0f172a;
+        --glass-bg: rgba(255, 255, 255, 0.03);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --accent-green: #22c55e;
         --sidebar-width: 250px;
-        --card-bg: rgba(20, 22, 26, 0.98);
-        --glass-border: rgba(0, 210, 255, 0.2);
-        --accent-orange: #ff5e3a;
-        --neon-blue: #00d2ff;
-        --neon-purple: #9d50bb;
-        --text-muted: #888;
     }
 
     body {
-        background: #06070a; 
-        background-image: radial-gradient(circle at top right, #1a1a1a, #06070a);
+        background-color: var(--deep-navy);
+        background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
         color: #fff;
-        font-family: 'Inter', -apple-system, sans-serif;
-        overflow-x: hidden;
+        font-family: 'Poppins', sans-serif;
     }
 
     .main-content {
@@ -41,24 +40,38 @@ include('header.php');
         transition: all 0.3s;
     }
 
-    /* Top HUD Section */
+    /* HUD Header */
     .hud-title-section {
-        border-left: 4px solid var(--neon-purple);
+        border-left: 4px solid var(--sky-blue);
         padding-left: 20px;
         margin-bottom: 30px;
     }
 
-    /* Live Clock Styling */
     #live_clock {
-        font-family: 'Monaco', 'Courier New', monospace;
-        color: var(--neon-blue);
-        text-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
-        font-size: 1.8rem;
-        font-weight: bold;
+        font-family: 'JetBrains Mono', monospace;
+        color: var(--sky-blue);
+        text-shadow: 0 0 15px var(--sky-glow);
+        font-size: 2rem;
+        font-weight: 700;
         letter-spacing: 2px;
     }
 
-    /* Search Bar HUD */
+    /* Active Ticket Counter */
+    .pending-counter {
+        text-align: right;
+        border-right: 4px solid var(--sky-blue);
+        padding-right: 25px;
+    }
+    
+    .counter-value {
+        font-size: 4.5rem;
+        font-weight: 900;
+        line-height: 1;
+        color: #fff;
+        text-shadow: 0 0 30px var(--sky-glow);
+    }
+
+    /* Search HUD */
     .search-container {
         max-width: 600px;
         margin-bottom: 40px;
@@ -66,32 +79,31 @@ include('header.php');
     }
 
     .search-box {
-        background: rgba(255, 255, 255, 0.03);
+        background: var(--glass-bg);
         border: 1px solid var(--glass-border);
-        border-radius: 12px;
+        backdrop-filter: blur(10px);
+        border-radius: 15px;
         padding: 18px 25px 18px 55px;
         width: 100%;
         color: #fff;
         font-size: 1.1rem;
-        outline: none;
         transition: 0.3s;
     }
 
     .search-box:focus {
-        border-color: var(--neon-purple);
-        background: rgba(255, 255, 255, 0.07);
-        box-shadow: 0 0 20px rgba(157, 80, 187, 0.2);
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 20px var(--sky-glow);
+        outline: none;
     }
 
     .search-icon {
         position: absolute;
         left: 20px;
         top: 22px;
-        color: var(--neon-blue);
-        font-size: 1.2rem;
+        color: var(--sky-blue);
     }
 
-    /* Ticket Grid - Content Fit Implementation */
+    /* Ticket Grid - CONSTRAINT: Fit content */
     .ticket-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
@@ -100,30 +112,30 @@ include('header.php');
         align-items: start; 
     }
 
-    /* Ticket Card Styling */
     .ticket-card {
-        background: var(--card-bg);
-        border-radius: 16px;
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+        background: rgba(15, 23, 42, 0.8);
+        backdrop-filter: blur(15px);
+        border-radius: 20px;
+        border: 1px solid var(--glass-border);
         display: flex;
         flex-direction: column;
-        height: fit-content; /* Critical: Card height fits content */
+        height: fit-content; /* Critical: Fits content */
         position: relative;
         overflow: hidden;
-        transition: transform 0.3s ease;
+        transition: 0.3s ease;
     }
 
     .ticket-card:hover {
         transform: translateY(-5px);
-        border-color: var(--neon-blue);
+        border-color: var(--sky-blue);
+        box-shadow: 0 0 20px var(--sky-glow);
     }
 
     .ticket-card::before {
         content: "";
         position: absolute;
-        top: 0; left: 0; width: 100%; height: 3px;
-        background: linear-gradient(90deg, var(--neon-blue), var(--neon-purple));
+        top: 0; left: 0; width: 100%; height: 4px;
+        background: var(--sky-blue);
     }
 
     .ticket-header {
@@ -134,64 +146,46 @@ include('header.php');
         background: rgba(255,255,255,0.02);
     }
 
-    .order-id { font-weight: 800; color: var(--neon-blue); font-family: monospace; }
+    .order-id { font-weight: 800; color: var(--sky-blue); font-family: 'JetBrains Mono', monospace; }
     .table-name { font-weight: 700; font-size: 1.2rem; color: #fff; }
 
     .ticket-meta {
         padding: 10px 20px;
-        background: rgba(0,0,0,0.3);
+        background: rgba(0,0,0,0.2);
         display: flex;
         justify-content: space-between;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
-    .customer-name { color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
-    .time-ago { color: var(--accent-orange); font-weight: 800; }
+    .time-ago { color: var(--accent-green); font-weight: 800; }
 
-    .ticket-body {
-        padding: 20px;
-    }
+    .ticket-body { padding: 20px; }
 
     .order-item {
-        font-size: 1.15rem;
-        padding: 10px 0;
-        border-bottom: 1px solid rgba(255,255,255,0.03);
+        font-size: 1.1rem;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--glass-border);
         display: flex;
         align-items: flex-start;
-        gap: 12px;
+        gap: 15px;
     }
 
     .order-item:last-child { border-bottom: none; }
 
     .item-qty {
-        color: var(--neon-purple);
-        background: rgba(157, 80, 187, 0.15);
-        padding: 2px 8px;
-        border-radius: 6px;
-        font-weight: 900;
+        color: white;
+        background: var(--sky-blue);
+        padding: 2px 10px;
+        border-radius: 8px;
+        font-weight: 800;
         min-width: 35px;
         text-align: center;
+        box-shadow: 0 0 10px var(--sky-glow);
     }
 
-    .pending-counter {
-        text-align: right;
-        border-right: 4px solid var(--neon-blue);
-        padding-right: 25px;
-    }
-    
-    .counter-value {
-        font-size: 4.5rem;
-        font-weight: 900;
-        line-height: 1;
-        color: #fff;
-        text-shadow: 0 0 30px rgba(0, 210, 255, 0.3);
-    }
-
-    /* Mobile Responsive Fixes */
     @media (max-width: 768px) {
         .main-content { margin-left: 0; padding: 20px; }
         .counter-value { font-size: 3rem; }
-        .ticket-grid { grid-template-columns: 1fr; }
     }
 </style>
 
@@ -199,18 +193,19 @@ include('header.php');
     <div class="row align-items-center mb-5">
         <div class="col-md-8">
             <div class="hud-title-section">
-                <h1 class="font-weight-bold m-0" style="letter-spacing: -1px;">KITCHEN <span style="color: var(--neon-blue);">DASHBOARD</span></h1>
+                <h6 class="text-sky-blue font-weight-bold mb-1" style="color: var(--sky-blue); letter-spacing: 2px; text-transform: uppercase;">Operations</h6>
+                <h1 class="font-weight-bold m-0" style="letter-spacing: -1px;">KITCHEN <span style="color: var(--sky-blue);">TERMINAL</span></h1>
                 <div class="d-flex align-items-center mt-2">
-                    <div id="live_clock" class="mr-3"><?php echo date('H:i:s'); ?></div>
+                    <div id="live_clock" class="mr-4"><?php echo date('H:i:s'); ?></div>
                     <div class="text-white-50 small font-weight-bold text-uppercase" style="letter-spacing: 1px;">
-                        <?php echo date('l, d F Y'); ?>
+                        <i class="fas fa-calendar-alt mr-2"></i><?php echo date('l, d F Y'); ?>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-4">
             <div class="pending-counter">
-                <span class="text-white-50 font-weight-bold small text-uppercase" style="letter-spacing: 2px;">Active Tickets</span>
+                <span class="text-white-50 font-weight-bold small text-uppercase" style="letter-spacing: 2px;">Live Tickets</span>
                 <div id="active_count" class="counter-value">0</div>
             </div>
         </div>
@@ -218,7 +213,7 @@ include('header.php');
 
     <div class="search-container">
         <i class="fas fa-search search-icon"></i>
-        <input type="text" id="search_ticket" class="search-box" placeholder="Scan Table Name or Order ID...">
+        <input type="text" id="search_ticket" class="search-box" placeholder="Scan Table or Order ID...">
     </div>
 
     <div class="ticket-grid" id="kitchen_order_display">
@@ -269,8 +264,8 @@ $(document).ready(function(){
         load_orders();
     });
 
-    // Refresh every 10s
-    setInterval(load_orders, 10000);
+    // High-frequency refresh for kitchen environment
+    setInterval(load_orders, 5000); 
     load_orders();
 });
 </script>
