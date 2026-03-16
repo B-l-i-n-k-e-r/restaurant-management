@@ -34,21 +34,20 @@ if(isset($_POST["user_email"])) {
         ";
         $object->execute();
         
-$mail = new PHPMailer(true);
+        $mail = new PHPMailer(true);
 
         try {
-            // Enable this ONLY for troubleshooting; it will show in your JQuery response
-            // $mail->SMTPDebug = 2; 
-
+            // Server settings
             $mail->isSMTP();
             $mail->Host       = 'smtp.gmail.com'; 
             $mail->SMTPAuth   = true;
+            // IMPORTANT: Ensure this is a 16-character App Password from Google
             $mail->Username   = 'vinniemariba2004@gmail.com'; 
-            $mail->Password   = 'hrhr wfzi vzrm cddl'; 
+            $mail->Password   = 'uksz nfnp blzu gypl'; 
             $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             $mail->Port       = 587;
 
-            // ADD THIS BLOCK FOR INFINITYFREE
+            // InfinityFree / Localhost SSL certificate bypass
             $mail->SMTPOptions = array(
                 'ssl' => array(
                     'verify_peer' => false,
@@ -57,28 +56,33 @@ $mail = new PHPMailer(true);
                 )
             );
 
-            $mail->setFrom('vinniemariba2004@gmail.com', 'Wakanesa Restaurant'); // Use your Gmail here too
+            // Recipients
+            $mail->setFrom('vinniemariba2004@gmail.com', 'Wakanesa Restaurant');
             $mail->addAddress($email);
 
+            // Content
             $mail->isHTML(true);
             $mail->Subject = 'Password Reset Request - Wakanesa Restaurant';
             
-            // Adjust the URL to your exact folder name if it's different
             $reset_link = "https://wakanesa.infinityfreeapp.com/reset_password.php?token=" . $token;
             
             $mail->Body = "
-                <div style='font-family: Arial, sans-serif; padding: 20px;'>
-                    <h3>Reset Your Password</h3>
-                    <p>Click the button below to reset your Wakanesa Restaurant account password:</p>
-                    <a href='$reset_link' style='background:#0ea5e9; color:white; padding:10px 20px; text-decoration:none; border-radius:5px; display:inline-block;'>Reset Password</a>
-                    <p>If you did not request this, please ignore this email.</p>
+                <div style='font-family: Arial, sans-serif; padding: 20px; border: 1px solid #eee; border-radius: 10px;'>
+                    <h3 style='color: #333;'>Reset Your Password</h3>
+                    <p>We received a request to reset the password for your Wakanesa Restaurant account.</p>
+                    <p>Click the button below to proceed:</p>
+                    <div style='margin: 20px 0;'>
+                        <a href='$reset_link' style='background:#0ea5e9; color:white; padding:12px 25px; text-decoration:none; border-radius:5px; display:inline-block; font-weight: bold;'>Reset Password</a>
+                    </div>
+                    <p style='font-size: 12px; color: #777;'>If you did not request this, please ignore this email. This link will remain active for a limited time.</p>
                 </div>
             ";
 
             $mail->send();
             $success = 'Reset link has been sent to your email address.';
         } catch (Exception $e) {
-            $error = "Mail could not be sent. Error: {$mail->ErrorInfo}";
+            // This provides the specific reason why authentication failed
+            $error = "Mail could not be sent. Error: SMTP Error: " . $mail->ErrorInfo;
         }
     } else {
         $error = 'Email Address not found in our records.';
@@ -89,6 +93,8 @@ $mail = new PHPMailer(true);
         'success' => $success
     );
 
+    // Ensure no previous whitespace/warnings break the JSON
+    if (ob_get_length()) ob_clean();
     echo json_encode($output);
 }
 ?>
