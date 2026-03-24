@@ -283,7 +283,7 @@ if(isset($_POST["action"])) {
         exit;
     }
 
-    // 11. FETCH CUSTOMER ACTIVE ORDERS (Updated with Pay Button)
+   // 11. FETCH CUSTOMER ACTIVE ORDERS (FIXED FOR BUTTON ALIGNMENT)
     if($_POST["action"] == 'fetch_customer_active_orders') {
         $user_name = $_SESSION['user_name'] ?? 'Staff';
         $object->query = "SELECT * FROM order_table WHERE order_waiter = :user AND order_status NOT IN ('Completed') ORDER BY order_id DESC";
@@ -295,15 +295,14 @@ if(isset($_POST["action"])) {
             foreach($result as $row) {
                 $status_class = ($row['order_status'] == 'Ready') ? 'badge-success' : 'badge-warning';
                 
-                // Determine if we show the Pay Button
                 $pay_button = '';
                 if($row['order_status'] == 'Ready') {
                     $pay_button = '
-                    <button class="btn btn-sm pay_now_btn ml-2" 
+                    <button class="btn btn-sm pay_now_btn" 
                             data-id="'.$row["order_id"].'" 
                             data-bill="'.$object->cur.' '.number_format($row["order_net_amount"], 2).'"
-                            style="background: #22c55e; color: white; border-radius: 8px; font-weight: bold; border: none; padding: 5px 12px;">
-                        <i class="fas fa-money-bill-wave mr-1"></i> PAY NOW
+                            style="background: #22c55e; color: white; border: none;">
+                        <i class="fas fa-money-bill-wave mr-1"></i> PAY
                     </button>';
                 }
 
@@ -322,9 +321,10 @@ if(isset($_POST["action"])) {
                         <div class="small text-white-50 mb-3 border-bottom border-secondary pb-2">
                              Table: <span class="text-white">'.$row["order_table"].'</span>
                         </div>
-                        <div class="d-flex justify-content-between align-items-center">
+                        
+                        <div class="order-footer-wrapper">
                             <span class="h5 mb-0 text-success font-weight-bold" style="white-space: nowrap;">'.$object->cur.' '.number_format($row["order_net_amount"], 2).'</span>
-                            <div class="d-flex">
+                            <div class="order-action-btns">
                                 <button class="btn btn-sm btn-outline-info view_receipt" data-id="'.$row["order_id"].'"><i class="fas fa-eye"></i></button>
                                 '.$pay_button.'
                             </div>
@@ -562,7 +562,7 @@ if($_POST["action"] == 'fetch_customer_history') {
                     $next_status = 'Ready';
                     $btn_state = '';
                 } else {
-                    $btn_text = 'WAITING FOR CASHIER';
+                    $btn_text = '<span style="color: #bbb8b8; text-shadow: 0 0 10px rgba(233, 242, 250, 0.93);">AWAITING PAYMENT</span>';                    
                     $btn_class = 'btn-waiting'; 
                     $next_status = ''; 
                     $btn_state = 'disabled';

@@ -5,99 +5,115 @@ $object = new rms();
 
 if(isset($_POST["action"])) {
 
-    if($_POST["action"] == 'fetch_production') {
+    if($_POST["action"] == 'fetch_kitchen_grid') {
         
-        $order_column = array('order_number', 'order_table', NULL, 'order_id', 'order_status', NULL);
-
-        // STUBBORN QUERY: Force both statuses
-        $main_query = "SELECT * FROM order_table WHERE order_status IN ('In Process', 'Preparing') ";
-
         $search_query = "";
-        if(isset($_POST["search"]["value"]) && $_POST["search"]["value"] != '') {
-            $search_val = $_POST["search"]["value"];
-            $search_query = 'AND (order_number LIKE "%'.$search_val.'%" ';
-            $search_query .= 'OR order_table LIKE "%'.$search_val.'%" ';
-            $search_query .= 'OR order_status LIKE "%'.$search_val.'%") ';
+        if(isset($_POST["search"]) && $_POST["search"] != '') {
+            $search_val = $_POST["search"];
+            $search_query = " AND (order_number LIKE '%$search_val%' OR order_table LIKE '%$search_val%') ";
         }
 
-        $order_query = "ORDER BY FIELD(order_status, 'Preparing', 'In Process'), order_id ASC ";
-        
-        if(isset($_POST["order"])) {
-            $col_index = $_POST['order']['0']['column'];
-            $dir = $_POST['order']['0']['dir'];
-            if($order_column[$col_index] != NULL) {
-                $order_query = 'ORDER BY '.$order_column[$col_index].' '.$dir.' ';
-            }
-        }
+        // Fetch orders that are currently being worked on
+        $object->query = "
+            SELECT * FROM order_table 
+            WHERE order_status IN ('In Process', 'Preparing') 
+            $search_query 
+            ORDER BY FIELD(order_status, 'Preparing', 'In Process'), order_id ASC
+        ";
 
-        $limit_query = '';
-        if($_POST["length"] != -1) {
-            $limit_query = 'LIMIT ' . $_POST['start'] . ', ' . $_POST['length'];
-        }
-
-        // Count rows first
-        $object->query = $main_query . $search_query;
-        $object->execute();
-        $total_rows = $object->row_count();
-
-        // Get Actual Data
-        $object->query = $main_query . $search_query . $order_query . $limit_query;
         $result = $object->get_result();
-        $data = array();
+        $html = '';
 
         foreach($result as $row) {
-            $sub_array = array();
-            
-            $sub_array[] = '<strong>#'.$row["order_number"].'</strong>';
-            $sub_array[] = '<span class="badge badge-info">'.$row["order_table"].'</span>';
+            // Calculate time elapsed
+            $order_time = strtotime($row["order_date"] . ' ' . $row["order_time"]);
+            $diff = time() - $order_time;
+            $mins_ago = round($diff / 60);
 
-            // FIX: DO NOT use $object->get_result() inside the loop. 
-            // It overwrites the parent query. Use a direct PDO call instead.
+            // UPDATED STATUS UI FOR DARK MODE VISIBILITY
+            if($row['order_status'] == 'Preparing') {
+                $status_label = 'COOKING';
+                $status_class = 'bg-warning text-dark';
+            } else {
+                // Changing "In Process" to "WAITING FOR CASHIER" with bright cyan text
+                $status_label = 'WAITING FOR CASHIER';
+                $status_class = ''; // Clear default bg
+                $custom_style = 'background: rgba(0, 212, 255, 0.1); color: #00d4ff; border: 1px solid #00d4ff;';
+            }
+            
+            // Start Ticket Card
+            $html .= '
+            <div class="ticket-card" id="order_'.$row["order_id"].'">
+                <div class="ticket-header">
+                    <div class="status-badge '.$status_class.'" style="padding: 4px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 900; '.($row['order_status'] != 'Preparing' ? $custom_style : '').'">
+                        '.$status_label.'
+                    </div>
+                    <div class="order-time-top text-white-50 small">
+                        '.date('H:i A', $order_time).'
+                    </div>
+                </div>
+
+                <div class="ticket-body" style="padding: 15px 20px;">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <h4 class="order-id m-0" style="color: #0ea5e9;">#ORD-'.$row["order_number"].'</h4>
+                    </div>
+                    <div class="table-info text-white-50 small mb-3">
+                        Table: <span class="text-white font-weight-bold">'.$row["order_table"].'</span>
+                    </div>
+                    
+                    <div class="order-items-list" style="border-top: 1px solid rgba(255,255,255,0.05); padding-top: 15px;">';
+
+            // Fetch Items
             $stmt = $object->connect->prepare("SELECT * FROM order_item_table WHERE order_id = :id");
             $stmt->execute(['id' => $row["order_id"]]);
             $items = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
-            $item_list = '<ul class="list-unstyled mb-0 small">';
-            $total_qty = 0;
+
             foreach($items as $item) {
-                $item_list .= '<li>'.$item["product_quantity"].' x '.$item["product_name"].'</li>';
-                $total_qty += $item["product_quantity"];
+                $html .= '
+                <div class="order-item d-flex align-items-center mb-2">
+                    <span class="item-qty mr-3" style="color: #0ea5e9; font-weight: bold;">'.$item["product_quantity"].'x</span>
+                    <span class="item-name text-white">'.$item["product_name"].'</span>
+                </div>';
             }
-            $item_list .= '</ul>';
-            $sub_array[] = $item_list;
 
-            $sub_array[] = '<span class="font-weight-bold">'.$total_qty.'</span>';
+            $html .= '</div></div>'; // End Body
 
-            // Status Badge
+            // Ticket Footer / Action Section
+            $html .= '
+                <div class="ticket-meta mt-auto" style="padding: 15px 20px; background: rgba(255,255,255,0.02); display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05);">
+                    <div class="time-ago" style="font-size: 0.7rem; font-weight: bold; color: rgba(255,255,255,0.3);">
+                        '.($mins_ago > 1440 ? "LONG AGO" : $mins_ago . " MINS AGO").'
+                    </div>
+                    <div class="actions">';
+            
             if($row['order_status'] == 'In Process') {
-                $sub_array[] = '<span class="status-waiting"><i class="fas fa-clock"></i> Waiting</span>';
-                $sub_array[] = '<button type="button" class="btn btn-warning btn-sm update_status btn-action" data-id="'.$row["order_id"].'" data-status="Preparing">Start Cook</button>';
+                $html .= '<button type="button" class="btn btn-outline-info btn-sm update_status" data-id="'.$row["order_id"].'" data-status="Preparing" style="font-weight: 800; border-radius: 8px;"><i class="fas fa-fire"></i> START</button>';
             } else {
-                $sub_array[] = '<span class="status-preparing"><i class="fas fa-fire"></i> Cooking</span>';
-                $sub_array[] = '<button type="button" class="btn btn-success btn-sm update_status btn-action" data-id="'.$row["order_id"].'" data-status="Completed">Mark Ready</button>';
+                $html .= '<button type="button" class="btn btn-success btn-sm update_status" data-id="'.$row["order_id"].'" data-status="Completed" style="font-weight: 800; border-radius: 8px;"><i class="fas fa-check"></i> READY</button>';
             }
 
-            $data[] = $sub_array;
+            $html .= '
+                    </div>
+                </div>
+            </div>';
         }
 
-        $output = array(
-            "draw"            => intval($_POST["draw"]),
-            "recordsTotal"    => $total_rows,
-            "recordsFiltered" => $total_rows,
-            "data"            => $data
-        );
-        echo json_encode($output);
+        if(empty($result)) {
+            $html = '<div class="col-12 text-center opacity-50 mt-5"><h3>NO LIVE TICKETS</h3></div>';
+        }
+
+        echo $html;
         exit;
     }
 
     if($_POST['action'] == 'update_order_status') {
         $order_id = $_POST['order_id'];
         $status = $_POST['status'];
-        $cashier = $_SESSION['user_name'] ?? 'Kitchen';
+        $user = $_SESSION['user_name'] ?? 'Kitchen';
 
         if($status == 'Completed') {
-            $object->query = "UPDATE order_table SET order_status = :status, order_cashier = :cashier WHERE order_id = :id";
-            $params = [':status' => $status, ':cashier' => $cashier, ':id' => $order_id];
+            $object->query = "UPDATE order_table SET order_status = :status, order_cashier = :user WHERE order_id = :id";
+            $params = [':status' => $status, ':user' => $user, ':id' => $order_id];
         } else {
             $object->query = "UPDATE order_table SET order_status = :status WHERE order_id = :id";
             $params = [':status' => $status, ':id' => $order_id];

@@ -21,7 +21,7 @@ include('header.php');
     
     body { background-color: var(--deep-navy); color: #e2e8f0; font-family: 'Poppins', sans-serif; }
 
-    /* CONSTRAINT: Fit content for table columns */
+    /* TABLE LAYOUT FIXES */
     .table td, .table th { 
         white-space: nowrap !important; 
         width: 1% !important; 
@@ -29,7 +29,11 @@ include('header.php');
         padding: 1.2rem 1rem !important;
         border-top: 1px solid var(--glass-border) !important;
     }
-    .table td.expand, .table th.expand { width: auto !important; white-space: normal !important; }
+    /* Let the action column be flexible but contained */
+    .table td:last-child, .table th:last-child {
+        width: auto !important;
+        text-align: right;
+    }
 
     .glass-card { 
         background: rgba(15, 23, 42, 0.7) !important; 
@@ -39,6 +43,34 @@ include('header.php');
         border-radius: 24px; 
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
         overflow: hidden;
+    }
+
+    /* LIVE STATUS CARD FIXES (Addressing the Image provided) */
+    .order-footer-wrapper {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+        margin-top: 1rem;
+        flex-wrap: wrap; /* Prevents breaking out of card on small screens */
+    }
+
+    .order-action-btns {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .pay_now_btn, .view_receipt {
+        padding: 6px 12px !important;
+        border-radius: 10px !important;
+        font-weight: 700 !important;
+        text-transform: uppercase;
+        font-size: 0.75rem !important;
+        white-space: nowrap;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .glass-card-modal { 
@@ -86,20 +118,10 @@ include('header.php');
         box-shadow: 0 0 50px var(--sky-glow);
     }
 
-    /* Digital Receipt Print Styling */
-    .digital-receipt-wrapper {
-        background: #000;
-        color: #fff;
-        padding: 30px;
-        border-radius: 15px;
-        border: 1px dashed var(--glass-border);
-    }
-
     @media print {
         body * { visibility: hidden !important; }
         #receipt_content, #receipt_content * { visibility: visible !important; }
         #receipt_content { position: absolute; left: 0; top: 0; width: 100%; background: white !important; color: black !important; }
-        .digital-receipt-wrapper { background: white !important; color: black !important; border: 1px solid #000 !important; }
     }
 </style>
 
@@ -236,7 +258,6 @@ $(document).ready(function(){
         }
     });
 
-    // UPDATED: Direct redirect to print.php instead of showing modal
     $(document).on('click', '.view_receipt', function(){
         let order_id = $(this).data('id');
         window.location.href = 'print.php?action=print_receipt&order_id=' + order_id;
@@ -302,7 +323,6 @@ $(document).ready(function(){
                             background: '#0f172a', 
                             color: '#fff'
                         }).then(() => {
-                            // Automatically open print page after payment if desired
                             window.location.href = 'print.php?action=print_receipt&order_id=' + id;
                         });
                         load_active_orders();

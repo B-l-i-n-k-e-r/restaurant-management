@@ -24,7 +24,6 @@ include('header.php');
         --glass-bg: rgba(255, 255, 255, 0.03);
         --glass-border: rgba(255, 255, 255, 0.1);
         --accent-green: #22c55e;
-        --sidebar-width: 250px;
     }
 
     body {
@@ -34,10 +33,19 @@ include('header.php');
         font-family: 'Poppins', sans-serif;
     }
 
+    /* Fix: Ensure the content fills the remaining width next to sidebar */
+    #content-wrapper, #content {
+        width: 100% !important;
+        display: flex;
+        flex-direction: column;
+    }
+
     .main-content {
-        margin-left: var(--sidebar-width);
+        flex: 1;
+        width: 100%;
         padding: 40px;
         transition: all 0.3s;
+        box-sizing: border-box; /* Prevents padding from causing overflow */
     }
 
     /* HUD Header */
@@ -103,7 +111,7 @@ include('header.php');
         color: var(--sky-blue);
     }
 
-    /* Ticket Grid - CONSTRAINT: Fit content */
+    /* Ticket Grid - Constraint: Fit content vertically */
     .ticket-grid {
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); 
@@ -119,7 +127,7 @@ include('header.php');
         border: 1px solid var(--glass-border);
         display: flex;
         flex-direction: column;
-        height: fit-content; /* Critical: Fits content */
+        height: fit-content; 
         position: relative;
         overflow: hidden;
         transition: 0.3s ease;
@@ -184,7 +192,7 @@ include('header.php');
     }
 
     @media (max-width: 768px) {
-        .main-content { margin-left: 0; padding: 20px; }
+        .main-content { padding: 20px; }
         .counter-value { font-size: 3rem; }
     }
 </style>
@@ -264,7 +272,6 @@ $(document).ready(function(){
         load_orders();
     });
 
-    // High-frequency refresh for kitchen environment
     setInterval(load_orders, 5000); 
     load_orders();
 });
